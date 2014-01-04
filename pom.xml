@@ -32,8 +32,13 @@
             <artifactId>jstl</artifactId>
             <version>1.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.googlecode.objectify</groupId>
+            <artifactId>objectify</artifactId>
+            <version>4.0rc2</version>
+        </dependency>
 
-        <!-- Test Dependencies -->
+        <!-- AnottationTest Dependencies -->
         <dependency>
             <groupId>com.google.appengine</groupId>
             <artifactId>appengine-testing</artifactId>
@@ -56,10 +61,41 @@
             <artifactId>mockito-all</artifactId>
             <version>1.9.5</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-
     <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <targetPath>${basedir}/src/test/resources</targetPath>
+            </resource>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <targetPath>${basedir}/target/classes</targetPath>
+            </resource>
+        </resources>
+
         <plugins>
+            <plugin>
+                <groupId>com.google.appengine</groupId>
+                <artifactId>appengine-maven-plugin</artifactId>
+                <version>1.8.8</version>
+                <configuration>
+                    <enableJarClasses>false</enableJarClasses>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>endpoints_get_discovery_doc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <version>2.5.1</version>
@@ -69,11 +105,10 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.3</version>
+                <version>2.4</version>
                 <configuration>
                     <archiveClasses>true</archiveClasses>
                     <webResources>
@@ -85,12 +120,6 @@
                         </resource>
                     </webResources>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>com.google.appengine</groupId>
-                <artifactId>appengine-maven-plugin</artifactId>
-                <version>${appengine.target.version}</version>
             </plugin>
         </plugins>
     </build>

@@ -27,7 +27,6 @@ public class IndexManager extends Manager<IndexInputs> {
     private BundleMap bundle;
     private IteratorNextHealthTec iteratorNextHealthTec;
     private IteratorUserFromApp iteratorUserFromApp;
-    private IndexValidator validator;
 
     public IndexManager() {
         super();
@@ -39,8 +38,6 @@ public class IndexManager extends Manager<IndexInputs> {
         userFromApp = UserFromApp.create();
         bundle = new BundleMap("index");
 
-        validator = new IndexValidator();
-        validator.setAdmin(userFromApp.isAdmin());
 
         if (UserServiceFactory.getUserService().isUserLoggedIn()) {
             User current = UserServiceFactory.getUserService().getCurrentUser();
@@ -52,63 +49,24 @@ public class IndexManager extends Manager<IndexInputs> {
         }
     }
 
-    public IndexInputs getInputs() {
-        return inputs;
-    }
-
     public BundleMap getBundle() {
         return bundle;
     }
 
     @Override
-    protected IndexInputs getNewIputsInstance() {
-        return new IndexInputs();
-    }
-
-    @Override
     protected void problemInReflectionsCall(Exception ex) {
-        validator.setReflectionProblem(true);
     }
 
-    private boolean validatingEmail() {
-        if (inputs.getMail().isEmpty()) {
-            validator.setMailEmpty(true);
-            return false;
-        }
 
-        EmailValidator emailValidator = new EmailValidator();
-        if (!emailValidator.validate(inputs.getMail())) {
-            validator.setMailMalformed(true);
-            return false;
-        }
+    @Override
+    public void afterCatch() {
 
-        try {
-            NextHealthTec.setNext(inputs.getMail());
-            validator.setMailAlreadyExists(false);
-        } catch (IllegalArgumentException iaa) {
-            validator.setMailAlreadyExists(true);
-            return false;
-        }
-        inputs.setMail(null);
-        return true;
+        //TODO criar a validação dos iteradores
     }
 
     @Override
-    public boolean pageValidatation() {
-
-        boolean emailValid = validatingEmail();
-
-
-        return emailValid;
-    }
-
-    @Override
-    public void afterValidatation() {
-        iteratorNextHealthTec = new IteratorNextHealthTec();
-        validator.setItNextHealthTecHasRows(iteratorNextHealthTec.hasNext());
-
-        iteratorUserFromApp = new IteratorUserFromApp();
-        validator.setItUserFromAppHasRows(iteratorUserFromApp.hasNext());
+    public IndexInputs createInputContainer() {
+        return new IndexInputs();
     }
 
     @Override
@@ -116,7 +74,6 @@ public class IndexManager extends Manager<IndexInputs> {
         Map<String, List<?>> idsList = getIDsList();
         idsList.put("idsFromNextHealthTec", iteratorNextHealthTec.getIDsList());
         idsList.put("idsFromUserFromApp", iteratorUserFromApp.getIDsList());
-        super.postRendering();
     }
 
     public IteratorNextHealthTec getIteratorNextHealthTec() {
@@ -125,14 +82,6 @@ public class IndexManager extends Manager<IndexInputs> {
 
     public IteratorUserFromApp getIteratorUserFromApp() {
         return iteratorUserFromApp;
-    }
-
-    public IndexValidator getValidator() {
-        return validator;
-    }
-
-    public String getAlertAfterInsertion() {
-        return MessageFormat.format(getBundle().get("alertAfterInsertion"), getInputs().getMail());
     }
 
 }

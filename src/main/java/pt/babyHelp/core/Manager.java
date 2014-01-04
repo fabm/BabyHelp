@@ -1,156 +1,223 @@
 package pt.babyHelp.core;
 
+import pt.babyHelp.bundle.BundleMap;
+import pt.babyHelp.core.annotationsManager.BundledNames;
+import pt.babyHelp.core.annotationsManager.PostCreation;
 import pt.babyHelp.core.annotationsManager.Request;
-import pt.babyHelp.core.annotationsManager.Session;
+import pt.babyHelp.core.annotationsManager.RequestType;
+import pt.babyHelp.core.annotationsManager.interceptors.InterceptorAnnotation;
+import pt.babyHelp.core.validators.Validator;
+import pt.babyHelp.core.webComponents.inputs.Input;
+import pt.babyHelp.core.webComponents.inputs.InputDefault;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
  * User: francisco
- * Date: 29/11/13
- * Time: 21:55
+ * Date: 24/12/13
+ * Time: 11:36
  * To change this template use File | Settings | File Templates.
  */
-public abstract class Manager<T> {
-    protected HttpSession session;
-    protected ServletRequest request;
-    protected HashMap<String, Method> renderPanelsMethods;
-    private boolean withRequests;
-    protected T inputs;
-    private boolean validatesIfHasRequests = true;
-    protected boolean pageValid = false;
-    private Map<String,List<?>>idsLists = null;
+public abstract class Manager<T extends EventValidation> {
 
-    public Manager() {
-        renderPanelsMethods = null;
-        withRequests = false;
-        inputs = getNewIputsInstance();
-    }
+    protected boolean pageValid;
+    private HttpServletRequest request;
+    private T inputContainer;
+    private BundleMap bundleMapName;
+    private HashSet<String> dependenciesSet;
+    private StringBuilder sbDependencies;
+    private StringBuilder sbInsideJQuery = null;
+    private Map<String, List<?>> idsLists;
 
-    protected abstract T getNewIputsInstance();
+    protected abstract void afterCatch();
+
+    public abstract T createInputContainer();
+
     protected abstract void problemInReflectionsCall(Exception ex);
-    public abstract boolean pageValidatation();
-    public abstract void afterValidatation();
 
+    public T getInputContainer() {
+        return inputContainer;
+    }
 
-    public void setContext(ServletRequest request, HttpSession session) {
-        this.session = session;
+    public static boolean addErrorMessage(Input input, Validator validator){
+        if(!validator.validate(input)){
+            input.addMessage(validator.getMessage(input.getFieldLabel()));
+            return false;
+        }
+        return true;
+    }
+
+    public void setRequest(HttpServletRequest request) {
         this.request = request;
-        initManager();
+        try {
+            catchInputs();
+            pageValid = inputContainer.isValid();
+        } catch (Exception e) {
+            problemInReflectionsCall(e);
+        }
     }
 
-    private void initManager(){
-        Object idsLists = session.getAttribute("iDslists");
-        if(idsLists!=null){
-            this.idsLists= (Map<String, List<?>>) idsLists;
+    public void initSbInsideJQuery() {
+        if (sbInsideJQuery == null) {
+            sbInsideJQuery = new StringBuilder();
         }
-        catchRequestAndSession();
-        if(validatesIfHasRequests && hasRequests()){
-            pageValid = pageValidatation();
-        }
-        afterValidatation();
     }
 
-    protected Map<String,List<?>> getIDsList(){
-        if(idsLists==null){
+    public StringBuilder getSbInsideJQuery() {
+        return sbInsideJQuery;
+    }
+
+    public void postRendering() {
+        Object idsListsObject = request.getSession().getAttribute("iDslists");
+        if (idsListsObject == null) {
+            return;
+        }
+        Map idsListsMap = (Map) idsListsObject;
+        if (idsListsObject instanceof Map) {
+            request.getSession().removeAttribute("iDsLists");
+        }
+    }
+
+    protected void initManager() {
+        Object idsLists = request.getSession().getAttribute("iDslists");
+        if (idsLists != null) {
+            this.idsLists = (Map<String, List<?>>) idsLists;
+        }
+    }
+
+    public void appendString(String str) {
+        if(sbDependencies==null){
+            sbDependencies = new StringBuilder();
+        }
+        sbDependencies.append(str);
+    }
+
+    public String getJavascriptSB() {
+        return sbDependencies.toString();
+    }
+
+    public Set<String> getDependenciesSet(){
+        if (dependenciesSet == null) {
+            dependenciesSet = new HashSet<String>();
+        }
+        return dependenciesSet;
+    }
+
+    private void catchInputs() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
+        inputContainer = createInputContainer();
+        Class<?> icClass = inputContainer.getClass();
+        for (Field f : icClass.getDeclaredFields()) {
+            Request requestAnnotation = f.getAnnotation(Request.class);
+            RequestType requestType = requestAnnotation == null ?
+                    RequestType.REQUEST :
+                    requestAnnotation.requestType();
+            if (Input.class.isAssignableFrom(f.getType()) && requestType != RequestType.NONE) {
+                String param = requestAnnotation == null || requestAnnotation.name().isEmpty() ?
+                        f.getName() :
+                        requestAnnotation.name();
+                Input<? super Object> input = requestAnnotation == null ?
+                        InputDefault.class.newInstance() : requestAnnotation.inputClass().newInstance();
+                f.setAccessible(true);
+                f.set(inputContainer, input);
+                input.setName(param);
+
+                BundledNames bn = inputContainer.getClass().getAnnotation(BundledNames.class);
+                if (bn != null && bundleMapName == null) {
+                    bundleMapName = new BundleMap(bn.value());
+                }
+                fieldNameSet(requestAnnotation, f, input);
+
+                Object value = null;
+                if (requestType == RequestType.REQUEST) {
+                    input.setValue(request.getParameter(param));
+                }
+            }
+        }
+    }
+
+    protected Map<String, List<?>> getIDsList() {
+        if (idsLists == null) {
             idsLists = new HashMap<String, List<?>>();
-            session.setAttribute("iDslists",idsLists);
+            request.getSession().setAttribute("iDslists", idsLists);
         }
         return idsLists;
     }
 
-    public void postRendering(){
-        Object idsListsObject = session.getAttribute("iDslists");
-        if(idsListsObject == null){
-            return;
+    private void fieldNameSet(Request requestAnnotation, Field field, Input<?> input) {
+        String fieldName = requestAnnotation != null &&
+                !requestAnnotation.labelField().isEmpty() ?
+                requestAnnotation.labelField() :
+                null;
+        if (fieldName != null) {
+            input.setFieldLabel(fieldName);
         }
-        Map idsListsMap = (Map)idsListsObject;
-        if(idsListsObject instanceof Map){
-           session.removeAttribute("iDsLists");
-        }
-    }
-
-    public boolean isPageValid(){
-        return pageValid;
-    }
-
-    protected boolean hasRequests() {
-        return withRequests;
-    }
-
-    private void catchRequestAndSession() {
-        Method[] methods = inputs.getClass().getDeclaredMethods();
-        for (Method method : methods) {
-            Annotation[] anotations = method.getDeclaredAnnotations();
-            String methodName = method.getName();
-            boolean withAnnotations = false;
-            for (Annotation annotation : anotations) {
-                withAnnotations = true;
-                if (annotation instanceof Request) {
-                    if (methodName.startsWith("set")) {
-                        String parName = ((Request) annotation).name();
-                        if (parName.isEmpty()) {
-                            parName = ReflectionNamesManager.nameFromAcessor(method.getName());
-                        }
-
-                        setterRequest(method, parName);
-                    }
-                }
-                if (annotation instanceof Session) {
-                    if (methodName.startsWith("set")) {
-                        setterSession(method, (Session) annotation);
-                    }
-                }
+        if (bundleMapName != null) {
+            try {
+                fieldName = input.getFieldLabel();
+                String bundleFieldName = bundleMapName.get(fieldName);
+                input.setFieldLabel(bundleMapName.get(input.getFieldLabel()));
+            } catch (MissingResourceException mre) {
             }
-            if(!withAnnotations){
-                if (methodName.startsWith("set")) {
-                    setterRequest(method, ReflectionNamesManager.nameFromAcessor(method.getName()));
+        }
+    }
+
+    private void callPostedCreation(Class<?> icClass) throws
+            InvocationTargetException, IllegalAccessException {
+        for (Method method : icClass.getDeclaredMethods()) {
+            for (Annotation annotation : method.getDeclaredAnnotations()) {
+                if (annotation.annotationType() == PostCreation.class) {
+                    method.invoke(inputContainer, request);
+                    return;
                 }
             }
         }
     }
 
-
-    private void setterSession(Method method, Session annotation) {
-        String parName = annotation.name();
-        if (parName.isEmpty()) {
-            parName = ReflectionNamesManager.nameFromAcessor(method.getName());
-        }
-        try {
-            method.invoke(inputs,
-                    this.session.getAttribute(parName)
-            );
-        } catch (Exception e) {
-            problemInReflectionsCall(e);
-        }
-    }
-
-    private void getterSession(Method method, Session annotation) {
-        try {
-            String parName = annotation.name();
-            if (parName.isEmpty()) {
-                parName = ReflectionNamesManager.nameFromAcessor(method.getName());
+    private Collection<InterceptorContainer> getOrderedInterceptedAnnotationsCollection
+            (Annotation[] declaredAnnotations) {
+        ArrayList<InterceptorContainer> interceptorContainers = new ArrayList<InterceptorContainer>();
+        for (Annotation annotation : declaredAnnotations) {
+            try {
+                interceptorContainers.add(new InterceptorContainer(annotation));
+            } catch (IllegalArgumentException iae) {
             }
-            this.session.setAttribute(parName, method.invoke(inputs));
-        } catch (Exception e) {
-            problemInReflectionsCall(e);
+        }
+        Collections.sort(interceptorContainers);
+        return interceptorContainers;
+    }
+
+    private class InterceptorContainer implements Comparable<InterceptorContainer> {
+        Annotation interceptionAnnotation;
+        int priority = 0;
+
+        private InterceptorContainer(Annotation interceptorAnnotation) {
+            InterceptorAnnotation ia = interceptorAnnotation.annotationType().getAnnotation(InterceptorAnnotation.class);
+            if (ia == null) {
+                throw new IllegalArgumentException(interceptorAnnotation.getClass().getName() +
+                        " don't have an InterceptorAnnotation");
+            }
+            this.priority = ia.priority();
+            this.interceptionAnnotation = interceptorAnnotation;
+        }
+
+        @Override
+        public int compareTo(InterceptorContainer ic) {
+            if (this.priority > ic.priority) {
+                return 1;
+            }
+            if (this.priority < ic.priority) {
+                return -1;
+            }
+            return 0;
         }
     }
 
-    private void setterRequest(Method method, String parName) {
-        try {
-            String requestValue = this.request.getParameter(parName);
-            withRequests = withRequests || requestValue != null;
-            method.invoke(inputs, requestValue);
-        } catch (Exception e) {
-            problemInReflectionsCall(e);
-        }
-    }
+
+
 }

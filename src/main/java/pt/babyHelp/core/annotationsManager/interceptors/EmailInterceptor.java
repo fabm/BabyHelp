@@ -1,4 +1,4 @@
-package pt.babyHelp.core.annotationsManager;
+package pt.babyHelp.core.annotationsManager.interceptors;
 
 
 import java.lang.annotation.ElementType;
@@ -13,8 +13,8 @@ import java.lang.annotation.Target;
  * Time: 21:29
  * To change this template use File | Settings | File Templates.
  */
+@InterceptorAnnotation(priority = 1)
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Session {
-    String name() default "";
+@Target(ElementType.FIELD)
+public @interface EmailInterceptor {
 }

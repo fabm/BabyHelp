@@ -1,5 +1,10 @@
 package pt.babyHelp.managers.index;
 
+import pt.babyHelp.core.EventValidation;
+import pt.babyHelp.core.validators.EmailValidator;
+import pt.babyHelp.core.validators.NotEmptyValidator;
+import pt.babyHelp.core.webComponents.inputs.InputDefault;
+
 /**
  * Created with IntelliJ IDEA.
  * User: francisco
@@ -7,14 +12,16 @@ package pt.babyHelp.managers.index;
  * Time: 18:59
  * To change this template use File | Settings | File Templates.
  */
-public class IndexInputs {
-    private String mail;
+public class IndexInputs implements EventValidation {
+    private InputDefault<String> mail;
 
-    public String getMail() {
+    public InputDefault<String> getMail() {
         return mail;
     }
 
-    public void setMail(String mail) {
-        this.mail = mail;
+    @Override
+    public boolean isValid() {
+        return NotEmptyValidator.getInstance().validate(mail)
+                && EmailValidator.getInstance().validate(mail);
     }
 }

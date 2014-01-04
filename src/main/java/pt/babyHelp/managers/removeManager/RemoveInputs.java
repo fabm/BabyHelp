@@ -1,7 +1,5 @@
 package pt.babyHelp.managers.removeManager;
 
-import pt.babyHelp.core.annotationsManager.Request;
-
 /**
  * Created with IntelliJ IDEA.
  * User: francisco
@@ -17,7 +15,7 @@ public class RemoveInputs {
         return id;
     }
 
-    @Request
+    //@Request
     public void setId(String id) {
         this.id = id;
     }
@@ -25,7 +23,7 @@ public class RemoveInputs {
     public String getType() {
         return type;
     }
-    @Request
+    //@Request
     public void setType(String type) {
         this.type = type;
     }

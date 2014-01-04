@@ -10,7 +10,7 @@ public class BundleMap implements Map<String,String> {
     private ResourceBundle bundle;
 
     public BundleMap(String bundleFile) {
-        this.bundle = ResourceBundle.getBundle("bundle."+bundleFile, Locale.getDefault());
+        this.bundle = ResourceBundle.getBundle("bundle."+bundleFile);
     }
 
     @Override
@@ -77,6 +77,4 @@ public class BundleMap implements Map<String,String> {
             throw new RuntimeException("Error when try to get a bundle string ("+e.getMessage()+")");
         }
     }
-
-
 }
