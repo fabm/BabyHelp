@@ -4,10 +4,10 @@ $(document).ready(function () {
         editor.insertHtml('<img src="' + url + '"/>');
     };
     $("#galeria").carregaGaleria({
-        'url':"exemploDadosGaleria",
-        'fn':fnInserirHtml,
-        'data':{
-            'album':0
+        'url': "exemploDadosGaleria",
+        'fn': fnInserirHtml,
+        'data': {
+            'album': 0
         }
     });
 });

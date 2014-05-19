@@ -1,0 +1,21 @@
+<h2>Gestão de utilizadores</h2>
+<h3 ng-if="(state === 'create')">Novo utilizador</h3>
+<h3 ng-if="(state === 'update')">Editar utilizador {{user.email}}</h3>
+
+<div ng-if="loading">{{loading}}</div>
+
+<form name="userForm">
+    <div ng-if="(state === 'create')">
+        <span class="label" style="width: 100px;">Email</span>
+        <input type="text" ng-model="user.email">
+    </div>
+
+    <div style="display: table">
+        <div ng-repeat="role in user.roles" style="display: table-cell">
+            <span class="label" style="width: 100px;">{{role.alias}}</span>
+            <input ng-model="role.role" type="checkbox"/>
+        </div>
+    </div>
+
+    <button ng-click="save()">update</button>
+</form>

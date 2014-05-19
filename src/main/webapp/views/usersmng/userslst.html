@@ -1,0 +1,39 @@
+<div ng-if="showUsersList()">
+    <h2>Lista de utilizadores registados</h2>
+
+    <div ng-if="(users.length == 0)">
+        Sem utilizadores
+    </div>
+    <table ng-if="(users.length > 0)">
+        <tr>
+            <th>Email</th>
+            <th>Roles</th>
+        </tr>
+        <tr ng-repeat="user in users">
+            <td>{{user[0]}}</td>
+            <td>
+                <a ng-href="#/users/edit/{{user[0]}}">editar</a>
+            </td>
+        </tr>
+    </table>
+    <a ng-href="#/users/edit/">Criar roles para novo utilizador</a>
+
+</div>
+
+<div ng-if="(!isNull(state.error))">
+    {{state.error}}
+</div>
+
+<div ng-if="(state == 'wait')">
+    <img src="http://plotlocator.dm.gov.ae/Content/images/loading2.gif" width="100px" height="100px">
+</div>
+
+<modal-dialog show='modalShown' data="data" width='750px' height='40%'>
+    <div>{{data}}</div>
+    <div ng-if="(data.state == 'confirmRemove')">
+        <p>Tem a certeza que quer eliminar a role {{data.role}} do user {{data.email}}</p>
+
+        <a href="" ng-click="data.confirm()">ok</a>
+        <a href="" ng-click="data.hideModal()">cancel</a>
+    </div>
+</modal-dialog>

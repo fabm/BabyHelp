@@ -1,4 +1,3 @@
-<%@ page import="bd.Foto" %>
 <%--
   Created by IntelliJ IDEA.
   Caster: francisco

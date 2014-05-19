@@ -1,48 +1,46 @@
 package pt.babyHelp.bd;
 
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 
-/**
- * Created with IntelliJ IDEA.
- * UserFromApp: francisco
- * Date: 02/11/13
- * Time: 22:35
- * To change this template use File | Settings | File Templates.
- */
+import java.util.Iterator;
+import java.util.Map;
 
 @Entity
 public class NextHealthTec extends BD {
-
     @Id
     private Long id;
     @Index
     private String email;
 
-
-    public static NextHealthTec load(String email){
-        return BD.ofy().load().type(NextHealthTec.class).filter("email =", email).first().now();
+    public static NextHealthTec load(Long id) {
+        return BD.load(NextHealthTec.class, id);
     }
 
-    public static boolean isApplyedTecSaude(final String email) {
-        NextHealthTec nts = NextHealthTec.load(email);
-        if (nts != null) {
-            UserFromApp user = UserFromApp.create();
-            user.setHealthTec(true);
-            user.save();
-            return true;
-        }
-        return false;
+    public static NextHealthTec findByEmail(String email) {
+        return BD.ofy().load().type(NextHealthTec.class).filter("email = ", email).first().now();
     }
 
-    public static void setNext(String email) {
-        NextHealthTec nextHealthTec = NextHealthTec.load(email);
-        if(nextHealthTec!=null)throw new IllegalArgumentException("There are already an " +
-                "NextHealthTec object with the same email");
-        NextHealthTec ntt = new NextHealthTec();
-        ntt.email = email;
-        ntt.save();
+    public static int rowsCount() {
+        return BD.rowsCount(NextHealthTec.class);
+    }
+
+    public static Iterator<NextHealthTec> loadPage(int itemsPerPage, int page) {
+        return BD.loadIterablePage(NextHealthTec.class, itemsPerPage, page);
+    }
+
+    public static Map<Long, NextHealthTec> getMap(Iterable<Long> iterable) {
+        return BD.loadIDs(NextHealthTec.class, iterable);
+    }
+
+    public static Iterator<NextHealthTec> loadAll() {
+        return BD.loadALL(NextHealthTec.class);
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public void setEmail(String email) {
@@ -57,7 +55,14 @@ public class NextHealthTec extends BD {
         this.id = id;
     }
 
-    public String getEmail() {
-        return email;
+    @Override
+    public Key<BD> save() throws PersistenceException {
+        if (NextHealthTec.findByEmail(this.email) != null) throw new MissingEmail();
+        return super.save();
     }
+
+    public class MissingEmail extends RuntimeException {
+
+    }
+
 }

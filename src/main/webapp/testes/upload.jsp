@@ -1,5 +1,5 @@
-<%@ page import="com.google.appengine.api.blobstore.BlobstoreServiceFactory" %>
 <%@ page import="com.google.appengine.api.blobstore.BlobstoreService" %>
+<%@ page import="com.google.appengine.api.blobstore.BlobstoreServiceFactory" %>
 
 <%
     BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();

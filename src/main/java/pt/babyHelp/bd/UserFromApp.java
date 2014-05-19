@@ -1,103 +1,65 @@
 package pt.babyHelp.bd;
 
-
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserServiceFactory;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
-import pt.babyHelp.utils.Caster;
 
-import javax.servlet.http.HttpSession;
 import java.io.Serializable;
-
-/**
- * Created with IntelliJ IDEA.
- * UserFromApp: francisco
- * Date: 02/11/13
- * Time: 22:35
- * To change this template use File | Settings | File Templates.
- */
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 @Entity
-public class UserFromApp extends BD implements Serializable{
+public class UserFromApp extends BD implements Serializable {
 
     @Id
-    private Long id;
     @Index
     private String email;
-    private String originalID;
-    private boolean healthTec = false;
+    private Set<Role> roles;
 
-    public static UserFromApp create() {
-        UserFromApp userFromApp;
-        if (!UserServiceFactory.getUserService().isUserLoggedIn()) {
-            userFromApp = BD.ofy().load().type(UserFromApp.class).filter("originalID =",
-                    UserServiceFactory.getUserService().getCurrentUser().getUserId()).first().now();
-            if(userFromApp == null){
-                userFromApp = new UserFromApp();
-            }
-        } else {
-            User cu = UserServiceFactory.getUserService().getCurrentUser();
-            userFromApp = BD.load(UserFromApp.class,cu.getUserId());
-            if (userFromApp == null) {
-                userFromApp = new UserFromApp();
-                userFromApp.email = cu.getEmail();
-            }
-        }
-        return userFromApp;
+    public static UserFromApp findByEmail(String email) {
+        return BD.ofy().load().type(UserFromApp.class).filter("email = ", email).first().now();
     }
 
-    public static UserFromApp create(HttpSession session){
-        try{
-            return Caster.cast(session.getAttribute("userFromApp"));
-        }catch (NullPointerException npe){
-            UserFromApp userFromApp = UserFromApp.create();
-            session.setAttribute("userFromApp",userFromApp);
-            return userFromApp;
-        }
+    public static Iterator<UserFromApp> iterateAll() {
+        return BD.loadALL(UserFromApp.class);
     }
 
-    public Long getId() {
-        return id;
+    public String getEmail() {
+        return email;
     }
 
-
-
-    public void setId(Long id) {
-        this.id = id;
-    }
     public void setEmail(String email) {
         this.email = email;
     }
 
-    public void setIdFromCurrentUser() {
-        this.id = Long.parseLong(UserServiceFactory.getUserService().getCurrentUser().getUserId());
+    public Key<BD> save() throws PersistenceException {
+        return super.save();
     }
 
-    public boolean isLogged() {
-        return UserServiceFactory.getUserService().isUserLoggedIn();
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-    public boolean isHealthTecSaude() {
-        if(!isLogged()){
-            return false;
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    public void setRoles(Role... roles) {
+        this.roles = new HashSet<Role>(roles.length);
+        for (Role role : roles) {
+            this.roles.add(role);
         }
-        return healthTec;
     }
 
-    public boolean isAdmin() {
-        if (!isLogged()) {
-            return false;
-        }
-        return UserServiceFactory.getUserService().isUserAdmin();
+    public synchronized boolean removeRole(String strRole) {
+        if (this.roles == null) return false;
+        return this.roles.remove(Role.convert(strRole));
     }
 
-    public String getEmail(){
-        return email;
+    public synchronized boolean addRole(String strRole) {
+        if (this.roles == null) return false;
+        return this.roles.add(Role.convert(strRole));
     }
-    public void setHealthTec(boolean healthTec){
-        this.healthTec = healthTec;
-    }
-
 }
