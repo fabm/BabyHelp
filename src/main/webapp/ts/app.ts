@@ -4,7 +4,6 @@
 /// <reference path="ext/angular/angular-resource.d.ts" />
 /// <reference path="services.ts" />
 
-
 interface Growl {
     box:(title:string, content:string, options:{class:string;sticky:boolean;timeout:number})
         =>{open:()=>void};
