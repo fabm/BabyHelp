@@ -15,7 +15,6 @@ public class BD {
     static {
         ObjectifyService.register(Foto.class);
         ObjectifyService.register(UserFromApp.class);
-        ObjectifyService.register(NextHealthTec.class);
     }
 
     public static Objectify ofy() {

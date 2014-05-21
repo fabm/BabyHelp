@@ -77,7 +77,10 @@ app.directive('modalDialog', function () {
     };
 });
 
-var growlMessage:string = null;
+enum GrowlType{
+    danger, success
+}
+var growlObject:{type:GrowlType;message:string} = null;
 
 module Users {
 
@@ -102,7 +105,7 @@ module Users {
                     $scope.users = response.body;
                     $scope.$digest();
                 } else {
-                    growlMessage = response.error.message;
+                    growlObject = {message: response.error.message, type: GrowlType.success};
                     $state.go('default', null, { reload: true });
                 }
             });
@@ -113,11 +116,11 @@ module Users {
             $scope.modalShown = !$scope.modalShown;
         };
 
-        if (growlMessage != null) {
-            $growl.box('Update', growlMessage, {
-                class: 'success', sticky: false, timeout: 3000
+        if (growlObject != null) {
+            $growl.box('Update', growlObject.message, {
+                class: GrowlType[growlObject.type], sticky: false, timeout: 3000
             }).open();
-            growlMessage = null;
+            growlObject = null;
         }
 
         $scope['showUsersList'] = ()=> {
@@ -171,7 +174,11 @@ module Users {
         var scopeEdit = $scope;
 
         function updated(response) {
-            growlMessage = 'Updated user';
+            if (!response.error) {
+                growlObject = {message: 'Updated user', type: GrowlType.danger};
+            } else {
+                growlObject = {message: 'Error:' + response.message, type: GrowlType.success};
+            }
             $state.go('users-list', null, { reload: true });
         }
 
@@ -206,11 +213,12 @@ interface AuthButtonCtrlScope extends ng.IScope {
 
 
 function DefaultCtrl($scope, $cookies, $state, $location, $growl:Growl) {
-    if (growlMessage != null) {
-        $growl.box('Erro', growlMessage, {
-            class: 'danger', sticky: false, timeout: 3000
+    if (growlObject != null) {
+        //TODO trocar o tipo de erro para dinamico
+        $growl.box('Erro', growlObject.message, {
+            class: GrowlType[growlObject.type], sticky: false, timeout: 3000
         }).open();
-        growlMessage = null;
+        growlObject = null;
     }
 }
 

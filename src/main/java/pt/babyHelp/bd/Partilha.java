@@ -2,13 +2,6 @@ package pt.babyHelp.bd;
 
 import com.googlecode.objectify.annotation.Embed;
 
-/**
- * Created with IntelliJ IDEA.
- * Caster: francisco
- * Date: 20/10/13
- * Time: 16:02
- * To change this template use File | Settings | File Templates.
- */
 @Embed
 public class Partilha {
     private String utilizador;

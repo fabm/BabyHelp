@@ -45,7 +45,12 @@ app.directive('modalDialog', function () {
     };
 });
 
-var growlMessage = null;
+var GrowlType;
+(function (GrowlType) {
+    GrowlType[GrowlType["danger"] = 0] = "danger";
+    GrowlType[GrowlType["success"] = 1] = "success";
+})(GrowlType || (GrowlType = {}));
+var growlObject = null;
 
 var Users;
 (function (Users) {
@@ -68,7 +73,7 @@ var Users;
                     $scope.users = response.body;
                     $scope.$digest();
                 } else {
-                    growlMessage = response.error.message;
+                    growlObject = { message: response.error.message, type: 1 /* success */ };
                     $state.go('default', null, { reload: true });
                 }
             });
@@ -79,11 +84,11 @@ var Users;
             $scope.modalShown = !$scope.modalShown;
         };
 
-        if (growlMessage != null) {
-            $growl.box('Update', growlMessage, {
-                class: 'success', sticky: false, timeout: 3000
+        if (growlObject != null) {
+            $growl.box('Update', growlObject.message, {
+                class: GrowlType[growlObject.type], sticky: false, timeout: 3000
             }).open();
-            growlMessage = null;
+            growlObject = null;
         }
 
         $scope['showUsersList'] = function () {
@@ -134,7 +139,11 @@ var Users;
         var scopeEdit = $scope;
 
         function updated(response) {
-            growlMessage = 'Updated user';
+            if (!response.error) {
+                growlObject = { message: 'Updated user', type: 0 /* danger */ };
+            } else {
+                growlObject = { message: 'Error:' + response.message, type: 1 /* success */ };
+            }
             $state.go('users-list', null, { reload: true });
         }
 
@@ -156,11 +165,12 @@ var DefaultViewCtrl = (function () {
 })();
 
 function DefaultCtrl($scope, $cookies, $state, $location, $growl) {
-    if (growlMessage != null) {
-        $growl.box('Erro', growlMessage, {
-            class: 'danger', sticky: false, timeout: 3000
+    if (growlObject != null) {
+        //TODO trocar o tipo de erro para dinamico
+        $growl.box('Erro', growlObject.message, {
+            class: GrowlType[growlObject.type], sticky: false, timeout: 3000
         }).open();
-        growlMessage = null;
+        growlObject = null;
     }
 }
 
