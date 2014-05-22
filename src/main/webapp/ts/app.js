@@ -5,11 +5,12 @@
 /// <reference path="services.ts" />
 
 var RouteState = {
+    $state: null,
     userList: 'users-list',
     usersEdit: 'users-edit',
     home: 'default',
-    goto: function ($state, state) {
-        $state.go(state, null, { reload: true });
+    goto: function (state) {
+        this.$state.go(state, null, { reload: true });
     }
 };
 
@@ -117,7 +118,8 @@ var Users;
                     $scope.$digest();
                 } else {
                     growlObject.setMessage(response.error.message, GrowlObject.typeMessage.error);
-                    RouteState.goto($state, RouteState.home);
+                    RouteState.$state = $state;
+                    RouteState.goto(RouteState.home);
                 }
             });
         });
@@ -179,14 +181,15 @@ var Users;
         $stateParams.email;
         var scopeEdit = $scope;
 
+        RouteState.$state = $state;
         function updated(response) {
             if (isNull(response.error)) {
                 growlObject.setMessage('Utilizador atualizado', GrowlObject.typeMessage.success);
-                RouteState.goto($state, RouteState.userList);
+                RouteState.goto(RouteState.userList);
             } else {
                 growlObject.setMessage(response.error.message, GrowlObject.typeMessage.error);
                 if (response.error.code === 401) {
-                    RouteState.goto($state, RouteState.home);
+                    RouteState.goto(RouteState.home);
                 } else {
                     growlObject.showGrowl($growl);
                     growlObject.closeGrowl();
@@ -247,7 +250,8 @@ function AuthButtonCtrl($scope, $cookies, $state, $location, $rootScope) {
     $scope.logout = function () {
         Api.logout();
         $scope.state = $cookies.logged = Api.logged;
-        RouteState.goto($state, RouteState.home);
+        RouteState.$state = $state;
+        RouteState.goto(RouteState.home);
     };
     $scope.login = function () {
         Api.login(apiAuthCallback);

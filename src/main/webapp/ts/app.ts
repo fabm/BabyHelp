@@ -31,11 +31,12 @@ interface ScopeMain extends ng.IScope {
 }
 
 var RouteState = {
+    $state: null,
     userList: 'users-list',
     usersEdit: 'users-edit',
     home: 'default',
-    goto: function ($state, state:string) {
-        $state.go(state, null, { reload: true });
+    goto: function (state:string) {
+        this.$state.go(state, null, { reload: true });
     }
 }
 
@@ -150,7 +151,8 @@ module Users {
                     $scope.$digest();
                 } else {
                     growlObject.setMessage(response.error.message, GrowlObject.typeMessage.error);
-                    RouteState.goto($state, RouteState.home);
+                    RouteState.$state = $state;
+                    RouteState.goto(RouteState.home);
                 }
             });
         });
@@ -215,14 +217,15 @@ module Users {
         $stateParams.email
         var scopeEdit = $scope;
 
+        RouteState.$state = $state;
         function updated(response) {
             if (isNull(response.error)) {
                 growlObject.setMessage('Utilizador atualizado', GrowlObject.typeMessage.success);
-                RouteState.goto($state, RouteState.userList);
+                RouteState.goto(RouteState.userList);
             } else {
                 growlObject.setMessage(response.error.message, GrowlObject.typeMessage.error);
                 if (response.error.code === 401) {
-                    RouteState.goto($state, RouteState.home);
+                    RouteState.goto(RouteState.home);
                 }
                 else {
                     growlObject.showGrowl($growl);
@@ -298,7 +301,8 @@ function AuthButtonCtrl($scope:AuthButtonCtrlScope, $cookies, $state, $location,
     $scope.logout = () => {
         Api.logout();
         $scope.state = $cookies.logged = Api.logged;
-        RouteState.goto($state, RouteState.home);
+        RouteState.$state = $state;
+        RouteState.goto(RouteState.home);
     }
     $scope.login = () => {
         Api.login(apiAuthCallback);

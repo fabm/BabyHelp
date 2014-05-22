@@ -30,10 +30,10 @@ public class UserBHEndpoint {
 
     private UserBHService userBHService = new UserBHServiceImpl();
 
-    @ApiMethod(name = "current.email", httpMethod = HttpMethod.GET,path = "current-email")
+    @ApiMethod(name = "current.email", httpMethod = HttpMethod.GET, path = "current-email")
     public Map<String, Object> currentEmail(User user) throws UnauthorizedException {
-        Authorization.check(user, "verificação do email atual");
         try {
+            Authorization.check(user, "verificação do email atual");
             this.userBHService.setUser(user);
             return this.userBHService.currentEmail();
         } catch (EndPointError endPointError) {
@@ -57,8 +57,8 @@ public class UserBHEndpoint {
     public Map<String, Object> updateRoles
             (User user, @Named("email") String email, RolesParameters rolesParameters)
             throws UnauthorizedException {
-        Authorization.check(user, "atualização de utilizadores", Role.ADMINISTRATOR);
         try {
+            Authorization.check(user, "atualização de utilizadores", Role.ADMINISTRATOR);
             this.userBHService.setUser(user);
             return this.userBHService.updateRoles(email, rolesParameters);
         } catch (EndPointError endPointError) {
@@ -68,8 +68,8 @@ public class UserBHEndpoint {
 
     @ApiMethod(name = "list")
     public Map<String, Object> list(User user) throws UnauthorizedException {
-        Authorization.check(user, "listagem de utilizadores", Role.ADMINISTRATOR);
         try {
+            Authorization.check(user, "listagem de utilizadores", Role.ADMINISTRATOR);
             this.userBHService.setUser(user);
             return this.userBHService.list();
         } catch (EndPointError endPointError) {
@@ -79,8 +79,8 @@ public class UserBHEndpoint {
 
     @ApiMethod(name = "getRoles")
     public Map<String, Object> getRoles(User user, @Named("email") String email) throws UnauthorizedException {
-        Authorization.check(user, "edição de utilizadores", Role.ADMINISTRATOR);
         try {
+            Authorization.check(user, "edição de utilizadores", Role.ADMINISTRATOR);
             this.userBHService.setUser(user);
             return this.userBHService.getRoles(email);
         } catch (EndPointError endPointError) {

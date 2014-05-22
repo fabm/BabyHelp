@@ -27,8 +27,6 @@ public class ArticleServiceImpl implements ArticleService {
         if (articleParams.getBody() == null)
             throw new EndPointError(Error.FIELD_BODY_REUIRED);
 
-        UserBHServiceImpl userBHService = new UserBHServiceImpl();
-        userBHService.currentEmail();
 
         Article article = new Article();
         article.setAuthor(user);
