@@ -4,18 +4,27 @@
 /// <reference path="ext/angular/angular-resource.d.ts" />
 /// <reference path="services.ts" />
 
+var RouteState = {
+    userList: 'users-list',
+    usersEdit: 'users-edit',
+    home: 'default',
+    goto: function ($state, state) {
+        $state.go(state, null, { reload: true });
+    }
+};
+
 app.config(function ($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise("/");
 
-    $stateProvider.state('users-list', {
+    $stateProvider.state(RouteState.userList, {
         url: "/users",
         templateUrl: "views/usersmng/userslst.html",
         controller: Users.ListUsersCtrl
-    }).state('users-edit', {
+    }).state(RouteState.usersEdit, {
         url: "/users/edit/:email",
         templateUrl: "views/usersmng/usersup.html",
         controller: Users.UpdateUsersCtrl
-    }).state('default', {
+    }).state(RouteState.home, {
         url: "/",
         templateUrl: "views/default.html",
         controller: DefaultCtrl
@@ -45,12 +54,46 @@ app.directive('modalDialog', function () {
     };
 });
 
-var GrowlType;
-(function (GrowlType) {
-    GrowlType[GrowlType["danger"] = 0] = "danger";
-    GrowlType[GrowlType["success"] = 1] = "success";
-})(GrowlType || (GrowlType = {}));
-var growlObject = null;
+var GrowlObject = (function () {
+    function GrowlObject() {
+        this.type = 0;
+    }
+    GrowlObject.prototype.setMessage = function (message, type) {
+        this.msg = message;
+        this.type = type;
+    };
+
+    GrowlObject.prototype.closeGrowl = function () {
+        this.msg = null;
+    };
+
+    GrowlObject.prototype.isOpen = function () {
+        return this.msg != null;
+    };
+
+    GrowlObject.prototype.showGrowl = function ($growl) {
+        if (isNull(this.msg))
+            return;
+        var strType;
+        var title;
+        if (this.type == 0) {
+            strType = 'success';
+            title = 'Informação';
+        } else if (this.type == 1) {
+            strType = 'danger';
+            title = 'Erro';
+        }
+        $growl.box(title, this.msg, {
+            class: strType, sticky: false, timeout: 3000
+        }).open();
+    };
+    GrowlObject.typeMessage = {
+        success: 0, error: 1
+    };
+    return GrowlObject;
+})();
+
+var growlObject = new GrowlObject();
 
 var Users;
 (function (Users) {
@@ -73,8 +116,8 @@ var Users;
                     $scope.users = response.body;
                     $scope.$digest();
                 } else {
-                    growlObject = { message: response.error.message, type: 1 /* success */ };
-                    $state.go('default', null, { reload: true });
+                    growlObject.setMessage(response.error.message, GrowlObject.typeMessage.error);
+                    RouteState.goto($state, RouteState.home);
                 }
             });
         });
@@ -84,11 +127,9 @@ var Users;
             $scope.modalShown = !$scope.modalShown;
         };
 
-        if (growlObject != null) {
-            $growl.box('Update', growlObject.message, {
-                class: GrowlType[growlObject.type], sticky: false, timeout: 3000
-            }).open();
-            growlObject = null;
+        if (growlObject.isOpen()) {
+            growlObject.showGrowl($growl);
+            growlObject.closeGrowl();
         }
 
         $scope['showUsersList'] = function () {
@@ -103,7 +144,7 @@ var Users;
     }
     Users.ListUsersCtrl = ListUsersCtrl;
 
-    function UpdateUsersCtrl($scope, $state, $stateParams, $q) {
+    function UpdateUsersCtrl($scope, $state, $stateParams, $q, $growl) {
         var user = { email: null };
 
         function loadClient(callback) {
@@ -139,12 +180,18 @@ var Users;
         var scopeEdit = $scope;
 
         function updated(response) {
-            if (!response.error) {
-                growlObject = { message: 'Updated user', type: 0 /* danger */ };
+            if (isNull(response.error)) {
+                growlObject.setMessage('Utilizador atualizado', GrowlObject.typeMessage.success);
+                RouteState.goto($state, RouteState.userList);
             } else {
-                growlObject = { message: 'Error:' + response.message, type: 1 /* success */ };
+                growlObject.setMessage(response.error.message, GrowlObject.typeMessage.error);
+                if (response.error.code === 401) {
+                    RouteState.goto($state, RouteState.home);
+                } else {
+                    growlObject.showGrowl($growl);
+                    growlObject.closeGrowl();
+                }
             }
-            $state.go('users-list', null, { reload: true });
         }
 
         scopeEdit.user = user;
@@ -165,12 +212,9 @@ var DefaultViewCtrl = (function () {
 })();
 
 function DefaultCtrl($scope, $cookies, $state, $location, $growl) {
-    if (growlObject != null) {
-        //TODO trocar o tipo de erro para dinamico
-        $growl.box('Erro', growlObject.message, {
-            class: GrowlType[growlObject.type], sticky: false, timeout: 3000
-        }).open();
-        growlObject = null;
+    if (growlObject.isOpen()) {
+        growlObject.showGrowl($growl);
+        growlObject.closeGrowl();
     }
 }
 
@@ -203,7 +247,7 @@ function AuthButtonCtrl($scope, $cookies, $state, $location, $rootScope) {
     $scope.logout = function () {
         Api.logout();
         $scope.state = $cookies.logged = Api.logged;
-        $state.go('default', null, { reload: true });
+        RouteState.goto($state, RouteState.home);
     };
     $scope.login = function () {
         Api.login(apiAuthCallback);

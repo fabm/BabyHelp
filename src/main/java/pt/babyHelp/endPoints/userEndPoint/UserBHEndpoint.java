@@ -41,49 +41,73 @@ public class UserBHEndpoint {
 
     @ApiMethod(name = "checkRoles", httpMethod = HttpMethod.POST)
     public Map<String, Object> checkRoles(User user, RolesParameters rolesParameters)
-            throws UnauthorizedException, EndPointError {
+            throws UnauthorizedException{
         this.userBHService.setUser(user);
-        return this.userBHService.checkRoles(rolesParameters);
+        try {
+            return this.userBHService.checkRoles(rolesParameters);
+        } catch (EndPointError endPointError) {
+            return endPointError.getMap();
+        }
     }
 
     @ApiMethod(name = "updateRoles",httpMethod = HttpMethod.POST)
     public Map<String, Object> updateRoles
             (User user, @Named("email") String email, RolesParameters rolesParameters)
-            throws UnauthorizedException, EndPointError {
+            throws UnauthorizedException{
         Authorization.check(user,"atualização de utilizadores", Role.ADMINISTRATOR);
         this.userBHService.setUser(user);
-        return this.userBHService.updateRoles(email, rolesParameters);
+        try {
+            return this.userBHService.updateRoles(email, rolesParameters);
+        } catch (EndPointError endPointError) {
+            return endPointError.getMap();
+        }
     }
 
     @ApiMethod(name = "removeRole")
     public Map<String, Object> removeRole(
             User user, @Named("email") String email, @Named("role") String role)
-            throws UnauthorizedException, EndPointError {
+            throws UnauthorizedException{
         Authorization.check(user,"remoção de utilizadores", Role.ADMINISTRATOR);
         this.userBHService.setUser(user);
-        return this.userBHService.removeRole(email, role);
+        try {
+            return this.userBHService.removeRole(email, role);
+        } catch (EndPointError endPointError) {
+            return endPointError.getMap();
+        }
     }
 
     @ApiMethod(name = "addRole")
     public Map<String, Object> addRole(
             User user, @Named("email") String email, @Named("role") String role)
-            throws UnauthorizedException, EndPointError {
+            throws UnauthorizedException{
         Authorization.check(user,"adição de utilizadores", Role.ADMINISTRATOR);
         this.userBHService.setUser(user);
-        return this.userBHService.addRole(email, role);
+        try {
+            return this.userBHService.addRole(email, role);
+        } catch (EndPointError endPointError) {
+            return endPointError.getMap();
+        }
     }
 
     @ApiMethod(name = "list")
-    public Map<String, Object> list(User user) throws EndPointError, UnauthorizedException {
+    public Map<String, Object> list(User user) throws UnauthorizedException {
         Authorization.check(user,"listagem de utilizadores", Role.ADMINISTRATOR);
         this.userBHService.setUser(user);
-        return this.userBHService.list();
+        try {
+            return this.userBHService.list();
+        } catch (EndPointError endPointError) {
+            return endPointError.getMap();
+        }
     }
     @ApiMethod(name = "getRoles")
-    public Map<String, Object> getRoles(User user,@Named("email")String email) throws EndPointError, UnauthorizedException {
+    public Map<String, Object> getRoles(User user,@Named("email")String email) throws UnauthorizedException {
         Authorization.check(user,"edição de utilizadores", Role.ADMINISTRATOR);
         this.userBHService.setUser(user);
-        return this.userBHService.getRoles(email);
+        try {
+            return this.userBHService.getRoles(email);
+        } catch (EndPointError endPointError) {
+            return endPointError.getMap();
+        }
     }
 
 }
