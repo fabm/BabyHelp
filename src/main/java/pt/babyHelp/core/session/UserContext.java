@@ -1,6 +1,6 @@
 package pt.babyHelp.core.session;
 
-import com.google.appengine.api.users.User;
+import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.Role;
 import pt.babyHelp.bd.UserFromApp;
 
@@ -20,7 +20,7 @@ public class UserContext {
      * @param user
      * @return UserContext
      */
-    private final static UserContext cacheNewUser(User user) {
+    private final static UserContext cacheNewUser(UserFromApp user) {
         UserContext userContext = new UserContext(user);
         while (!userQueue.offer(userContext)) {
             userQueue.poll();
@@ -34,7 +34,7 @@ public class UserContext {
      * @param user
      * @return UserContext
      */
-    private final static UserContext getUserCached(User user) {
+    private final static UserContext getUserCached(UserFromApp user) {
         for (UserContext userContext : userQueue) {
             if (user.getEmail().equals(userContext.getUser().getEmail())) {
                 return userContext;
@@ -43,7 +43,7 @@ public class UserContext {
         return null;
     }
 
-    public final static UserContext createUserContext(User user) {
+    public final static UserContext createUserContext(UserFromApp user) {
         UserContext userCached = UserContext.getUserCached(user);
         if (userCached == null) {
             return UserContext.cacheNewUser(user);
@@ -53,17 +53,17 @@ public class UserContext {
     }
 
     private Set<Role> roles;
-    private User user;
+    private UserFromApp user;
 
-    private UserContext(User user) {
-        UserFromApp userFromApp = UserFromApp.findByEmail(user.getEmail());
+    private UserContext(UserFromApp user) {
+        UserFromApp userFromApp = BD.ofy().load().entity(user).now();
         if (userFromApp != null) {
             this.roles = userFromApp.getRoles();
         }
         this.user = user;
     }
 
-    public User getUser() {
+    public UserFromApp getUser() {
         return user;
     }
 

@@ -19,15 +19,13 @@ public interface UserBHService extends UserAcessible {
     Map<String, Object> list()
             throws EndPointError;
 
-    Map<String, Object> removeRole(String email, String role) throws EndPointError;
-
-    Map<String, Object> addRole(String email, String role) throws EndPointError;
-    Map<String, Object> getRoles(String email) throws EndPointError;
+    Map<String, Object> getRoles(String email)
+            throws EndPointError;
 
 
     enum Error implements ErrorReturn {
-        ROLE_NOT_MATCH(1, "Não é possível corresponder o role %s a nenhum role existente"),
-        PERSISTENCE(2, "Problema ao tentar guardar %s"),
+        PERSISTENCE(1, "Problema ao tentar guardar %s"),
+        ROLE_NOT_MATCH(2, "Não é possível corresponder o role %s a nenhum role existente"),
         EMAIL_REQUIRED(3, "O campo email é obrigatório");
 
         private String msg;
@@ -51,6 +49,11 @@ public interface UserBHService extends UserAcessible {
         public Error addArgs(String... vars) {
             this.msg = String.format(msg, vars);
             return this;
+        }
+
+        @Override
+        public String getContext() {
+            return "userBH";
         }
     }
 

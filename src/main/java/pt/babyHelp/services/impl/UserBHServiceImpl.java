@@ -12,7 +12,7 @@ import pt.babyHelp.services.UserBHService;
 import java.util.*;
 
 public class UserBHServiceImpl implements UserBHService {
-    private User user;
+    private UserFromApp user;
 
     private static Map<String, Object> getList() throws EndPointError {
         Iterator<UserFromApp> it = UserFromApp.iterateAll();
@@ -37,34 +37,7 @@ public class UserBHServiceImpl implements UserBHService {
         return map;
     }
 
-    private static Map<String, Object> updateRole(String email, String role, UpdateRoleAction updateRoleAction)
-            throws EndPointError {
-        if (email == null) {
-            throw new EndPointError(Error.EMAIL_REQUIRED);
-        }
-        UserFromApp userFromApp = UserFromApp.findByEmail(email);
-        if (userFromApp == null) {
-            userFromApp = new UserFromApp();
-            userFromApp.setEmail(email);
-        }
-        try {
-            switch (updateRoleAction) {
-                case add:
-                    userFromApp.addRole(role);
-                    break;
-                case delete:
-                    userFromApp.removeRole(role);
-            }
-            userFromApp.save();
-        } catch (PersistenceException e) {
-            throw new EndPointError(Error.PERSISTENCE.addArgs("UserFromApp"));
-        } catch (Role.ConvertException e) {
-            throw new EndPointError(Error.ROLE_NOT_MATCH.addArgs(role));
-        }
-        Map<String, Object> map = getList();
-        map.put("state", "user updated");
-        return map;
-    }
+
 
     @Override
     public Map<String, Object> currentEmail() {
@@ -128,15 +101,7 @@ public class UserBHServiceImpl implements UserBHService {
         return getList();
     }
 
-    @Override
-    public Map<String, Object> removeRole(String email, String role) throws EndPointError {
-        return UserBHServiceImpl.updateRole(email, role, UpdateRoleAction.delete);
-    }
 
-    @Override
-    public Map<String, Object> addRole(String email, String role) throws EndPointError {
-        return UserBHServiceImpl.updateRole(email, role, UpdateRoleAction.add);
-    }
 
     @Override
     public Map<String, Object> getRoles(String email) throws EndPointError {
@@ -151,8 +116,9 @@ public class UserBHServiceImpl implements UserBHService {
     }
 
     @Override
-    public void setUser(User user) {
-        this.user = user;
+    public void setUser(User user) throws EndPointError {
+        this.user = new UserFromApp();
+        this.user.setEmail(user.getEmail());
     }
 
     private static enum UpdateRoleAction {

@@ -24,9 +24,7 @@
     {{state.error}}
 </div>
 
-<div ng-if="(state == 'wait')">
-    <img src="http://plotlocator.dm.gov.ae/Content/images/loading2.gif" width="100px" height="100px">
-</div>
+<img ng-if="(state == 'wait')" src="/images/Wait.gif">
 
 <modal-dialog show='modalShown' data="data" width='750px' height='40%'>
     <div>{{data}}</div>

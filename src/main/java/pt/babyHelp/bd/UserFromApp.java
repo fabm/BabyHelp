@@ -1,6 +1,7 @@
 package pt.babyHelp.bd;
 
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
@@ -12,6 +13,9 @@ import java.util.Set;
 
 @Entity
 public class UserFromApp extends BD implements Serializable {
+    static {
+        ObjectifyService.register(UserFromApp.class);
+    }
 
     @Id
     @Index
@@ -53,13 +57,18 @@ public class UserFromApp extends BD implements Serializable {
         }
     }
 
-    public synchronized boolean removeRole(String strRole) {
-        if (this.roles == null) return false;
-        return this.roles.remove(Role.convert(strRole));
-    }
+    public UserFromApp loadOrSave() throws PersistenceException {
 
-    public synchronized boolean addRole(String strRole) {
-        if (this.roles == null) return false;
-        return this.roles.add(Role.convert(strRole));
+        UserFromApp userFromApp;
+        if (email != null && !email.isEmpty()) {
+            userFromApp = UserFromApp.findByEmail(this.email);
+            if (userFromApp != null)
+                return userFromApp;
+            else {
+                save();
+                return this;
+            }
+        }
+        return null;
     }
 }
