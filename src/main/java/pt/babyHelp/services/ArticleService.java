@@ -4,6 +4,7 @@ import pt.babyHelp.core.endpoints.EndPointError;
 import pt.babyHelp.core.endpoints.ErrorReturn;
 import pt.babyHelp.endPoints.UserAcessible;
 import pt.babyHelp.endPoints.article.ArticleParams;
+import pt.babyHelp.endPoints.article.ListIDs;
 
 import java.util.Map;
 
@@ -13,11 +14,10 @@ public interface ArticleService extends UserAcessible {
     Map<String, Object> update(ArticleParams articleParams)
             throws EndPointError;
 
-    Map<String, Object> delete(long...ids)
+    Map<String, Object> delete(ListIDs ids)
             throws EndPointError;
 
     Map<String,Object>getMyArticles();
-
 
     enum Error implements ErrorReturn {
         WRONG_ROLE(1, "Não tem previlégios suficientes para executar esta ação"),

@@ -33,8 +33,7 @@ public class UserBHEndpoint {
     @ApiMethod(name = "current.email", httpMethod = HttpMethod.GET, path = "current-email")
     public Map<String, Object> currentEmail(User user) throws UnauthorizedException {
         try {
-            Authorization.check(user, "verificação do email atual");
-            this.userBHService.setUser(user);
+            this.userBHService.setUserContext(Authorization.check(user, "verificação do email atual"));
             return this.userBHService.currentEmail();
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
@@ -42,24 +41,12 @@ public class UserBHEndpoint {
     }
 
 
-    @ApiMethod(name = "checkRoles", httpMethod = HttpMethod.POST)
-    public Map<String, Object> checkRoles(User user, RolesParameters rolesParameters)
-            throws UnauthorizedException {
-        try {
-            this.userBHService.setUser(user);
-            return this.userBHService.checkRoles(rolesParameters);
-        } catch (EndPointError endPointError) {
-            return endPointError.getMap();
-        }
-    }
-
     @ApiMethod(name = "updateRoles", httpMethod = HttpMethod.POST)
     public Map<String, Object> updateRoles
             (User user, @Named("email") String email, RolesParameters rolesParameters)
             throws UnauthorizedException {
         try {
-            Authorization.check(user, "atualização de utilizadores", Role.ADMINISTRATOR);
-            this.userBHService.setUser(user);
+            this.userBHService.setUserContext(Authorization.check(user, "atualização de utilizadores", Role.ADMINISTRATOR));
             return this.userBHService.updateRoles(email, rolesParameters);
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
@@ -69,8 +56,7 @@ public class UserBHEndpoint {
     @ApiMethod(name = "list")
     public Map<String, Object> list(User user) throws UnauthorizedException {
         try {
-            Authorization.check(user, "listagem de utilizadores", Role.ADMINISTRATOR);
-            this.userBHService.setUser(user);
+            this.userBHService.setUserContext(Authorization.check(user, "listagem de utilizadores", Role.ADMINISTRATOR));
             return this.userBHService.list();
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
@@ -80,8 +66,7 @@ public class UserBHEndpoint {
     @ApiMethod(name = "getRoles")
     public Map<String, Object> getRoles(User user, @Named("email") String email) throws UnauthorizedException {
         try {
-            Authorization.check(user, "edição de utilizadores", Role.ADMINISTRATOR);
-            this.userBHService.setUser(user);
+            this.userBHService.setUserContext(Authorization.check(user,"verificação de roles",Role.ADMINISTRATOR));
             return this.userBHService.getRoles(email);
         } catch (EndPointError endPointError) {
             return endPointError.getMap();

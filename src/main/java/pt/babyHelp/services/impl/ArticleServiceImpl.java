@@ -1,24 +1,24 @@
 package pt.babyHelp.services.impl;
 
-import com.google.appengine.api.users.User;
-import com.googlecode.objectify.cmd.Query;
-import com.googlecode.objectify.cmd.QueryKeys;
+import com.google.appengine.api.datastore.QueryResultIterable;
+import com.googlecode.objectify.ObjectifyService;
 import pt.babyHelp.bd.Article;
 import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.PersistenceException;
-import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.core.endpoints.EndPointError;
+import pt.babyHelp.core.session.UserContext;
 import pt.babyHelp.endPoints.article.ArticleParams;
+import pt.babyHelp.endPoints.article.ListIDs;
 import pt.babyHelp.services.ArticleService;
-import pt.babyHelp.services.UserBHService;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ArticleServiceImpl implements ArticleService {
+    static {
+        ObjectifyService.register(Article.class);
+    }
 
-    private UserFromApp user;
+    private UserContext userContext;
 
     @Override
     public Map<String, Object> create(ArticleParams articleParams) throws EndPointError {
@@ -29,10 +29,10 @@ public class ArticleServiceImpl implements ArticleService {
 
 
         Article article = new Article();
-        article.setAuthor(user);
+        article.setAuthor(userContext.getUserFromApp());
 
         article.setTitle(articleParams.getTitle());
-        article.setFotoUrl(articleParams.getFoto());
+        article.setPhotoUrl(articleParams.getFoto());
         article.setBody(articleParams.getBody());
 
         try {
@@ -56,13 +56,13 @@ public class ArticleServiceImpl implements ArticleService {
             throw new EndPointError(Error.ID_NOT_FOUND.addArgs(articleParams.getId().toString()));
 
         article.setTitle(articleParams.getTitle());
-        article.setFotoUrl(articleParams.getFoto());
+        article.setPhotoUrl(articleParams.getFoto());
         article.setBody(articleParams.getBody());
 
         if (article.getTitle() == null || article.getTitle().isEmpty())
             throw new EndPointError(Error.FIELD_TITLE_REQUIRED);
 
-        if (article.getAuthor().equals(user.getEmail()))
+        if (article.getAuthor().equals(userContext.getUserFromApp().getEmail()))
             throw new EndPointError(Error.NOT_OWNER.addArgs(article.getTitle(), "atualizá-lo"));
 
         Map<String, Object> map = new HashMap<String, Object>();
@@ -72,8 +72,22 @@ public class ArticleServiceImpl implements ArticleService {
 
 
     @Override
-    public Map<String, Object> delete(long... ids) throws EndPointError {
-        BD.ofy().delete().type(Article.class).ids(ids).now();
+    public Map<String, Object> delete(ListIDs listIds) throws EndPointError {
+
+        long[] ids = listIds.getIds();
+
+        Long[] tIds = new Long[ids.length];
+        for(int i=0;i<ids.length;i++){tIds[i]=ids[i];}
+
+        Map<Long, Article> articlesMap = BD.ofy().load().type(Article.class).ids(tIds);
+
+        for (Map.Entry<Long,Article> entry: articlesMap.entrySet()){
+            if(!entry.getValue().getAuthor().getName().equals(userContext.getUser().getEmail())){
+                throw new EndPointError(Error.NOT_OWNER);
+            }
+        }
+
+        BD.ofy().delete().entities(articlesMap.values()).now();
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("state", "deleted");
         return map;
@@ -81,24 +95,28 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public Map<String, Object> getMyArticles() {
-        QueryKeys<Article> keys = BD.ofy().load().type(Article.class).filterKey(user).keys();
-        Collection<Article> articleKeys = BD.ofy().load().keys(keys).values();
-        Query<Article> query = BD.ofy().load().type(Article.class).filter("author", user);
+
+        QueryResultIterable<Article> it = BD.ofy().load().type(Article.class).filter("author", userContext.getUserFromApp()).iterable();
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+
+        Map<String, Object> articleMap;
+        for (Article article : it) {
+            articleMap = new HashMap<String, Object>();
+            articleMap.put("id", article.getId());
+            articleMap.put("body", article.getBody());
+            articleMap.put("title", article.getTitle());
+            articleMap.put("photo", article.getPhotoUrl());
+            articleMap.put("author", article.getAuthor().getName());
+            list.add(articleMap);
+        }
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("body", query.list());
+        map.put("body", list);
         return map;
     }
 
 
-
     @Override
-    public void setUser(User user) throws EndPointError {
-        try {
-            this.user = new UserFromApp();
-            this.user.setEmail(user.getEmail());
-            this.user = this.user.loadOrSave();
-        } catch (PersistenceException e) {
-            throw new EndPointError(UserBHService.Error.PERSISTENCE);
-        }
+    public void setUserContext(UserContext userContext) throws EndPointError {
+        this.userContext = userContext;
     }
 }

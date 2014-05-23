@@ -2,19 +2,24 @@ package pt.babyHelp.bd;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
 
+@Entity
 public class Article extends BD {
-    static {
-        ObjectifyService.register(Article.class);
-    }
 
     @Id
-    private long id;
+    private Long id;
+    @Index
     private Key<UserFromApp> author;
     private String title;
     private String body;
-    private String fotoUrl;
+    private String photoUrl;
+
+    public Long getId() {
+        return id;
+    }
 
     public Key getAuthor() {
         return author;
@@ -40,12 +45,12 @@ public class Article extends BD {
         this.body = body;
     }
 
-    public String getFotoUrl() {
-        return fotoUrl;
+    public String getPhotoUrl() {
+        return photoUrl;
     }
 
-    public void setFotoUrl(String fotoUrl) {
-        this.fotoUrl = fotoUrl;
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
 
 }

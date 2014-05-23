@@ -10,9 +10,6 @@ import java.util.Map;
 public interface UserBHService extends UserAcessible {
     Map<String, Object> currentEmail();
 
-    Map<String, Object> checkRoles(RolesParameters rolesParameters)
-            throws EndPointError;
-
     Map<String, Object> updateRoles(String email, RolesParameters rolesParameters)
             throws EndPointError;
 

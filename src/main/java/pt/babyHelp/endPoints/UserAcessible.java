@@ -1,9 +1,9 @@
 package pt.babyHelp.endPoints;
 
-import com.google.appengine.api.users.User;
 import pt.babyHelp.core.endpoints.EndPointError;
+import pt.babyHelp.core.session.UserContext;
 
 public interface UserAcessible {
-    void setUser(User user) throws EndPointError;
+    void setUserContext(UserContext userContext) throws EndPointError;
 }
 

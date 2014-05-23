@@ -9,7 +9,7 @@ import pt.babyHelp.core.endpoints.EndPointError;
 import pt.babyHelp.core.session.UserContext;
 
 public class Authorization {
-    public static void check(User user, String area, Role... roles) throws UnauthorizedException, EndPointError {
+    public static UserContext check(User user, String area, Role... roles) throws UnauthorizedException, EndPointError {
         if (user == null) {
             throw new UnauthorizedException(String.format("Não é possível aceder à área de '%s' sem fazer login", area));
         }
@@ -18,8 +18,9 @@ public class Authorization {
             userFromApp = new UserFromApp();
             userFromApp.setEmail(user.getEmail());
         }
-        UserContext userContext = UserContext.createUserContext(userFromApp);
+        UserContext userContext = UserContext.createUserContext(user);
         check(userContext, area, roles);
+        return  userContext;
     }
 
     public static void check(UserContext userContext, String area, Role... roles) throws UnauthorizedException {

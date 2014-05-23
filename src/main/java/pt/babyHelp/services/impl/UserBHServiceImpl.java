@@ -1,6 +1,5 @@
 package pt.babyHelp.services.impl;
 
-import com.google.appengine.api.users.User;
 import pt.babyHelp.bd.PersistenceException;
 import pt.babyHelp.bd.Role;
 import pt.babyHelp.bd.UserFromApp;
@@ -12,7 +11,7 @@ import pt.babyHelp.services.UserBHService;
 import java.util.*;
 
 public class UserBHServiceImpl implements UserBHService {
-    private UserFromApp user;
+    private UserContext userContext;
 
     private static Map<String, Object> getList() throws EndPointError {
         Iterator<UserFromApp> it = UserFromApp.iterateAll();
@@ -37,38 +36,14 @@ public class UserBHServiceImpl implements UserBHService {
         return map;
     }
 
-
-
     @Override
     public Map<String, Object> currentEmail() {
         Map<String, Object> map = new HashMap<String, Object>();
-        if (user == null) {
+        if (userContext == null) {
             map.put("user", "guest");
             return map;
         }
-        map.put("user", user.getEmail());
-        return map;
-    }
-
-    @Override
-    public Map<String, Object> checkRoles(RolesParameters rolesParameters) throws EndPointError {
-        Map<String, Object> map = new HashMap<String, Object>();
-        Map<String, Boolean> rolesMap = new HashMap<String, Boolean>();
-        if (user == null) {
-            for (String role : rolesParameters.getRoles()) {
-                rolesMap.put(role, false);
-            }
-        } else {
-            UserContext userContext = UserContext.createUserContext(user);
-            try {
-                for (Role role : rolesParameters.toEnum()) {
-                    rolesMap.put(role.name(), userContext.hasRules(role));
-                }
-            } catch (Role.ConvertException e) {
-                throw new EndPointError(UserBHService.Error.ROLE_NOT_MATCH.addArgs(e.getRoleStr()));
-            }
-        }
-        map.put("roles", rolesMap);
+        map.put("user", userContext.getUser().getEmail());
         return map;
     }
 
@@ -116,9 +91,8 @@ public class UserBHServiceImpl implements UserBHService {
     }
 
     @Override
-    public void setUser(User user) throws EndPointError {
-        this.user = new UserFromApp();
-        this.user.setEmail(user.getEmail());
+    public void setUserContext(UserContext userContext) throws EndPointError {
+        this.userContext = userContext;
     }
 
     private static enum UpdateRoleAction {
