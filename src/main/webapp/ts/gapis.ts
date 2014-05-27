@@ -1,7 +1,6 @@
 /// <reference path="ext/gapi/gapi.d.ts" />
 /// <reference path="lib.ts" />
 
-
 interface AuthResponse {
     logged:()=>void;
     notlogged:()=>void;
@@ -61,11 +60,108 @@ enum Role{
     admin, healthTec
 }
 
+enum StateLoading{
+    loadingGAPI , authenticating, clientLoading, callService, authFail
+}
+
+class ClientLoader {
+
+    private apiUrl = 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api";
+    private cbState:(state:StateLoading)=>void;
+    private client:string;
+    private version:string = 'v1';
+    private requireAuth:boolean;
+    private logged:boolean;
+
+    constructor(cbState:(state:StateLoading)=>void) {
+        this.cbState = cbState;
+    }
+
+    setClient(client:string){
+        this.client = client;
+    }
+
+    setVersion(version:string){
+        this.version = version;
+    }
+
+
+    private getAuthConfig = (immediate:boolean)=> {
+        var config = {
+            client_id: '942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com',
+            scope: ['https://www.googleapis.com/auth/userinfo.email'],
+            immediate: immediate
+        };
+
+        if (!immediate) {
+            config['authuser'] = "";
+        }
+        return config;
+    }
+
+    private checkAuth(immediate, callback:()=>void) {
+        var self = this;
+        gapi.auth.authorize(self.getAuthConfig(immediate), (response)=> {
+            if (response.error) {
+                self.logged = false
+            } else {
+                self.logged = true;
+            }
+            callback();
+        });
+    }
+
+    load() {
+        var self = this;
+
+        if (isNull(gapi.auth)) {
+            self.cbState(StateLoading.loadingGAPI);
+            gapi.load('auth', ()=> {
+                self.cbState(StateLoading.authenticating);
+                self.load();
+            });
+        } else if (self.requireAuth && !self.logged)
+            self.checkAuth(true, ()=> {
+                if (self.logged) {
+                    self.cbState(StateLoading.clientLoading);
+                    self.load();
+                }
+                else {
+                    self.cbState(StateLoading.authFail);
+                }
+            });
+        else if (isNull(gapi.client[self.client])) {
+            gapi.client.load(self.client, self.version, ()=> {
+                self.cbState(StateLoading.callService);
+            }, self.apiUrl);
+        }
+
+    }
+
+}
+
+class UserLoader extends ClientLoader {
+    constructor(){
+        super((state:StateLoading)=>{
+            Log.prt(state);
+        });
+
+        super.setClient('userBH');
+    }
+    load(){
+        var self = this;
+        super.load();
+    }
+}
+
+
+
 module Api {
 
     export enum ApiClient{
         userBH
     }
+
 
     export var loadClient = (client:any, callback:()=>void)=> {
         var version;
@@ -157,7 +253,7 @@ module Api {
             return client.updateRoles({'email': user.email, 'roles': arrRoles});
         }
 
-        export function list(){
+        export function list() {
             loadClient();
             return client.list();
         }
@@ -169,7 +265,6 @@ module Api {
     export interface Executor {
         execute:(callback:(response:any)=>void)=>void;
     }
-
 
 
     export var root;

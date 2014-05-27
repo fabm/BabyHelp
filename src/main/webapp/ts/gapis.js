@@ -1,5 +1,11 @@
 /// <reference path="ext/gapi/gapi.d.ts" />
 /// <reference path="lib.ts" />
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 
 var auth = {
     _getConfig: function (immediate) {
@@ -55,6 +61,96 @@ var Role;
     Role[Role["admin"] = 0] = "admin";
     Role[Role["healthTec"] = 1] = "healthTec";
 })(Role || (Role = {}));
+
+var StateLoading;
+(function (StateLoading) {
+    StateLoading[StateLoading["loadingGAPI"] = 0] = "loadingGAPI";
+    StateLoading[StateLoading["authenticating"] = 1] = "authenticating";
+    StateLoading[StateLoading["clientLoading"] = 2] = "clientLoading";
+    StateLoading[StateLoading["callService"] = 3] = "callService";
+    StateLoading[StateLoading["authFail"] = 4] = "authFail";
+})(StateLoading || (StateLoading = {}));
+
+var ClientLoader = (function () {
+    function ClientLoader(cbState) {
+        this.apiUrl = 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api";
+        this.version = 'v1';
+        this.getAuthConfig = function (immediate) {
+            var config = {
+                client_id: '942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com',
+                scope: ['https://www.googleapis.com/auth/userinfo.email'],
+                immediate: immediate
+            };
+
+            if (!immediate) {
+                config['authuser'] = "";
+            }
+            return config;
+        };
+        this.cbState = cbState;
+    }
+    ClientLoader.prototype.setClient = function (client) {
+        this.client = client;
+    };
+
+    ClientLoader.prototype.setVersion = function (version) {
+        this.version = version;
+    };
+
+    ClientLoader.prototype.checkAuth = function (immediate, callback) {
+        var self = this;
+        gapi.auth.authorize(self.getAuthConfig(immediate), function (response) {
+            if (response.error) {
+                self.logged = false;
+            } else {
+                self.logged = true;
+            }
+            callback();
+        });
+    };
+
+    ClientLoader.prototype.load = function () {
+        var self = this;
+
+        if (isNull(gapi.auth)) {
+            self.cbState(0 /* loadingGAPI */);
+            gapi.load('auth', function () {
+                self.cbState(1 /* authenticating */);
+                self.load();
+            });
+        } else if (self.requireAuth && !self.logged)
+            self.checkAuth(true, function () {
+                if (self.logged) {
+                    self.cbState(2 /* clientLoading */);
+                    self.load();
+                } else {
+                    self.cbState(4 /* authFail */);
+                }
+            });
+        else if (isNull(gapi.client[self.client])) {
+            gapi.client.load(self.client, self.version, function () {
+                self.cbState(3 /* callService */);
+            }, self.apiUrl);
+        }
+    };
+    return ClientLoader;
+})();
+
+var UserLoader = (function (_super) {
+    __extends(UserLoader, _super);
+    function UserLoader() {
+        _super.call(this, function (state) {
+            Log.prt(state);
+        });
+
+        _super.prototype.setClient.call(this, 'userBH');
+    }
+    UserLoader.prototype.load = function () {
+        var self = this;
+        _super.prototype.load.call(this);
+    };
+    return UserLoader;
+})(ClientLoader);
 
 var Api;
 (function (Api) {

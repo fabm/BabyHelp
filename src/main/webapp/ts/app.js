@@ -94,13 +94,61 @@ var GrowlObject = (function () {
     return GrowlObject;
 })();
 
+var GrowlAndState = (function () {
+    function GrowlAndState($growl, $state) {
+        this.type = 0;
+        this.$growl = $growl;
+        this.$state = $state;
+    }
+    GrowlAndState.prototype.setMessage = function (message, type) {
+        this.msg = message;
+        this.type = type;
+    };
+
+    GrowlAndState.prototype.closeGrowl = function () {
+        this.msg = null;
+    };
+
+    GrowlAndState.prototype.isOpen = function () {
+        return this.msg != null;
+    };
+
+    GrowlAndState.prototype.showGrowl = function ($growl) {
+        if (isNull(this.msg))
+            return;
+        var strType;
+        var title;
+        if (this.type == 0) {
+            strType = 'success';
+            title = 'Informação';
+        } else if (this.type == 1) {
+            strType = 'danger';
+            title = 'Erro';
+        }
+        $growl.box(title, this.msg, {
+            class: strType, sticky: false, timeout: 3000
+        }).open();
+    };
+    GrowlAndState.typeMessage = {
+        success: 0, error: 1
+    };
+    return GrowlAndState;
+})();
+
+app.factory('gns', function ($state, $growl) {
+    var gns = new GrowlAndState($growl, $state);
+    return gns;
+});
+
 var growlObject = new GrowlObject();
 
 var Users;
 (function (Users) {
-    function ListUsersCtrl($scope, $growl, $state) {
+    function ListUsersCtrl($scope, $growl, $state, gns) {
         $scope.modalShown = false;
         $scope.template = "view/userslst.html";
+
+        Log.prt(gns);
 
         function loadClient(callback) {
             if (!Api.isClientLoaded(0 /* userBH */)) {

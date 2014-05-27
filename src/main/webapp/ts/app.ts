@@ -125,15 +125,66 @@ class GrowlObject {
 
 }
 
+class GrowlAndState {
+    static typeMessage = {
+        success: 0, error: 1
+    };
+
+    private type:number = 0;
+    private msg:string;
+    private $growl;
+    private $state;
+
+    constructor($growl,$state){
+        this.$growl = $growl;
+        this.$state = $state;
+    }
+    setMessage(message:string, type:number) {
+        this.msg = message;
+        this.type = type;
+    }
+
+    closeGrowl() {
+        this.msg = null;
+    }
+
+    isOpen():boolean {
+        return this.msg != null;
+    }
+
+    showGrowl($growl) {
+        if (isNull(this.msg))return;
+        var strType;
+        var title;
+        if (this.type == 0) {
+            strType = 'success';
+            title = 'Informação';
+        } else if (this.type == 1) {
+            strType = 'danger';
+            title = 'Erro';
+        }
+        $growl.box(title, this.msg, {
+            class: strType, sticky: false, timeout: 3000
+        }).open();
+    }
+
+}
+
+app.factory('gns',function($state,$growl){
+    var gns = new GrowlAndState($growl,$state);
+    return gns;
+});
+
 var growlObject = new GrowlObject();
 
 
 module Users {
 
-    export function ListUsersCtrl($scope:ScopeUserList, $growl:Growl, $state) {
+    export function ListUsersCtrl($scope:ScopeUserList, $growl:Growl, $state, gns) {
         $scope.modalShown = false;
         $scope.template = "view/userslst.html";
 
+        Log.prt(gns);
 
         function loadClient(callback:()=>void) {
             if (!Api.isClientLoaded(Api.ApiClient.userBH)) {
