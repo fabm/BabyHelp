@@ -13,7 +13,7 @@
     <properties>
         <appengine.app.version>1</appengine.app.version>
         <appengine.client>1.18.0-rc</appengine.client>
-        <appengine.target.version>1.8.8</appengine.target.version>
+        <appengine.target.version>1.9.4</appengine.target.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

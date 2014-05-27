@@ -73,28 +73,41 @@ var StateLoading;
 
 var ClientLoader = (function () {
     function ClientLoader(cbState) {
-        this.apiUrl = 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api";
+        var _this = this;
         this.version = 'v1';
+        this.config = {};
         this.getAuthConfig = function (immediate) {
-            var config = {
-                client_id: '942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com',
-                scope: ['https://www.googleapis.com/auth/userinfo.email'],
-                immediate: immediate
-            };
+            _this.config['immediate'] = immediate;
 
             if (!immediate) {
-                config['authuser'] = "";
+                _this.config['authuser'] = "";
             }
-            return config;
+            return _this.config;
         };
         this.cbState = cbState;
     }
+    ClientLoader.prototype.setApiUrl = function (apiUrl) {
+        this.apiUrl = apiUrl;
+    };
+
     ClientLoader.prototype.setClient = function (client) {
         this.client = client;
     };
 
     ClientLoader.prototype.setVersion = function (version) {
         this.version = version;
+    };
+
+    ClientLoader.prototype.setRequireAuth = function (requireAuth) {
+        this.requireAuth = requireAuth;
+    };
+
+    ClientLoader.prototype.setClientID = function (clientID) {
+        this.config['client_id'] = clientID;
+    };
+
+    ClientLoader.prototype.setScope = function (scope) {
+        this.config['scope'] = scope;
     };
 
     ClientLoader.prototype.checkAuth = function (immediate, callback) {
@@ -109,20 +122,20 @@ var ClientLoader = (function () {
         });
     };
 
-    ClientLoader.prototype.load = function () {
+    ClientLoader.prototype.load = function (callback) {
         var self = this;
 
         if (isNull(gapi.auth)) {
             self.cbState(0 /* loadingGAPI */);
             gapi.load('auth', function () {
                 self.cbState(1 /* authenticating */);
-                self.load();
+                self.load(callback);
             });
         } else if (self.requireAuth && !self.logged)
             self.checkAuth(true, function () {
                 if (self.logged) {
                     self.cbState(2 /* clientLoading */);
-                    self.load();
+                    self.load(callback);
                 } else {
                     self.cbState(4 /* authFail */);
                 }
@@ -130,11 +143,26 @@ var ClientLoader = (function () {
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, function () {
                 self.cbState(3 /* callService */);
+                callback(gapi.client[self.client]);
             }, self.apiUrl);
+        } else {
+            self.cbState(3 /* callService */);
+            callback(gapi.client[self.client]);
         }
     };
     return ClientLoader;
 })();
+
+var ClientBabyHelp = (function (_super) {
+    __extends(ClientBabyHelp, _super);
+    function ClientBabyHelp(cBState) {
+        _super.call(this, cBState);
+        _super.prototype.setApiUrl.call(this, 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api");
+        _super.prototype.setClientID.call(this, '942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com');
+        _super.prototype.setScope.call(this, ['https://www.googleapis.com/auth/userinfo.email']);
+    }
+    return ClientBabyHelp;
+})(ClientLoader);
 
 var UserLoader = (function (_super) {
     __extends(UserLoader, _super);
@@ -145,12 +173,14 @@ var UserLoader = (function (_super) {
 
         _super.prototype.setClient.call(this, 'userBH');
     }
-    UserLoader.prototype.load = function () {
+    UserLoader.prototype.list = function (callback) {
         var self = this;
-        _super.prototype.load.call(this);
+        _super.prototype.load.call(this, function (client) {
+            client.list().execute(callback);
+        });
     };
     return UserLoader;
-})(ClientLoader);
+})(ClientBabyHelp);
 
 var Api;
 (function (Api) {

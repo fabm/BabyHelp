@@ -66,37 +66,49 @@ enum StateLoading{
 
 class ClientLoader {
 
-    private apiUrl = 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api";
+    private apiUrl;
     private cbState:(state:StateLoading)=>void;
     private client:string;
     private version:string = 'v1';
     private requireAuth:boolean;
     private logged:boolean;
+    private config = {};
 
     constructor(cbState:(state:StateLoading)=>void) {
         this.cbState = cbState;
     }
 
-    setClient(client:string){
+    setApiUrl(apiUrl:string) {
+        this.apiUrl = apiUrl;
+    }
+
+    setClient(client:string) {
         this.client = client;
     }
 
-    setVersion(version:string){
+    setVersion(version:string) {
         this.version = version;
     }
 
+    setRequireAuth(requireAuth:boolean) {
+        this.requireAuth = requireAuth;
+    }
+
+    setClientID(clientID:string) {
+        this.config['client_id'] = clientID;
+    }
+
+    setScope(scope:Array<string>) {
+        this.config['scope'] = scope;
+    }
 
     private getAuthConfig = (immediate:boolean)=> {
-        var config = {
-            client_id: '942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com',
-            scope: ['https://www.googleapis.com/auth/userinfo.email'],
-            immediate: immediate
-        };
+        this.config['immediate'] = immediate;
 
         if (!immediate) {
-            config['authuser'] = "";
+            this.config['authuser'] = "";
         }
-        return config;
+        return this.config;
     }
 
     private checkAuth(immediate, callback:()=>void) {
@@ -111,20 +123,20 @@ class ClientLoader {
         });
     }
 
-    load() {
+    load(callback:(client)=>void) {
         var self = this;
 
         if (isNull(gapi.auth)) {
             self.cbState(StateLoading.loadingGAPI);
             gapi.load('auth', ()=> {
                 self.cbState(StateLoading.authenticating);
-                self.load();
+                self.load(callback);
             });
         } else if (self.requireAuth && !self.logged)
             self.checkAuth(true, ()=> {
                 if (self.logged) {
                     self.cbState(StateLoading.clientLoading);
-                    self.load();
+                    self.load(callback);
                 }
                 else {
                     self.cbState(StateLoading.authFail);
@@ -133,27 +145,41 @@ class ClientLoader {
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, ()=> {
                 self.cbState(StateLoading.callService);
+                callback(gapi.client[self.client]);
             }, self.apiUrl);
+        }else{
+            self.cbState(StateLoading.callService);
+            callback(gapi.client[self.client]);
         }
-
     }
 
 }
 
-class UserLoader extends ClientLoader {
-    constructor(){
-        super((state:StateLoading)=>{
+class ClientBabyHelp extends ClientLoader {
+    constructor(cBState:(state:StateLoading)=>void) {
+        super(cBState);
+        super.setApiUrl('http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api");
+        super.setClientID('942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com');
+        super.setScope(['https://www.googleapis.com/auth/userinfo.email']);
+    }
+}
+
+class UserLoader extends ClientBabyHelp {
+    constructor() {
+        super((state:StateLoading)=> {
             Log.prt(state);
         });
 
         super.setClient('userBH');
     }
-    load(){
+
+    list(callback) {
         var self = this;
-        super.load();
+        super.load((client)=> {
+            client.list().execute(callback);
+        });
     }
 }
-
 
 
 module Api {
