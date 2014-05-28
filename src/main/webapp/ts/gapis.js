@@ -125,6 +125,23 @@ var ClientLoader = (function () {
     ClientLoader.prototype.load = function (callback) {
         var self = this;
 
+        function responseResolver(apiMethod) {
+            var fnOnSuccess;
+            var fnOnError;
+            function resolve(success, error) {
+                fnOnSuccess = success;
+                fnOnError = error;
+            }
+            apiMethod.execute(function (response) {
+                if (!isNull(response.error)) {
+                    fnOnSuccess(response);
+                } else {
+                    fnOnError(response);
+                }
+            });
+            return { resolve: resolve };
+        }
+
         if (isNull(gapi.auth)) {
             self.cbState(0 /* loadingGAPI */);
             gapi.load('auth', function () {
@@ -143,11 +160,11 @@ var ClientLoader = (function () {
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, function () {
                 self.cbState(3 /* callService */);
-                callback(gapi.client[self.client]);
+                responseResolver(callback(gapi.client[self.client]));
             }, self.apiUrl);
         } else {
             self.cbState(3 /* callService */);
-            callback(gapi.client[self.client]);
+            responseResolver(callback(gapi.client[self.client]));
         }
     };
     return ClientLoader;
@@ -176,7 +193,7 @@ var UserLoader = (function (_super) {
     UserLoader.prototype.list = function (callback) {
         var self = this;
         _super.prototype.load.call(this, function (client) {
-            client.list().execute(callback);
+            return client.list();
         });
     };
     return UserLoader;

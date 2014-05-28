@@ -123,8 +123,27 @@ class ClientLoader {
         });
     }
 
-    load(callback:(client)=>void) {
+    load(callback:(client)=>{
+        resolve:(success:(response)=>void,error:(response)=>void)=>void
+    }):void {
         var self = this;
+
+        function responseResolver(apiMethod){
+            var fnOnSuccess:(response)=>void;
+            var fnOnError:(response)=>void;
+            function resolve(success:(response)=>void,error:(response)=>void){
+                fnOnSuccess = success;
+                fnOnError = error;
+            }
+            apiMethod.execute((response)=>{
+                if(!isNull(response.error)){
+                    fnOnSuccess(response);
+                }else{
+                    fnOnError(response);
+                }
+            });
+            return{resolve:resolve}
+        }
 
         if (isNull(gapi.auth)) {
             self.cbState(StateLoading.loadingGAPI);
@@ -145,11 +164,11 @@ class ClientLoader {
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, ()=> {
                 self.cbState(StateLoading.callService);
-                callback(gapi.client[self.client]);
+                responseResolver(callback(gapi.client[self.client]));
             }, self.apiUrl);
         }else{
             self.cbState(StateLoading.callService);
-            callback(gapi.client[self.client]);
+            responseResolver(callback(gapi.client[self.client]));
         }
     }
 
@@ -176,7 +195,7 @@ class UserLoader extends ClientBabyHelp {
     list(callback) {
         var self = this;
         super.load((client)=> {
-            client.list().execute(callback);
+            return client.list();
         });
     }
 }
