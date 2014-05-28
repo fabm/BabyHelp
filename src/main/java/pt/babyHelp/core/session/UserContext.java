@@ -14,8 +14,8 @@ public class UserContext {
     private static Queue<UserContext> userQueue = new ArrayBlockingQueue<UserContext>(10);
     private UserFromApp userFromApp;
 
-    private UserContext(User user) {
-        userFromApp = UserFromApp.findByEmail(user.getEmail());
+    private UserContext(UserFromApp userFromApp) {
+        this.userFromApp = userFromApp;
     }
 
     public final static UserContext createUserContext(User user) {
@@ -34,7 +34,9 @@ public class UserContext {
      * @return UserContext
      */
     private final static UserContext cacheNewUser(User user) {
-        UserContext userContext = new UserContext(user);
+        UserFromApp userFromApp = new UserFromApp();
+        userFromApp.setEmail(user.getEmail());
+        UserContext userContext = new UserContext(userFromApp);
         while (!userQueue.offer(userContext)) {
             userQueue.poll();
         }

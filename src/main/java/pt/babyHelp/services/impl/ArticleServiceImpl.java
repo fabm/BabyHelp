@@ -85,7 +85,7 @@ public class ArticleServiceImpl implements ArticleService {
         Map<Long, Article> articlesMap = BD.ofy().load().type(Article.class).ids(tIds);
 
         for (Map.Entry<Long,Article> entry: articlesMap.entrySet()){
-            if(!entry.getValue().getAuthor().getName().equals(userContext.getUser().getEmail())){
+            if(!entry.getValue().getAuthor().getName().equals(userContext.getUserFromApp().getEmail())){
                 throw new EndPointError(Error.NOT_OWNER);
             }
         }

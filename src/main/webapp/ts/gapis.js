@@ -124,22 +124,29 @@ var ClientLoader = (function () {
 
     ClientLoader.prototype.load = function (callback) {
         var self = this;
+        var onSuccess;
+        var onError;
+        var apiResponse = null;
 
-        function responseResolver(apiMethod) {
-            var fnOnSuccess;
-            var fnOnError;
-            function resolve(success, error) {
-                fnOnSuccess = success;
-                fnOnError = error;
-            }
-            apiMethod.execute(function (response) {
-                if (!isNull(response.error)) {
-                    fnOnSuccess(response);
-                } else {
-                    fnOnError(response);
-                }
+        function resolve() {
+            if (isNull(onSuccess))
+                return;
+            if (isNull(onError))
+                return;
+            if (apiResponse == null)
+                return;
+            if (isNull(apiResponse.error))
+                onSuccess(apiResponse);
+            else
+                onError(apiResponse);
+            apiResponse = null;
+        }
+
+        function execute(apiClient) {
+            apiClient.execute(function (response) {
+                apiResponse = response;
+                resolve();
             });
-            return { resolve: resolve };
         }
 
         if (isNull(gapi.auth)) {
@@ -160,12 +167,20 @@ var ClientLoader = (function () {
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, function () {
                 self.cbState(3 /* callService */);
-                responseResolver(callback(gapi.client[self.client]));
+                execute(callback(gapi.client[self.client]));
             }, self.apiUrl);
         } else {
             self.cbState(3 /* callService */);
-            responseResolver(callback(gapi.client[self.client]));
+            execute(callback(gapi.client[self.client]));
         }
+
+        return {
+            then: function (cbOnSuccess, cbOnError) {
+                onSuccess = cbOnSuccess;
+                onError = cbOnError;
+                resolve();
+            }
+        };
     };
     return ClientLoader;
 })();
@@ -190,9 +205,9 @@ var UserLoader = (function (_super) {
 
         _super.prototype.setClient.call(this, 'userBH');
     }
-    UserLoader.prototype.list = function (callback) {
+    UserLoader.prototype.list = function () {
         var self = this;
-        _super.prototype.load.call(this, function (client) {
+        return _super.prototype.load.call(this, function (client) {
             return client.list();
         });
     };

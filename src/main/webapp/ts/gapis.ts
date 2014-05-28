@@ -6,6 +6,10 @@ interface AuthResponse {
     notlogged:()=>void;
 }
 
+interface Resolve {
+    then:(success:(response)=>void, error:(response)=>void)=>void
+}
+
 var auth = {
     _getConfig(immediate:boolean) {
         var config = {
@@ -123,26 +127,31 @@ class ClientLoader {
         });
     }
 
-    load(callback:(client)=>{
-        resolve:(success:(response)=>void,error:(response)=>void)=>void
-    }):void {
+    load(callback:(client)=>void):Resolve {
         var self = this;
+        var onSuccess:(response)=>void;
+        var onError:(response)=>void;
+        var apiResponse = null;
 
-        function responseResolver(apiMethod){
-            var fnOnSuccess:(response)=>void;
-            var fnOnError:(response)=>void;
-            function resolve(success:(response)=>void,error:(response)=>void){
-                fnOnSuccess = success;
-                fnOnError = error;
-            }
-            apiMethod.execute((response)=>{
-                if(!isNull(response.error)){
-                    fnOnSuccess(response);
-                }else{
-                    fnOnError(response);
-                }
+        function resolve() {
+            if (isNull(onSuccess))
+                return;
+            if (isNull(onError))
+                return;
+            if (apiResponse == null)
+                return;
+            if (isNull(apiResponse.error))
+                onSuccess(apiResponse);
+            else
+                onError(apiResponse);
+            apiResponse = null;
+        }
+
+        function execute(apiClient) {
+            apiClient.execute((response)=> {
+                apiResponse = response;
+                resolve();
             });
-            return{resolve:resolve}
         }
 
         if (isNull(gapi.auth)) {
@@ -164,11 +173,19 @@ class ClientLoader {
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, ()=> {
                 self.cbState(StateLoading.callService);
-                responseResolver(callback(gapi.client[self.client]));
+                execute(callback(gapi.client[self.client]));
             }, self.apiUrl);
-        }else{
+        } else {
             self.cbState(StateLoading.callService);
-            responseResolver(callback(gapi.client[self.client]));
+            execute(callback(gapi.client[self.client]));
+        }
+
+        return {
+            then: (cbOnSuccess:(response)=>void, cbOnError:(response)=>void)=> {
+                onSuccess = cbOnSuccess;
+                onError = cbOnError;
+                resolve();
+            }
         }
     }
 
@@ -192,9 +209,9 @@ class UserLoader extends ClientBabyHelp {
         super.setClient('userBH');
     }
 
-    list(callback) {
+    list():Resolve {
         var self = this;
-        super.load((client)=> {
+        return super.load((client)=> {
             return client.list();
         });
     }
@@ -399,3 +416,5 @@ module Api {
 }
 
 Api.root = 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api";
+
+
