@@ -2,9 +2,18 @@ package pt.babyHelp.endPoints.article;
 
 public class ArticleParams {
     private String title;
-    private String foto;
+    private String photoUrl;
     private String body;
+    private String summary;
     private Long id = null;
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
 
     public Long getId() {
         return id;
@@ -30,11 +39,11 @@ public class ArticleParams {
         this.title = title;
     }
 
-    public String getFoto() {
-        return foto;
+    public String getPhotoUrl() {
+        return photoUrl;
     }
 
-    public void setFoto(String foto) {
-        this.foto = foto;
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
 }

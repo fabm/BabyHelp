@@ -22,9 +22,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public Map<String, Object> create(ArticleParams articleParams) throws EndPointError {
-        if (articleParams.getTitle() == null)
+        if (articleParams.getTitle() == null || articleParams.getTitle().isEmpty())
             throw new EndPointError(Error.FIELD_TITLE_REQUIRED);
-        if (articleParams.getBody() == null)
+        if (articleParams.getBody() == null || articleParams.getBody().isEmpty())
             throw new EndPointError(Error.FIELD_BODY_REUIRED);
 
 
@@ -32,8 +32,9 @@ public class ArticleServiceImpl implements ArticleService {
         article.setAuthor(userContext.getUserFromApp());
 
         article.setTitle(articleParams.getTitle());
-        article.setPhotoUrl(articleParams.getFoto());
+        article.setPhotoUrl(articleParams.getPhotoUrl());
         article.setBody(articleParams.getBody());
+        article.setSummary(articleParams.getSummary());
 
         try {
             article.save();
@@ -56,8 +57,9 @@ public class ArticleServiceImpl implements ArticleService {
             throw new EndPointError(Error.ID_NOT_FOUND.addArgs(articleParams.getId().toString()));
 
         article.setTitle(articleParams.getTitle());
-        article.setPhotoUrl(articleParams.getFoto());
+        article.setPhotoUrl(articleParams.getPhotoUrl());
         article.setBody(articleParams.getBody());
+        article.setSummary(articleParams.getSummary());
 
         if (article.getTitle() == null || article.getTitle().isEmpty())
             throw new EndPointError(Error.FIELD_TITLE_REQUIRED);
@@ -65,6 +67,7 @@ public class ArticleServiceImpl implements ArticleService {
         if (article.getAuthor().equals(userContext.getUserFromApp().getEmail()))
             throw new EndPointError(Error.NOT_OWNER.addArgs(article.getTitle(), "atualizá-lo"));
 
+        BD.ofy().save().entity(article).now();
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("state", "updated");
         return map;

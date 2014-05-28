@@ -5,4 +5,3 @@
 /// <reference path="gapis.ts" />
 
 var app = angular.module("babyhelp", ['ui.router', 'ui.growl', 'ngCookies']);
-

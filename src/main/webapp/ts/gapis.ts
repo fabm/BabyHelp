@@ -399,5 +399,3 @@ module Api {
 }
 
 Api.root = 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api";
-
-

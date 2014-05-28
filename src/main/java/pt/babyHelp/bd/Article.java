@@ -1,7 +1,6 @@
 package pt.babyHelp.bd;
 
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
@@ -15,7 +14,16 @@ public class Article extends BD {
     private Key<UserFromApp> author;
     private String title;
     private String body;
+    private String summary;
     private String photoUrl;
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
 
     public Long getId() {
         return id;

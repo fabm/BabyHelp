@@ -29,14 +29,18 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 public class ArticleEndPoint {
 
     private ArticleService articleService = new ArticleServiceImpl();
+    private UserContext userContext;
 
-
+    private void initUserContext(User user){
+        userContext = UserContext.createUserContext(user);
+    }
 
     @ApiMethod(name = "create", httpMethod = HttpMethod.PUT, path = "create")
     public Map<String, Object> createArticle(User user, ArticleParams articleParams) throws UnauthorizedException {
         try {
+            initUserContext(user);
+            Authorization.check(userContext, "criação de um artigo", Role.HEALTHTEC);
             this.articleService.setUserContext(UserContext.createUserContext(user));
-            Authorization.check(user, "criação de um artigo", Role.HEALTHTEC);
             return this.articleService.create(articleParams);
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
@@ -46,8 +50,9 @@ public class ArticleEndPoint {
     @ApiMethod(name = "update", httpMethod = HttpMethod.POST, path = "update")
     public Map<String, Object> currentEmail(User user, ArticleParams articleParams) throws UnauthorizedException {
         try {
+            initUserContext(user);
             this.articleService.setUserContext(UserContext.createUserContext(user));
-            Authorization.check(user, "atualização de um artigo", Role.HEALTHTEC);
+            Authorization.check(userContext, "atualização de um artigo", Role.HEALTHTEC);
             return this.articleService.update(articleParams);
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
@@ -56,8 +61,9 @@ public class ArticleEndPoint {
 
 
     @ApiMethod(name = "list.my", httpMethod = HttpMethod.GET, path = "list-my")
-    public Map<String,Object> myArticles(User user) throws UnauthorizedException {
+    public Map<String, Object> myArticles(User user) throws UnauthorizedException {
         try {
+            initUserContext(user);
             this.articleService.setUserContext(UserContext.createUserContext(user));
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
@@ -65,10 +71,12 @@ public class ArticleEndPoint {
         return this.articleService.getMyArticles();
     }
 
-    @ApiMethod(name = "delete",httpMethod = HttpMethod.PUT,path = "delete")
-    public Map<String,Object> delete(User user,ListIDs listIDs) throws UnauthorizedException {
+    @ApiMethod(name = "delete", httpMethod = HttpMethod.PUT, path = "delete")
+    public Map<String, Object> delete(User user, ListIDs listIDs) throws UnauthorizedException {
         try {
-            this.articleService.setUserContext(Authorization.check(user,"remoção de artigos"));
+            initUserContext(user);
+            Authorization.check(userContext, "remoção de artigos");
+            this.articleService.setUserContext(userContext);
             return this.articleService.delete(listIDs);
         } catch (EndPointError endPointError) {
             return endPointError.getMap();

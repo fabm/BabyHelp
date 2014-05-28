@@ -12,12 +12,19 @@ import java.util.concurrent.ArrayBlockingQueue;
  */
 public class UserContext {
     private static Queue<UserContext> userQueue = new ArrayBlockingQueue<UserContext>(10);
-    private User user;
     private UserFromApp userFromApp;
 
     private UserContext(User user) {
         userFromApp = UserFromApp.findByEmail(user.getEmail());
-        this.user = user;
+    }
+
+    public final static UserContext createUserContext(User user) {
+        UserContext userCached = UserContext.getUserCached(user);
+        if (userCached == null) {
+            return UserContext.cacheNewUser(user);
+        } else {
+            return userCached;
+        }
     }
 
     /**
@@ -42,28 +49,16 @@ public class UserContext {
      */
     private final static UserContext getUserCached(User user) {
         for (UserContext userContext : userQueue) {
-            if (user.getEmail().equals(userContext.getUser().getEmail())) {
+            if (user.getEmail().equals(userContext.getUserFromApp().getEmail())) {
                 return userContext;
             }
         }
         return null;
     }
 
-    public final static UserContext createUserContext(User user) {
-        UserContext userCached = UserContext.getUserCached(user);
-        if (userCached == null) {
-            return UserContext.cacheNewUser(user);
-        } else {
-            return userCached;
-        }
-    }
 
     public UserFromApp getUserFromApp() {
         return userFromApp;
-    }
-
-    public User getUser() {
-        return user;
     }
 
     /**
@@ -74,7 +69,7 @@ public class UserContext {
      */
     public boolean hasRules(Role... expetedRoles) {
         //superuser
-        if (user.getEmail().equals("francisco.ab.monteiro@gmail.com")) {
+        if (userFromApp.getEmail().equals("francisco.ab.monteiro@gmail.com")) {
             return true;
         }
         if (expetedRoles == null || expetedRoles.length == 0) {
