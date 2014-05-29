@@ -127,6 +127,32 @@ class ClientLoader {
         });
     }
 
+    loadApi(callback:(client)=>void){
+        var self = this;
+        if (isNull(gapi.auth)) {
+            self.cbState(StateLoading.loadingGAPI);
+            gapi.load('auth', ()=> {
+                self.cbState(StateLoading.authenticating);
+                self.load(callback);
+            });
+        } else if (self.requireAuth && !self.logged)
+            self.checkAuth(true, ()=> {
+                if (self.logged) {
+                    self.cbState(StateLoading.clientLoading);
+                    self.load(callback);
+                }
+                else {
+                    self.cbState(StateLoading.authFail);
+                }
+            });
+        else if (isNull(gapi.client[self.client])) {
+            gapi.client.load(self.client, self.version, ()=> {
+                self.cbState(StateLoading.callService);
+                callback(gapi.client[self.client]);
+            }, self.apiUrl);
+        }
+    }
+
     load(callback:(client)=>void):Resolve {
         var self = this;
         var onSuccess:(response)=>void;

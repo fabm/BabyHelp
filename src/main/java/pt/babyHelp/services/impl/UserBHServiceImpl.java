@@ -57,13 +57,13 @@ public class UserBHServiceImpl implements UserBHService {
         }
         UserFromApp userFromApp = userContext.getUserFromApp();
         String token = RandomStringUtils.randomAlphanumeric(20);
+        token = userFromApp.getEmail()+":"+token;
         try {
             userFromApp.createHash(token);
         } catch (NoSuchAlgorithmException e) {
             throw new EndPointError(Error.MISS_ALGORITHM);
         }
         BD.ofy().save().entity(userFromApp).now();
-        map.put("bhapiemail", userContext.getUserFromApp().getEmail());
         map.put("bhapitoken", token);
         return map;
     }

@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.http.HTTPException;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 
 public class Serve extends HttpServlet {
     private BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
@@ -33,29 +32,24 @@ public class Serve extends HttpServlet {
         String token = null, email;
         UserFromApp userFromApp = null;
 
-        for (Cookie cookie : req.getCookies()) {
-            res.getWriter().println("name:" + cookie.getName());
-            res.getWriter().println("value:" + cookie.getValue());
-            res.getWriter().println("comment:" + cookie.getComment());
-            res.getWriter().println("domain:" + cookie.getDomain());
-            res.getWriter().println("path:" + cookie.getPath());
-            res.getWriter().println("version:" + cookie.getVersion());
-            res.getWriter().println("maxAge:" + cookie.getMaxAge());
-            res.getWriter().println("------------------------------------------------------------");
-            if (cookie.getName().equals("bhapitoken"))
-                token = cookie.getValue();
-            if (cookie.getName().equals("bhapiemail")) {
-                email = cookie.getValue();
-                userFromApp = UserFromApp.findByEmail(email);
-            }
-        }
+        Cookie cookie = new Cookie("bhapitoken","teste");
+        cookie.setSecure(true);
+        res.addCookie(cookie);
 
-        try {
-            if (userFromApp != null)
-                res.getWriter().println("token corresponds:" + userFromApp.isValid(token,res));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+
+        Cookie cookie2 = new Cookie("bhapitoken2","teste");
+        res.addCookie(cookie2);
+
+        res.getWriter().print(getCoockie(req,"bhapitoken"));
+
+    }
+
+    private Cookie getCoockie(HttpServletRequest req, String name){
+        for (Cookie cookie : req.getCookies()) {
+            if(cookie.getName().equals(name))
+                return cookie;
         }
+        return null;
     }
 
     private void auth(HttpServletRequest req) {

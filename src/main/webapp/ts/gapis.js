@@ -122,6 +122,31 @@ var ClientLoader = (function () {
         });
     };
 
+    ClientLoader.prototype.loadApi = function (callback) {
+        var self = this;
+        if (isNull(gapi.auth)) {
+            self.cbState(0 /* loadingGAPI */);
+            gapi.load('auth', function () {
+                self.cbState(1 /* authenticating */);
+                self.load(callback);
+            });
+        } else if (self.requireAuth && !self.logged)
+            self.checkAuth(true, function () {
+                if (self.logged) {
+                    self.cbState(2 /* clientLoading */);
+                    self.load(callback);
+                } else {
+                    self.cbState(4 /* authFail */);
+                }
+            });
+        else if (isNull(gapi.client[self.client])) {
+            gapi.client.load(self.client, self.version, function () {
+                self.cbState(3 /* callService */);
+                callback(gapi.client[self.client]);
+            }, self.apiUrl);
+        }
+    };
+
     ClientLoader.prototype.load = function (callback) {
         var self = this;
         var onSuccess;

@@ -19,6 +19,7 @@ public class UserContext {
     }
 
     public final static UserContext createUserContext(User user) {
+        if(user==null)return null;
         UserContext userCached = UserContext.getUserCached(user);
         if (userCached == null) {
             return UserContext.cacheNewUser(user);

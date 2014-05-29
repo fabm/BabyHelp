@@ -378,3 +378,4 @@ class Params {
     method:string = 'GET';
     callback = Log.cbr;
 }
+
