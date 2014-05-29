@@ -36,13 +36,13 @@ public class UserBHEndpoint {
         userContext = UserContext.createUserContext(user);
     }
 
-    @ApiMethod(name = "current.email", httpMethod = HttpMethod.GET, path = "current-email")
+    @ApiMethod(name = "create.token", httpMethod = HttpMethod.GET, path = "token")
     public Map<String, Object> currentEmail(User user) throws UnauthorizedException {
         try {
             setUserContext(user);
-            Authorization.check(userContext, "verificação do email atual");
+            Authorization.check(userContext, "criação de um token para áreas reservadas");
             this.userBHService.setUserContext(userContext);
-            return this.userBHService.currentEmail();
+            return this.userBHService.createToken();
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
         }

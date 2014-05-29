@@ -1,5 +1,7 @@
 package pt.babyHelp.services.impl;
 
+import org.apache.commons.lang3.RandomStringUtils;
+import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.PersistenceException;
 import pt.babyHelp.bd.Role;
 import pt.babyHelp.bd.UserFromApp;
@@ -8,6 +10,7 @@ import pt.babyHelp.core.session.UserContext;
 import pt.babyHelp.endPoints.userEndPoint.RolesParameters;
 import pt.babyHelp.services.UserBHService;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public class UserBHServiceImpl implements UserBHService {
@@ -36,14 +39,32 @@ public class UserBHServiceImpl implements UserBHService {
         return map;
     }
 
+    private static String toHex(byte[] byteData) {
+        //convert the byte to hex format method 1
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < byteData.length; i++) {
+            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        return sb.toString();
+    }
+
     @Override
-    public Map<String, Object> currentEmail() {
+    public Map<String, Object> createToken() throws EndPointError {
         Map<String, Object> map = new HashMap<String, Object>();
         if (userContext == null) {
             map.put("user", "guest");
             return map;
         }
-        map.put("user", userContext.getUser().getEmail());
+        UserFromApp userFromApp = userContext.getUserFromApp();
+        String token = RandomStringUtils.randomAlphanumeric(20);
+        try {
+            userFromApp.createHash(token);
+        } catch (NoSuchAlgorithmException e) {
+            throw new EndPointError(Error.MISS_ALGORITHM);
+        }
+        BD.ofy().save().entity(userFromApp).now();
+        map.put("bhapiemail", userContext.getUserFromApp().getEmail());
+        map.put("bhapitoken", token);
         return map;
     }
 
@@ -75,7 +96,6 @@ public class UserBHServiceImpl implements UserBHService {
     public Map<String, Object> list() throws EndPointError {
         return getList();
     }
-
 
 
     @Override

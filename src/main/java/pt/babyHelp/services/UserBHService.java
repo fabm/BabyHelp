@@ -8,7 +8,7 @@ import pt.babyHelp.endPoints.userEndPoint.RolesParameters;
 import java.util.Map;
 
 public interface UserBHService extends UserAcessible {
-    Map<String, Object> currentEmail();
+    Map<String, Object> createToken() throws EndPointError;
 
     Map<String, Object> updateRoles(String email, RolesParameters rolesParameters)
             throws EndPointError;
@@ -23,7 +23,8 @@ public interface UserBHService extends UserAcessible {
     enum Error implements ErrorReturn {
         PERSISTENCE(1, "Problema ao tentar guardar %s"),
         ROLE_NOT_MATCH(2, "Não é possível corresponder o role %s a nenhum role existente"),
-        EMAIL_REQUIRED(3, "O campo email é obrigatório");
+        EMAIL_REQUIRED(3, "O campo email é obrigatório"),
+        MISS_ALGORITHM(4, "Falta o algoritmo criptográfico");
 
         private String msg;
         private int code;
