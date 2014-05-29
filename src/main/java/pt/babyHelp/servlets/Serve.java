@@ -28,7 +28,6 @@ public class Serve extends HttpServlet {
 
         String par = req.getParameter("blob-key");
         if (par == null) {
-            res.sendRedirect("/");
             return;
         }
         Foto foto = Foto.load(par);

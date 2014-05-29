@@ -21,6 +21,16 @@
         <url-pattern>/_ah/spi/*</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>photoServe</servlet-name>
+        <servlet-class>pt.babyHelp.servlets.Serve</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>photoServe</servlet-name>
+        <url-pattern>/photo</url-pattern>
+    </servlet-mapping>
+
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
