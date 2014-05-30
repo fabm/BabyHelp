@@ -11,7 +11,7 @@ import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import pt.babyHelp.bd.Foto;
+import pt.babyHelp.bd.Photo;
 import pt.babyHelp.bd.PersistenceException;
 
 import javax.servlet.ServletException;
@@ -37,13 +37,12 @@ public class Upload extends HttpServlet {
         UserService userService = UserServiceFactory.getUserService();
 
         String thisURL = req.getRequestURI();
-        Foto foto = new Foto();
+        Photo photo = new Photo();
 
         if (blobKey != null && req.getUserPrincipal() != null) {
-            foto.setBlob(blobKey.get(0).getKeyString());
-            foto.setUtilizador(userService.getCurrentUser().getUserId());
+            photo.setBlob(blobKey.get(0).getKeyString());
             try {
-                foto.save();
+                photo.save();
                 res.getWriter().println("foto gravada com sucesso");
             } catch (PersistenceException e) {
                 res.getWriter().println("ocorreu um erro ao tentar gravar a foto");

@@ -9,9 +9,6 @@ package pt.babyHelp.servlets; /**
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserServiceFactory;
-import pt.babyHelp.bd.Foto;
 import pt.babyHelp.bd.UserFromApp;
 
 import javax.servlet.http.Cookie;
@@ -28,25 +25,22 @@ public class Serve extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws IOException {
+        Object attr = req.getSession().getAttribute("currentUser");
+        if (attr != null) {
+            UserFromApp userFromApp = (UserFromApp) attr;
+            res.getWriter().println(userFromApp.getEmail());
+        } else {
+            res.getWriter().println("nulo");
+        }
 
-        String token = null, email;
-        UserFromApp userFromApp = null;
 
-        Cookie cookie = new Cookie("bhapitoken","teste");
-        cookie.setSecure(true);
-        res.addCookie(cookie);
-
-
-        Cookie cookie2 = new Cookie("bhapitoken2","teste");
-        res.addCookie(cookie2);
-
-        res.getWriter().print(getCoockie(req,"bhapitoken"));
-
+        for (Object par : UrlParameters.getParameters(req))
+            res.getWriter().println(par);
     }
 
-    private Cookie getCoockie(HttpServletRequest req, String name){
+    private Cookie getCoockie(HttpServletRequest req, String name) {
         for (Cookie cookie : req.getCookies()) {
-            if(cookie.getName().equals(name))
+            if (cookie.getName().equals(name))
                 return cookie;
         }
         return null;
@@ -69,21 +63,7 @@ public class Serve extends HttpServlet {
     public void doPhoto(HttpServletRequest req, HttpServletResponse res)
             throws IOException {
         String par = req.getParameter("blob-key");
-        if (par == null) {
-            return;
-        }
-        Foto foto = Foto.load(par);
-        if (foto == null || req.getUserPrincipal() == null) {
-            res.getWriter().println("Náo tem acesso à foto");
-            return;
-        }
-
-        User cu = UserServiceFactory.getUserService().getCurrentUser();
-        if (foto.isPublica() || foto.temAutorizacao(cu.getUserId())) {
-            BlobKey blobKey = new BlobKey(req.getParameter("blob-key"));
-            blobstoreService.serve(blobKey, res);
-        } else {
-            res.getWriter().println("Náo tem acesso à foto");
-        }
+        BlobKey blobKey = new BlobKey(req.getParameter("blob-key"));
+        blobstoreService.serve(blobKey, res);
     }
 }

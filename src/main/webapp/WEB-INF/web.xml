@@ -28,7 +28,7 @@
 
     <servlet-mapping>
         <servlet-name>photoServe</servlet-name>
-        <url-pattern>/photo</url-pattern>
+        <url-pattern>/photo/*</url-pattern>
     </servlet-mapping>
 
     <welcome-file-list>

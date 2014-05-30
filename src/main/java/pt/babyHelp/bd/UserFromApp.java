@@ -1,18 +1,16 @@
 package pt.babyHelp.bd;
 
-import com.google.api.client.repackaged.org.apache.commons.codec.binary.Base64;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.Serializable;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 @Entity
 public class UserFromApp extends BD implements Serializable {
@@ -28,34 +26,6 @@ public class UserFromApp extends BD implements Serializable {
     private Date dateHash;
 
     private Set<Role> roles;
-
-    public void createHash(String pass) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(pass.getBytes());
-        byte[] dg = md.digest();
-        hash = Base64.encodeBase64(dg).toString();
-        dateHash = Calendar.getInstance().getTime();
-    }
-
-    public boolean isValid(String pass, HttpServletResponse res) throws NoSuchAlgorithmException {
-        Calendar m30 = Calendar.getInstance();
-        m30.add(Calendar.MINUTE,30);
-        if(m30.after(dateHash))
-            return false;
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(pass.getBytes());
-        byte[] dg = md.digest();
-        String currentHash = Base64.encodeBase64(dg).toString();
-
-        try {
-            res.getWriter().println("current hash:"+currentHash);
-            res.getWriter().println("stored hash:"+hash);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return currentHash.equals(hash);
-    }
 
     public static UserFromApp findByEmail(String email) {
         return BD.ofy().load().type(UserFromApp.class).filter("email = ", email).first().now();

@@ -1,16 +1,15 @@
 package pt.babyHelp.services.impl;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.PersistenceException;
 import pt.babyHelp.bd.Role;
 import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.core.endpoints.EndPointError;
 import pt.babyHelp.core.session.UserContext;
+import pt.babyHelp.core.validators.EmailChecker;
 import pt.babyHelp.endPoints.userEndPoint.RolesParameters;
 import pt.babyHelp.services.UserBHService;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public class UserBHServiceImpl implements UserBHService {
@@ -49,22 +48,15 @@ public class UserBHServiceImpl implements UserBHService {
     }
 
     @Override
-    public Map<String, Object> createToken() throws EndPointError {
+    public Map<String, Object> createSession() throws EndPointError {
         Map<String, Object> map = new HashMap<String, Object>();
         if (userContext == null) {
             map.put("user", "guest");
-            return map;
+        } else {
+            UserFromApp userFromApp = userContext.getUserFromApp();
+            BD.ofy().save().entity(userFromApp).now();
+            map.put("user", userFromApp.getEmail());
         }
-        UserFromApp userFromApp = userContext.getUserFromApp();
-        String token = RandomStringUtils.randomAlphanumeric(20);
-        token = userFromApp.getEmail()+":"+token;
-        try {
-            userFromApp.createHash(token);
-        } catch (NoSuchAlgorithmException e) {
-            throw new EndPointError(Error.MISS_ALGORITHM);
-        }
-        BD.ofy().save().entity(userFromApp).now();
-        map.put("bhapitoken", token);
         return map;
     }
 
@@ -74,6 +66,11 @@ public class UserBHServiceImpl implements UserBHService {
         if (email == null) {
             throw new EndPointError(Error.EMAIL_REQUIRED);
         }
+
+        if (!EmailChecker.check(email)) {
+            throw new EndPointError(Error.EMAIL_MALFORMED);
+        }
+
         UserFromApp userFromApp = UserFromApp.findByEmail(email);
         if (userFromApp == null) {
             userFromApp = new UserFromApp();

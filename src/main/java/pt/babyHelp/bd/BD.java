@@ -3,8 +3,6 @@ package pt.babyHelp.bd;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
-import com.googlecode.objectify.VoidWork;
-import com.googlecode.objectify.annotation.OnSave;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,7 +11,7 @@ import java.util.Map;
 
 public class BD {
     static {
-        ObjectifyService.register(Foto.class);
+        ObjectifyService.register(Photo.class);
         ObjectifyService.register(UserFromApp.class);
     }
 

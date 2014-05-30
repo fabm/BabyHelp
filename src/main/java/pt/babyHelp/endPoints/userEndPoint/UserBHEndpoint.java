@@ -14,6 +14,8 @@ import pt.babyHelp.endPoints.Constants;
 import pt.babyHelp.services.UserBHService;
 import pt.babyHelp.services.impl.UserBHServiceImpl;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
@@ -32,17 +34,21 @@ public class UserBHEndpoint {
     private UserBHService userBHService = new UserBHServiceImpl();
     private UserContext userContext;
 
-    void setUserContext(User user){
+    void setUserContext(User user) {
         userContext = UserContext.createUserContext(user);
     }
 
-    @ApiMethod(name = "create.token", httpMethod = HttpMethod.GET, path = "token")
-    public Map<String, Object> currentEmail(User user) throws UnauthorizedException {
+
+    @ApiMethod(name = "create.session", httpMethod = HttpMethod.GET, path = "create/session")
+    public Map<String, Object> createSession(HttpServletRequest req, User user) throws UnauthorizedException {
         try {
             setUserContext(user);
+            req.getSession().setAttribute("currentUser",userContext.getUserFromApp());
             Authorization.check(userContext, "criação de um token para áreas reservadas");
             this.userBHService.setUserContext(userContext);
-            return this.userBHService.createToken();
+            Map<String,Object> map = new HashMap<String, Object>();
+            map.put("session","created");
+            return map;
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
         }
@@ -79,7 +85,7 @@ public class UserBHEndpoint {
     public Map<String, Object> getRoles(User user, @Named("email") String email) throws UnauthorizedException {
         try {
             setUserContext(user);
-            Authorization.check(userContext,"verificação de roles",Role.ADMINISTRATOR);
+            Authorization.check(userContext, "verificação de roles", Role.ADMINISTRATOR);
             this.userBHService.setUserContext(userContext);
             return this.userBHService.getRoles(email);
         } catch (EndPointError endPointError) {
