@@ -56,12 +56,6 @@ var auth = {
     }
 };
 
-var Role;
-(function (Role) {
-    Role[Role["admin"] = 0] = "admin";
-    Role[Role["healthTec"] = 1] = "healthTec";
-})(Role || (Role = {}));
-
 var StateLoading;
 (function (StateLoading) {
     StateLoading[StateLoading["loadingGAPI"] = 0] = "loadingGAPI";
@@ -72,7 +66,7 @@ var StateLoading;
 })(StateLoading || (StateLoading = {}));
 
 var ClientLoader = (function () {
-    function ClientLoader(cbState) {
+    function ClientLoader() {
         var _this = this;
         this.version = 'v1';
         this.config = {};
@@ -84,24 +78,7 @@ var ClientLoader = (function () {
             }
             return _this.config;
         };
-        this.cbState = cbState;
     }
-    ClientLoader.prototype.setApiUrl = function (apiUrl) {
-        this.apiUrl = apiUrl;
-    };
-
-    ClientLoader.prototype.setClient = function (client) {
-        this.client = client;
-    };
-
-    ClientLoader.prototype.setVersion = function (version) {
-        this.version = version;
-    };
-
-    ClientLoader.prototype.setRequireAuth = function (requireAuth) {
-        this.requireAuth = requireAuth;
-    };
-
     ClientLoader.prototype.setClientID = function (clientID) {
         this.config['client_id'] = clientID;
     };
@@ -122,26 +99,31 @@ var ClientLoader = (function () {
         });
     };
 
+    ClientLoader.prototype.callCBState = function (state) {
+        if (this.cbState != null)
+            this.cbState(state);
+    };
+
     ClientLoader.prototype.loadApi = function (callback) {
         var self = this;
         if (isNull(gapi.auth)) {
-            self.cbState(0 /* loadingGAPI */);
+            self.callCBState(0 /* loadingGAPI */);
             gapi.load('auth', function () {
-                self.cbState(1 /* authenticating */);
-                self.load(callback);
+                self.callCBState(1 /* authenticating */);
+                self.loadApi(callback);
             });
         } else if (self.requireAuth && !self.logged)
             self.checkAuth(true, function () {
                 if (self.logged) {
-                    self.cbState(2 /* clientLoading */);
-                    self.load(callback);
+                    self.callCBState(2 /* clientLoading */);
+                    self.loadApi(callback);
                 } else {
-                    self.cbState(4 /* authFail */);
+                    self.callCBState(4 /* authFail */);
                 }
             });
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, function () {
-                self.cbState(3 /* callService */);
+                self.callCBState(3 /* callService */);
                 callback(gapi.client[self.client]);
             }, self.apiUrl);
         }
@@ -151,6 +133,7 @@ var ClientLoader = (function () {
         var self = this;
         var onSuccess;
         var onError;
+        var onNotAuthorized;
         var apiResponse = null;
 
         function resolve() {
@@ -162,8 +145,12 @@ var ClientLoader = (function () {
                 return;
             if (isNull(apiResponse.error))
                 onSuccess(apiResponse);
-            else
-                onError(apiResponse);
+            else {
+                if (!isNull(onNotAuthorized) && apiResponse.error.code == 401)
+                    onNotAuthorized(apiResponse);
+                else
+                    onError(apiResponse);
+            }
             apiResponse = null;
         }
 
@@ -175,34 +162,35 @@ var ClientLoader = (function () {
         }
 
         if (isNull(gapi.auth)) {
-            self.cbState(0 /* loadingGAPI */);
+            self.callCBState(0 /* loadingGAPI */);
             gapi.load('auth', function () {
-                self.cbState(1 /* authenticating */);
+                self.callCBState(1 /* authenticating */);
                 self.load(callback);
             });
         } else if (self.requireAuth && !self.logged)
             self.checkAuth(true, function () {
                 if (self.logged) {
-                    self.cbState(2 /* clientLoading */);
+                    self.callCBState(2 /* clientLoading */);
                     self.load(callback);
                 } else {
-                    self.cbState(4 /* authFail */);
+                    self.callCBState(4 /* authFail */);
                 }
             });
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, function () {
-                self.cbState(3 /* callService */);
+                self.callCBState(3 /* callService */);
                 execute(callback(gapi.client[self.client]));
             }, self.apiUrl);
         } else {
-            self.cbState(3 /* callService */);
+            self.callCBState(3 /* callService */);
             execute(callback(gapi.client[self.client]));
         }
 
         return {
-            then: function (cbOnSuccess, cbOnError) {
+            then: function (cbOnSuccess, cbOnError, cbOnNotAuthorized) {
                 onSuccess = cbOnSuccess;
                 onError = cbOnError;
+                onNotAuthorized = cbOnNotAuthorized;
                 resolve();
             }
         };
@@ -212,31 +200,74 @@ var ClientLoader = (function () {
 
 var ClientBabyHelp = (function (_super) {
     __extends(ClientBabyHelp, _super);
-    function ClientBabyHelp(cBState) {
-        _super.call(this, cBState);
-        _super.prototype.setApiUrl.call(this, 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api");
+    function ClientBabyHelp() {
+        _super.call(this);
+        this.apiUrl = 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api";
         _super.prototype.setClientID.call(this, '942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com');
         _super.prototype.setScope.call(this, ['https://www.googleapis.com/auth/userinfo.email']);
     }
     return ClientBabyHelp;
 })(ClientLoader);
 
-var UserLoader = (function (_super) {
-    __extends(UserLoader, _super);
-    function UserLoader() {
-        _super.call(this, function (state) {
-            Log.prt(state);
-        });
-
-        _super.prototype.setClient.call(this, 'userBH');
+var UserService = (function (_super) {
+    __extends(UserService, _super);
+    function UserService() {
+        _super.call(this);
+        this.client = 'userBH';
     }
-    UserLoader.prototype.list = function () {
+    UserService.loadAllRoles = function () {
+        function Create(alias, name) {
+            this.name = name;
+            this.alias = alias;
+            this.role = false;
+        }
+
+        var all = [];
+        all.push(new Create('técnico de saúde', 'HEALTHTEC'));
+        all.push(new Create('administrador', 'ADMINISTRATOR'));
+        return all;
+    };
+
+    UserService.prototype.list = function () {
         var self = this;
         return _super.prototype.load.call(this, function (client) {
             return client.list();
         });
     };
-    return UserLoader;
+
+    UserService.prototype.getRoles = function (user) {
+        var loader = _super.prototype.load.call(this, function (client) {
+            return client.getRoles({ mail: user.email });
+        });
+
+        function then(onSuccess, onError, onUnauthorized) {
+            return loader.then(function (response) {
+                var allRoles = UserService.loadAllRoles();
+                allRoles.forEach(function (value, index, arr) {
+                    value.role = response.body.roles.indexOf(value.name) != -1;
+                });
+                onSuccess(allRoles);
+            }, onError, onUnauthorized);
+        }
+
+        return {
+            then: then
+        };
+    };
+
+    UserService.prototype.updateRoles = function (user) {
+        return _super.prototype.load.call(this, function (client) {
+             {
+                var rolesSelected = [];
+                user.roles.forEach(function (value, index, arr) {
+                    if (value.role)
+                        rolesSelected.push(value.name);
+                });
+                return client.update({ 'email': user.email, 'roles': user.roles });
+            }
+        });
+    };
+    return UserService;
 })(ClientBabyHelp);
 
 var Api;

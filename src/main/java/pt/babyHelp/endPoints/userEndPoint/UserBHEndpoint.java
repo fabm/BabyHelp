@@ -38,7 +38,6 @@ public class UserBHEndpoint {
         userContext = UserContext.createUserContext(user);
     }
 
-
     @ApiMethod(name = "create.session", httpMethod = HttpMethod.GET, path = "create/session")
     public Map<String, Object> createSession(HttpServletRequest req, User user) throws UnauthorizedException {
         try {

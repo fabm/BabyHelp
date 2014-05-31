@@ -23,17 +23,14 @@ interface ResponseCallbacks {
 
 class Log {
     static prt(msg:any) {
-        console.trace();
         window.console.log(msg);
     }
 
     static prtError(msg:any) {
-        console.trace();
         window.console.log(msg);
     }
 
     static cbr(response):void {
-        console.trace();
         window.console.log(response);
     }
 

@@ -33,7 +33,6 @@ public class Serve extends HttpServlet {
             res.getWriter().println("nulo");
         }
 
-
         for (Object par : UrlParameters.getParameters(req))
             res.getWriter().println(par);
     }

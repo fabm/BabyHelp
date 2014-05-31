@@ -2,17 +2,14 @@ var Log = (function () {
     function Log() {
     }
     Log.prt = function (msg) {
-        console.trace();
         window.console.log(msg);
     };
 
     Log.prtError = function (msg) {
-        console.trace();
         window.console.log(msg);
     };
 
     Log.cbr = function (response) {
-        console.trace();
         window.console.log(response);
     };
 
