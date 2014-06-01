@@ -6,49 +6,46 @@ package pt.babyHelp.servlets; /**
  * To change this template use File | Settings | File Templates.
  */
 
-import com.google.appengine.api.blobstore.BlobKey;
+import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
-import pt.babyHelp.bd.Photo;
-import pt.babyHelp.bd.PersistenceException;
+import com.google.appengine.api.utils.SystemProperty;
+import com.google.appengine.repackaged.org.codehaus.jackson.map.ObjectMapper;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
+import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Upload extends HttpServlet {
-    private BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
 
     @Override
-    public void doPost(HttpServletRequest req, HttpServletResponse res)
+    public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
 
+        res.setContentType("application/json");
+        Map<String, Object> map = new HashMap<String, Object>();
+        ObjectMapper objectMaper = ObjectMapperUtil.createStandardObjectMapper();
 
 
-        Map<String, List<BlobKey>> blobs = blobstoreService.getUploads(req);
-        List<BlobKey> blobKey = blobs.get("myFile");
+        boolean devEnvironment = SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
 
-        UserService userService = UserServiceFactory.getUserService();
-
-        String thisURL = req.getRequestURI();
-        Photo photo = new Photo();
-
-        if (blobKey != null && req.getUserPrincipal() != null) {
-            photo.setBlob(blobKey.get(0).getKeyString());
-            try {
-                photo.save();
-                res.getWriter().println("foto gravada com sucesso");
-            } catch (PersistenceException e) {
-                res.getWriter().println("ocorreu um erro ao tentar gravar a foto");
-            }
-        } else {
-            res.sendRedirect("/");
+        if (devEnvironment || req.getSession().getAttribute("userFromApp") != null) {
+            BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+            map.put("url", blobstoreService.createUploadUrl("/upload"));
         }
+        else{
+            Map<String,Object> mapError = new HashMap<String, Object>();
+            mapError.put("code",401);
+            mapError.put("message","Unauthorized");
+            map.put("error",mapError);
+        }
+
+        objectMaper.writeValue(res.getWriter(), map);
     }
+
 }

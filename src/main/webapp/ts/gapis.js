@@ -79,6 +79,14 @@ var ClientLoader = (function () {
             return _this.config;
         };
     }
+    ClientLoader.logout = function () {
+        gapi.auth.setToken(null);
+    };
+
+    ClientLoader.prototype.login = function (callback) {
+        this.checkAuth(false, callback);
+    };
+
     ClientLoader.prototype.setClientID = function (clientID) {
         this.config['client_id'] = clientID;
     };
@@ -91,9 +99,9 @@ var ClientLoader = (function () {
         var self = this;
         gapi.auth.authorize(self.getAuthConfig(immediate), function (response) {
             if (response.error) {
-                self.logged = false;
+                ClientLoader.logged = false;
             } else {
-                self.logged = true;
+                ClientLoader.logged = true;
             }
             callback();
         });
@@ -112,9 +120,9 @@ var ClientLoader = (function () {
                 self.callCBState(1 /* authenticating */);
                 self.loadApi(callback);
             });
-        } else if (self.requireAuth && !self.logged)
+        } else if (self.requireAuth && !ClientLoader.logged)
             self.checkAuth(true, function () {
-                if (self.logged) {
+                if (ClientLoader.logged) {
                     self.callCBState(2 /* clientLoading */);
                     self.loadApi(callback);
                 } else {
@@ -167,9 +175,9 @@ var ClientLoader = (function () {
                 self.callCBState(1 /* authenticating */);
                 self.load(callback);
             });
-        } else if (self.requireAuth && !self.logged)
+        } else if (self.requireAuth && !ClientLoader.logged)
             self.checkAuth(true, function () {
-                if (self.logged) {
+                if (ClientLoader.logged) {
                     self.callCBState(2 /* clientLoading */);
                     self.load(callback);
                 } else {
@@ -195,6 +203,7 @@ var ClientLoader = (function () {
             }
         };
     };
+    ClientLoader.logged = false;
     return ClientLoader;
 })();
 
@@ -216,15 +225,17 @@ var UserService = (function (_super) {
         this.client = 'userBH';
     }
     UserService.loadAllRoles = function () {
-        function Create(alias, name) {
-            this.name = name;
-            this.alias = alias;
-            this.role = false;
+        function create(alias, name) {
+            return {
+                name: name,
+                alias: alias,
+                role: false
+            };
         }
 
         var all = [];
-        all.push(new Create('técnico de saúde', 'HEALTHTEC'));
-        all.push(new Create('administrador', 'ADMINISTRATOR'));
+        all.push(create('técnico de saúde', 'HEALTHTEC'));
+        all.push(create('administrador', 'ADMINISTRATOR'));
         return all;
     };
 
@@ -237,16 +248,17 @@ var UserService = (function (_super) {
 
     UserService.prototype.getRoles = function (user) {
         var loader = _super.prototype.load.call(this, function (client) {
-            return client.getRoles({ mail: user.email });
+            return client.getRoles({ email: user.email });
         });
 
         function then(onSuccess, onError, onUnauthorized) {
             return loader.then(function (response) {
                 var allRoles = UserService.loadAllRoles();
                 allRoles.forEach(function (value, index, arr) {
-                    value.role = response.body.roles.indexOf(value.name) != -1;
+                    value.role = response.body.indexOf(value.name) != -1;
                 });
-                onSuccess(allRoles);
+                user.roles = allRoles;
+                onSuccess(null);
             }, onError, onUnauthorized);
         }
 
@@ -263,210 +275,42 @@ var UserService = (function (_super) {
                     if (value.role)
                         rolesSelected.push(value.name);
                 });
-                return client.update({ 'email': user.email, 'roles': user.roles });
+
+                return client.updateRoles({ 'email': user.email, 'roles': rolesSelected });
             }
         });
     };
     return UserService;
 })(ClientBabyHelp);
 
-var Api;
-(function (Api) {
-    (function (ApiClient) {
-        ApiClient[ApiClient["userBH"] = 0] = "userBH";
-    })(Api.ApiClient || (Api.ApiClient = {}));
-    var ApiClient = Api.ApiClient;
-
-    Api.loadClient = function (client, callback) {
-        var version;
-        var name;
-        if (typeof client === 'number') {
-            version = 'v1';
-            name = Api.ApiClient[client];
-        } else if (typeof client === 'object') {
-            version = client.version;
-            name = client.name;
-        }
-
-        function loadClient(name) {
-            gapi.client.load(name, version, callback, Api.root);
-        }
-
-        if (isNull(gapi.client)) {
-            Api.auth(function (state) {
-                loadClient(name);
-            });
-        } else if (!Api.isClientLoaded(name)) {
-            loadClient(name);
-        }
-    };
-
-    function getClientGapi(client) {
-        var apiStr = Api.ApiClient[client];
-        var clientApi = gapi.client[apiStr];
-        return clientApi;
+var ArticlesService = (function (_super) {
+    __extends(ArticlesService, _super);
+    function ArticlesService() {
+        _super.call(this);
+        this.client = 'article';
     }
-
-    (function (User) {
-        var AllRoles;
-        (function (AllRoles) {
-            AllRoles[AllRoles["ADMINISTRATOR"] = 0] = "ADMINISTRATOR";
-            AllRoles[AllRoles["HEALTHTEC"] = 1] = "HEALTHTEC";
-        })(AllRoles || (AllRoles = {}));
-        User.allRolesAlias = {};
-
-        User.allRolesAlias[0 /* ADMINISTRATOR */] = 'administrador';
-        User.allRolesAlias[1 /* HEALTHTEC */] = 'ténico de saúde';
-
-        var allRolesSize = 2;
-
-        var client;
-
-        function loadClient() {
-            if (isNull(client)) {
-                client = getClientGapi(0 /* userBH */);
+    ArticlesService.prototype.create = function (article) {
+        return _super.prototype.load.call(this, function (client) {
+             {
+                return client.create(article);
             }
-        }
-
-        function getAllRoles() {
-            var roles = [];
-            for (var r = 0; r < allRolesSize; r++) {
-                roles.push({ nome: AllRoles[r], alias: User.allRolesAlias[r], role: false });
-            }
-            return roles;
-        }
-        User.getAllRoles = getAllRoles;
-
-        function getRoles(user) {
-            loadClient();
-            var executor = {
-                execute: function (callback) {
-                    client.getRoles({ email: user.email }).execute(function (response) {
-                        var allRoles = getAllRoles();
-                        for (var r in response.body) {
-                            var role = AllRoles[response.body[r]];
-                            allRoles[role].role = true;
-                        }
-                        user.roles = allRoles;
-                        callback();
-                    });
-                }
-            };
-            return executor;
-        }
-        User.getRoles = getRoles;
-
-        function updateRoles(user) {
-            loadClient();
-            var arrRoles = [];
-            for (var r in user.roles) {
-                if (user.roles[r].role)
-                    arrRoles.push(user.roles[r].nome);
-            }
-            return client.updateRoles({ 'email': user.email, 'roles': arrRoles });
-        }
-        User.updateRoles = updateRoles;
-
-        function list() {
-            loadClient();
-            return client.list();
-        }
-        User.list = list;
-    })(Api.User || (Api.User = {}));
-    var User = Api.User;
-})(Api || (Api = {}));
-
-var Api;
-(function (Api) {
-    Api.root;
-
-    (function (ApiState) {
-        ApiState[ApiState["loadingAuth"] = 0] = "loadingAuth";
-        ApiState[ApiState["auth"] = 1] = "auth";
-        ApiState[ApiState["client"] = 2] = "client";
-    })(Api.ApiState || (Api.ApiState = {}));
-    var ApiState = Api.ApiState;
-
-    var Params = (function () {
-        function Params() {
-            this.client = undefined;
-            this.version = 'v1';
-            this.requireAuth = true;
-            this.calbackLoading = function (state) {
-                Log.prt('state:' + ApiState[state]);
-            };
-        }
-        return Params;
-    })();
-    Api.Params = Params;
-
-    Api.logged = true;
-
-    var getAuthConfig = function (immediate) {
-        var config = {
-            client_id: '942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com',
-            scope: ['https://www.googleapis.com/auth/userinfo.email'],
-            immediate: immediate
-        };
-
-        if (!immediate) {
-            config['authuser'] = "";
-        }
-        return config;
-    };
-
-    Api.logout = function () {
-        gapi.auth.setToken(null);
-        Api.logged = false;
-    };
-
-    var checkAuth = function (immediate, authCallback) {
-        gapi.auth.authorize(getAuthConfig(immediate), function (response) {
-            if (response.error) {
-                Api.logged = false;
-            } else {
-                Api.logged = true;
-            }
-            authCallback(1 /* auth */);
         });
     };
-
-    Api.login = function (authCallback) {
-        checkAuth(false, authCallback);
+    ArticlesService.prototype.listMy = function () {
+        return _super.prototype.load.call(this, function (client) {
+            return client.list.my();
+        });
     };
-
-    Api.auth = function (authCallback) {
-        if (isNull(gapi.auth)) {
-            gapi.load('auth', function () {
-                authCallback(0 /* loadingAuth */);
-            });
-        } else
-            checkAuth(true, authCallback);
+    ArticlesService.prototype.update = function (article) {
+        return _super.prototype.load.call(this, function (client) {
+            return client.update(article);
+        });
     };
-
-    Api.load = function (params) {
-        var afterAuth = function () {
-            if (isNull(gapi.client) || isNull(gapi.client[params.client])) {
-                gapi.client.load(params.client, params.version, function () {
-                    params.calbackLoading(2 /* client */);
-                }, Api.root);
-            }
-        };
-
-        if (params.requireAuth)
-            Api.auth(function (authState) {
-                params.calbackLoading(authState);
-                afterAuth();
-            });
-        else
-            afterAuth();
+    ArticlesService.prototype.delete = function (ids) {
+        return _super.prototype.load.call(this, function (client) {
+            return client.delete({ ids: ids });
+        });
     };
-
-    Api.isClientLoaded = function (client) {
-        var strClient = Api.ApiClient[client];
-        return !isNull(gapi.client[strClient]);
-    };
-})(Api || (Api = {}));
-
-Api.root = 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api";
+    return ArticlesService;
+})(ClientBabyHelp);
 //# sourceMappingURL=gapis.js.map

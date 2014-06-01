@@ -65,13 +65,21 @@ enum StateLoading{
 }
 
 class ClientLoader {
+    public static logged:boolean = false;
     public apiUrl;
     public client:string;
     public version:string = 'v1';
     public requireAuth:boolean;
     public cbState:(state:StateLoading)=>void;
-    private logged:boolean;
     private config = {};
+
+    public static logout(){
+        gapi.auth.setToken(null);
+    }
+
+    public login(callback:()=>void){
+        this.checkAuth(false,callback);
+    }
 
     setClientID(clientID:string) {
         this.config['client_id'] = clientID;
@@ -90,13 +98,13 @@ class ClientLoader {
         return this.config;
     }
 
-    private checkAuth(immediate, callback:()=>void) {
+    private checkAuth(immediate:boolean, callback:()=>void) {
         var self = this;
         gapi.auth.authorize(self.getAuthConfig(immediate), (response)=> {
             if (response.error) {
-                self.logged = false
+                ClientLoader.logged = false
             } else {
-                self.logged = true;
+                ClientLoader.logged = true;
             }
             callback();
         });
@@ -115,9 +123,9 @@ class ClientLoader {
                 self.callCBState(StateLoading.authenticating);
                 self.loadApi(callback);
             });
-        } else if (self.requireAuth && !self.logged)
+        } else if (self.requireAuth && !ClientLoader.logged)
             self.checkAuth(true, ()=> {
-                if (self.logged) {
+                if (ClientLoader.logged) {
                     self.callCBState(StateLoading.clientLoading);
                     self.loadApi(callback);
                 }
@@ -172,9 +180,9 @@ class ClientLoader {
                 self.callCBState(StateLoading.authenticating);
                 self.load(callback);
             });
-        } else if (self.requireAuth && !self.logged)
+        } else if (self.requireAuth && !ClientLoader.logged)
             self.checkAuth(true, ()=> {
-                if (self.logged) {
+                if (ClientLoader.logged) {
                     self.callCBState(StateLoading.clientLoading);
                     self.load(callback);
                 }
@@ -224,15 +232,17 @@ class UserService extends ClientBabyHelp {
     }
 
     public static loadAllRoles():Array<Role> {
-        function Create(alias, name) {
-            this.name = name;
-            this.alias = alias;
-            this.role = false;
+        function create(alias, name):Role {
+            return {
+                name: name,
+                alias: alias,
+                role: false
+            };
         }
 
         var all:Array<Role> = [];
-        all.push(new Create('técnico de saúde', 'HEALTHTEC'));
-        all.push(new Create('administrador', 'ADMINISTRATOR'));
+        all.push(create('técnico de saúde', 'HEALTHTEC'));
+        all.push(create('administrador', 'ADMINISTRATOR'));
         return all;
     }
 
@@ -245,16 +255,17 @@ class UserService extends ClientBabyHelp {
 
     getRoles(user):Resolve {
         var loader = super.load((client)=> {
-            return client.getRoles({mail: user.email});
+            return client.getRoles({email: user.email});
         });
 
         function then(onSuccess:(response)=>void, onError, onUnauthorized) {
             return loader.then((response)=> {
                 var allRoles:Array<Role> = UserService.loadAllRoles();
                 allRoles.forEach((value, index, arr)=> {
-                    value.role = response.body.roles.indexOf(value.name) != -1;
-                })
-                onSuccess(allRoles);
+                    value.role = response.body.indexOf(value.name) != -1;
+                });
+                user.roles = allRoles;
+                onSuccess(null);
             }, onError, onUnauthorized);
         }
 
@@ -266,214 +277,56 @@ class UserService extends ClientBabyHelp {
     updateRoles(user:{email:string;roles:Array<Role>}):Resolve {
         return super.load((client)=> {
             {
-                var rolesSelected:Array<string>=[];
-                user.roles.forEach((value,index,arr)=>{
-                    if(value.role)rolesSelected.push(value.name);
+                var rolesSelected:Array<string> = [];
+                user.roles.forEach((value, index, arr)=> {
+                    if (value.role)rolesSelected.push(value.name);
                 });
-                return client.update({'email': user.email, 'roles': user.roles});
+
+                return client.updateRoles({'email': user.email, 'roles': rolesSelected});
             }
         });
     }
 }
 
 
-module Api {
-
-    export enum ApiClient{
-        userBH
-    }
-
-
-    export var loadClient = (client:any, callback:()=>void)=> {
-        var version;
-        var name;
-        if (typeof client === 'number') {//is enum -> ApiClient
-            version = 'v1';
-            name = Api.ApiClient[client];
-        } else if (typeof client === 'object') {
-            version = client.version;
-            name = client.name;
-        }
-
-        function loadClient(name:string) {
-            gapi.client.load(name, version, callback, root);
-        }
-
-        if (isNull(gapi.client)) {
-            Api.auth((state:Api.ApiState)=> {
-                loadClient(name);
-            });
-        } else if (!isClientLoaded(name)) {
-            loadClient(name);
-        }
-    }
-
-    function getClientGapi(client:Api.ApiClient) {
-        var apiStr = Api.ApiClient[client];
-        var clientApi = gapi.client[apiStr];
-        return clientApi
-    }
-
-    export module User {
-
-
-        enum AllRoles{
-            ADMINISTRATOR, HEALTHTEC
-        }
-        export var allRolesAlias:{
-            [index:number]:string
-        } = {};
-
-        allRolesAlias[AllRoles.ADMINISTRATOR] = 'administrador';
-        allRolesAlias[AllRoles.HEALTHTEC] = 'ténico de saúde';
-
-
-        var allRolesSize = 2;
-
-        var client:any;
-
-        function loadClient() {
-            if (isNull(client)) {
-                client = getClientGapi(Api.ApiClient.userBH);
-            }
-        }
-
-        export function getAllRoles():Array<{nome:string;alias:string;role:boolean;}> {
-            var roles = [];
-            for (var r = 0; r < allRolesSize; r++) {
-                roles.push({nome: AllRoles[r], alias: allRolesAlias[r], role: false});
-            }
-            return roles;
-        }
-
-        export function getRoles(user) {
-            loadClient();
-            var executor = {
-                execute: (callback:()=>void)=> {
-                    client.getRoles({email: user.email}).execute((response)=> {
-                        var allRoles = getAllRoles();
-                        for (var r in response.body) {
-                            var role = AllRoles[response.body[r]];
-                            allRoles[role].role = true;
-                        }
-                        user.roles = allRoles;
-                        callback();
-                    });
-                }
-            };
-            return executor;
-        }
-
-        export function updateRoles(user:{email:string;roles:Array<{nome:string;role:boolean}>}):Executor {
-            loadClient();
-            var arrRoles = [];
-            for (var r in user.roles) {
-                if (user.roles[r].role)
-                    arrRoles.push(user.roles[r].nome);
-            }
-            return client.updateRoles({'email': user.email, 'roles': arrRoles});
-        }
-
-        export function list() {
-            loadClient();
-            return client.list();
-        }
-    }
+interface ArticleCreation {
+    body:string;
+    summary:string;
+    tittle:string;
+    photoUrl:string;
 }
 
-module Api {
+interface ArticleUpdate extends ArticleCreation{
+    id:number;
+}
 
-    export interface Executor {
-        execute:(callback:(response:any)=>void)=>void;
+class ArticlesService extends ClientBabyHelp {
+    constructor() {
+        super();
+        this.client = 'article';
     }
 
-
-    export var root;
-
-    export enum ApiState{
-        loadingAuth, auth, client
-    }
-
-    export class Params {
-        client:string = undefined;
-        version:string = 'v1';
-        requireAuth = true;
-        calbackLoading:{(state:ApiState):void} = (state:ApiState)=> {
-            Log.prt('state:' + ApiState[state]);
-        }
-    }
-
-    export var logged = true;
-
-    var getAuthConfig = (immediate:boolean)=> {
-        var config = {
-            client_id: '942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com',
-            scope: ['https://www.googleapis.com/auth/userinfo.email'],
-            immediate: immediate
-        };
-
-        if (!immediate) {
-            config['authuser'] = "";
-        }
-        return config;
-    }
-
-    export var logout = ()=> {
-        gapi.auth.setToken(null);
-        logged = false;
-    }
-
-    var checkAuth = (immediate, authCallback:(authState:ApiState)=>void)=> {
-        gapi.auth.authorize(getAuthConfig(immediate), (response)=> {
-            if (response.error) {
-                Api.logged = false
-            } else {
-                Api.logged = true;
+    create(article:ArticleCreation):Resolve {
+        return super.load((client)=> {
+            {
+                return client.create(article);
             }
-            authCallback(ApiState.auth);
         });
     }
-
-    export var login = (authCallback:(authState:ApiState)=>void)=> {
-        checkAuth(false, authCallback);
+    listMy(){
+        return super.load((client)=>{
+            return client.list.my();
+        });
     }
-
-    export var auth = (authCallback:(authState:ApiState)=>void)=> {
-        if (isNull(gapi.auth)) {
-            gapi.load('auth', ()=> {
-                authCallback(ApiState.loadingAuth);
-            });
-        } else
-            checkAuth(true, authCallback);
+    update(article:ArticleUpdate){
+        return super.load((client)=>{
+            return client.update(article);
+        });
     }
-
-
-    export var load = (params:Params) => {
-        var afterAuth = ()=> {
-            if (isNull(gapi.client) || isNull(gapi.client[params.client])) {
-                gapi.client.load(params.client, params.version, ()=> {
-                    params.calbackLoading(ApiState.client);
-                }, root);
-            }
-        }
-
-        if (params.requireAuth)
-            auth((authState)=> {
-                params.calbackLoading(authState);
-                afterAuth();
-            });
-        else
-            afterAuth();
-
+    delete(ids){
+        return super.load((client)=>{
+            return client.delete({ids:ids});
+        });
     }
-
-    export var isClientLoaded = (client:ApiClient)=> {
-        var strClient = ApiClient[client];
-        return !isNull(gapi.client[strClient]);
-    }
-
 }
-
-Api.root = 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api";
-
 

@@ -23,6 +23,7 @@ public enum Role {
 
     public static Set<String> toStringSet(Collection<Role> roles){
         Set<String> set = new HashSet<String>();
+        if(roles == null)return set;
         for(Role role:roles){
             set.add(role.toString());
         }

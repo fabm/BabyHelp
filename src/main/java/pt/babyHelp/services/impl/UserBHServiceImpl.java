@@ -89,10 +89,16 @@ public class UserBHServiceImpl implements UserBHService {
     @Override
     public Map<String, Object> getRoles(String email) throws EndPointError {
         Map<String, Object> map = new HashMap<String, Object>();
+
+        if(email == null || email.isEmpty()){
+            throw  new EndPointError(Error.EMAIL_REQUIRED);
+        }
+
         UserFromApp userFromApp = UserFromApp.findByEmail(email);
         if (userFromApp == null) {
             map.put("body", new HashSet<String>());
         } else {
+
             map.put("body", Role.toStringSet(userFromApp.getRoles()));
         }
         return map;

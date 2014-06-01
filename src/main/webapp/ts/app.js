@@ -51,11 +51,26 @@ app.directive('modalDialog', function () {
     };
 });
 
+var Articles;
+(function (Articles) {
+    function EditArticleCtrl($scope, gns) {
+    }
+    Articles.EditArticleCtrl = EditArticleCtrl;
+
+    function ListArticles($scope, gns) {
+    }
+    Articles.ListArticles = ListArticles;
+})(Articles || (Articles = {}));
+
 var Users;
 (function (Users) {
     function ListUsersCtrl($scope, gns, userService) {
         $scope.modalShown = false;
-        $scope.template = "view/userslst.html";
+        $scope.loading = 'a carragar dados...';
+
+        function resetLoading() {
+            delete $scope.loading;
+        }
 
         function setErrorMesg(response) {
             gns.growl.setMessage(response.error.message, GrowlBH.typeMessage.error);
@@ -64,10 +79,13 @@ var Users;
         userService.list().then(function (response) {
             $scope.state = 'list';
             $scope.users = response.body;
+            resetLoading();
             $scope.$digest();
         }, function (response) {
+            resetLoading();
             setErrorMesg(response);
         }, function (response) {
+            resetLoading();
             setErrorMesg(response);
             gns.state.goto(RouteState.home);
         });
@@ -87,75 +105,71 @@ var Users;
     }
     Users.ListUsersCtrl = ListUsersCtrl;
 
-    function UpdateUsersCtrl($scope, $stateParams, $q, gns) {
+    function UpdateUsersCtrl($scope, $stateParams, $q, gns, userService) {
         var user = { email: null };
 
-        function loadClient(callback) {
-            if (!Api.isClientLoaded(0 /* userBH */)) {
-                $scope.loading = 'A autenticar...';
-                Api.auth(function (state) {
-                    $scope.loading = 'A carregar cliente...';
-                    $scope.$digest();
-                    Api.loadClient(0 /* userBH */, function () {
-                        $scope.loading = undefined;
-                        callback();
-                    });
-                });
-            } else {
-                callback();
-            }
+        function setErrorMessage(response) {
+            gns.growl.setMessage(response.error.message, GrowlBH.typeMessage.error);
         }
 
-        if ($stateParams.email === '') {
-            $scope.state = 'create';
-            user.roles = Api.User.getAllRoles();
+        $scope.create = $stateParams.email === '';
+        $scope.loading = 'a carregar dados...';
+
+        function resetLoading() {
+            delete $scope.loading;
+        }
+
+        if ($scope.create) {
+            userService.getRoles(user);
         } else {
-            $scope.state = 'update';
             user.email = $stateParams.email;
-            loadClient(function () {
-                Api.User.getRoles(user).execute(function () {
-                    $scope.$digest();
-                });
+            $scope.user = user;
+            userService.getRoles(user).then(function (response) {
+                resetLoading();
+                $scope.$digest();
+            }, function (response) {
+                resetLoading();
+                setErrorMessage(response);
+                gns.growl.showGrowl();
+            }, function (response) {
+                resetLoading();
+                setErrorMessage(response);
+                gns.state.goto(RouteState.home);
             });
         }
-
-        $stateParams.email;
-        var scopeEdit = $scope;
-
-        function updated(response) {
-            if (isNull(response.error)) {
-                gns.setMessage('Utilizador atualizado', GrowlBH.typeMessage.success);
-                gns.goto(RouteState.userList);
-            } else {
-                gns.setMessage(response.error.message, GrowlBH.typeMessage.error);
-                if (response.error.code === 401) {
-                    gns.goto(RouteState.home);
-                } else {
-                    gns.showGrowl();
-                }
-            }
-        }
-
-        scopeEdit.user = user;
 
         $scope.save = function () {
-            loadClient(function () {
-                Api.User.updateRoles(user).execute(updated);
+            userService.updateRoles($scope.user).then(function (response) {
+                gns.growl.setMessage('Utilizador atualizado', GrowlBH.typeMessage.success);
+                gns.state.goto(RouteState.userList);
+            }, function (response) {
+                setErrorMessage(response);
+                gns.growl.showGrowl();
+            }, function (response) {
+                setErrorMessage(response);
+                gns.state.goto(RouteState.userList);
             });
+        };
+        $scope.buttonLabel = function () {
+            if ($scope.create)
+                return 'criar';
+            else
+                return 'atualizar';
+        };
+
+        $scope.cancel = function () {
+            gns.state.goto(RouteState.userList);
         };
     }
     Users.UpdateUsersCtrl = UpdateUsersCtrl;
 })(Users || (Users = {}));
 
-var DefaultViewCtrl = (function () {
-    function DefaultViewCtrl($scope) {
-    }
-    return DefaultViewCtrl;
-})();
-
 function DefaultCtrl($scope, $cookies, $location, gns) {
     if (gns.growl.isMsgShowed())
         gns.growl.showGrowl();
+    $scope.goToUsers = function () {
+        gns.state.goto(RouteState.userList);
+    };
 }
 
 function AuthButtonCtrl($scope, $cookies, gns, $location, $rootScope) {
@@ -163,37 +177,28 @@ function AuthButtonCtrl($scope, $cookies, gns, $location, $rootScope) {
         update(false);
     });
 
-    if (!isNull($cookies.logged)) {
-        Api.logged = $cookies.logged;
-    }
-    var apiAuthCallback = function (state) {
-        $scope.state = Api.logged;
-        $cookies.logged = Api.logged;
-        update(true);
-    };
+    var bh = new ClientBabyHelp();
 
     $scope.authaction = function () {
-        if (Api.logged) {
+        if (ClientLoader.logged) {
             $scope.logout();
         } else {
             $scope.login();
         }
     };
 
-    if (window.location.hostname !== 'localhost') {
-        Api.auth(apiAuthCallback);
-    }
-
     $scope.logout = function () {
-        Api.logout();
-        $scope.state = $cookies.logged = Api.logged;
+        ClientLoader.logout();
         gns.goto(RouteState.home);
     };
     $scope.login = function () {
-        Api.login(apiAuthCallback);
+        bh.login(function () {
+            if (ClientLoader.logged)
+                update(true);
+        });
     };
 
-    $scope.state = Api.logged;
+    $scope.state = ClientLoader.logged;
 
     var update = function (apply) {
         var scope = $scope;

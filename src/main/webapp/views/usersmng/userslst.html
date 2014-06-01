@@ -4,6 +4,7 @@
     <div ng-if="(users.length == 0)">
         Sem utilizadores
     </div>
+    <div ng-if="loading">{{loading}}</div>
     <table ng-if="(users.length > 0)">
         <tr>
             <th>Email</th>
@@ -20,11 +21,10 @@
 
 </div>
 
-<div ng-if="(!isNull(state.error))">
-    {{state.error}}
+<div ng-if="error" class="erro">
+    {{error}}
 </div>
 
-<img ng-if="(state == 'wait')" src="/images/Wait.gif">
 
 <modal-dialog show='modalShown' data="data" width='750px' height='40%'>
     <div>{{data}}</div>

@@ -6,6 +6,68 @@
 
 var app = angular.module("babyhelp", ['ui.router', 'ui.growl', 'ngCookies']);
 
+
+app.directive('fileModel', function ($parse) {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+            var model = $parse(attrs.fileModel);
+            var modelSetter = model.assign;
+
+            element.bind('change', function(){
+                scope.$apply(function(){
+                    modelSetter(scope, element[0].files[0]);
+                });
+            });
+        }
+    };
+});
+
+app.service('fileUpload', function ($http) {
+    this.uploadFileToUrl = function(file, uploadUrl){
+        var fd = new FormData();
+        fd.append('file', file);
+        $http.post(uploadUrl, fd, {
+            transformRequest: angular.identity,
+            headers: {'Content-Type': undefined}
+        })
+            .success(function(){
+            })
+            .error(function(){
+            });
+    }
+
+});
+
+app.controller('myCtrlUpload', ['$scope', 'fileUpload', function($scope, fileUpload){
+
+    $scope.uploadFile = function(){
+        var file = $scope.myFile;
+        console.log('file is ' + JSON.stringify(file));
+        var uploadUrl = "/fileUpload";
+        fileUpload.uploadFileToUrl(file, uploadUrl);
+    };
+
+}]);
+
+class AppEngineUpload {
+    private urlToGetSessionUrl = '/upload'
+    public urlSession;
+
+    processUrlSession() {
+        var self = this;
+        var ajax = new XMLHttpRequest();
+        ajax.open("GET", this.urlToGetSessionUrl, false);
+        ajax.onload = function () {
+            var response = eval('('+ajax.responseText+')');
+            if (!response.error)
+                self.urlSession = response.url;
+        }
+        ajax.send();
+    }
+
+}
+
 class GrowlBH {
     static typeMessage = {
         success: 0, error: 1
@@ -53,13 +115,18 @@ app.factory('gns', ($state, $growl)=> {
         growl: new GrowlBH($growl),
         state: {
             goto: (state:string)=> {
-                this.$state.go(state, null, { reload: true });
+                $state.go(state, null, { reload: true });
             }
         }
     };
 });
 
 
-app.factory('userService',()=>{
+app.factory('userService', ()=> {
     return new UserService();
 });
+
+app.factory('articleService', ()=> {
+    return new ArticlesService();
+});
+
