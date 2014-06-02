@@ -1,9 +1,11 @@
 package pt.babyHelp.bd;
 
-import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
+
+import java.util.Date;
 
 @Entity
 public class UploadToken {
@@ -11,23 +13,32 @@ public class UploadToken {
         ObjectifyService.register(UploadToken.class);
     }
 
-    private Key<UserFromApp> userFromApp;
+    public UploadToken() {
+        this.timestamp = new Date();
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAuthToken() {
+        return authToken;
+    }
+
+    public void setAuthToken(String authToken) {
+        this.authToken = authToken;
+    }
+
+    @Index
+    private String email;
+    @Index
+    private String authToken;
+    @Index
+    private Date timestamp;
     @Id
-    private String token;
-
-    public Key<UserFromApp> getUserFromApp() {
-        return userFromApp;
-    }
-
-    public void setUserFromApp(Key<UserFromApp> userFromApp) {
-        this.userFromApp = userFromApp;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
+    private String id;
 }

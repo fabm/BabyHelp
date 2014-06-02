@@ -46,14 +46,6 @@ public class Upload extends HttpServlet {
         boolean devEnvironment = true;
         //SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
 
-        byte[] r = new byte[256]; //Means 2048 bit
-        Random random = new Random();
-        random.nextBytes(r);
-        String upTokenStr = Base64.encodeBase64String(r);
-        Cookie upToken = new Cookie("upload-token", upTokenStr);
-        if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Development)
-            upToken.setSecure(true);
-        res.addCookie(upToken);
 
         //ver se é possivel http-only no cookie
 

@@ -111,7 +111,9 @@ app.service('fUpload', function ($http) {
 
         $http.post(url, fd, {
             transformRequest: angular.identity,
-            headers: {'Content-Type': undefined}
+            headers: {
+                'Content-Type': undefined
+            }
         })
         .success(function(data){
             console.log("imagekey:");
@@ -159,4 +161,6 @@ testes.login = function(){
     delete cfg.authuser;
     gapi.auth.authorize(cfg,Log.cbr);
 }
+
+
 
