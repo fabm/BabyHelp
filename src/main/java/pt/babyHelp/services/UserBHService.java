@@ -19,6 +19,8 @@ public interface UserBHService extends UserAcessible {
     Map<String, Object> getRoles(String email)
             throws EndPointError;
 
+    Map<String,Object> uploadToken(String token);
+
 
     enum Error implements ErrorReturn {
         PERSISTENCE(1, "Problema ao tentar guardar %s"),

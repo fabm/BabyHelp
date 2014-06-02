@@ -1,1 +1,6 @@
 <a ng-click="goToUsers()" href="#">users link</a>
+<div ng-controller="InnerController">
+    <input type="file" file-model="upFile"/>
+    <button ng-click="send()">send</button>
+    <img ng-if="imagekey" ng-srcset="/photo/{{imagekey}}" style="width:100px;height:100px;"/>
+</div>

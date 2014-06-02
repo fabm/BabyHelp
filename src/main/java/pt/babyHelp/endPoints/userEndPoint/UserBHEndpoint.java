@@ -42,11 +42,11 @@ public class UserBHEndpoint {
     public Map<String, Object> createSession(HttpServletRequest req, User user) throws UnauthorizedException {
         try {
             setUserContext(user);
-            req.getSession().setAttribute("currentUser",userContext.getUserFromApp());
+            req.getSession().setAttribute("currentUser", userContext.getUserFromApp());
             Authorization.check(userContext, "criação de um token para áreas reservadas");
             this.userBHService.setUserContext(userContext);
-            Map<String,Object> map = new HashMap<String, Object>();
-            map.put("session","created");
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("session", "created");
             return map;
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
@@ -91,5 +91,18 @@ public class UserBHEndpoint {
             return endPointError.getMap();
         }
     }
+
+    @ApiMethod(name = "upload.token", path = "uptoken", httpMethod = HttpMethod.GET)
+    public Map<String, Object> createUploadToken(User user, @Named("token") String token) throws UnauthorizedException {
+        try {
+            setUserContext(user);
+            Authorization.check(userContext, "criação de um token para fazer upload", Role.ADMINISTRATOR);
+            this.userBHService.setUserContext(userContext);
+            return this.userBHService.uploadToken(token);
+        } catch (EndPointError endPointError) {
+            return endPointError.getMap();
+        }
+    }
+
 
 }

@@ -100,3 +100,63 @@ testes.upload = function () {
     appengineUplad.processUrlSession();
     return appengineUplad;
 }
+
+app.service('fUpload', function ($http) {
+    var self = this;
+    var upEvent;
+
+    function afterUrl(file,url){
+        var fd = new FormData();
+        fd.append('file', file);
+
+        $http.post(url, fd, {
+            transformRequest: angular.identity,
+            headers: {'Content-Type': undefined}
+        })
+        .success(function(data){
+            console.log("imagekey:");
+            console.log(data);
+            upEvent(data.imagekey);
+        })
+        .error(function(data){
+            console.log("erro imagekey:");
+            console.log(data);
+        });
+    }
+
+    this.up = function(file, updateEvent){
+        upEvent = updateEvent;
+        console.log("serviço de upload");
+
+        $http.get('/upload')
+        .success(function(data){
+            console.log("sessão url:");
+            console.log(data);
+            afterUrl(file,data.url);
+        })
+        .error(function(data){
+            console.log("sessão url erro:");
+            console.log(data);
+        });
+    }
+});
+
+
+function InnerController($scope,$http,fUpload) {
+    function updateImage(imagekey){
+        $scope.imagekey = imagekey;
+    }
+
+    $scope.send = function(){
+        fUpload.up($scope.upFile, updateImage);
+    }
+}
+testes.login = function(){
+    var ch = new ClientBabyHelp();
+    cfg = ch.getAuthConfig(false);
+    cfg.approval_prompt = 'force';
+    //sem authuser portanto tirar no getconfig
+    delete cfg.authuser;
+    gapi.auth.authorize(cfg,Log.cbr);
+}
+

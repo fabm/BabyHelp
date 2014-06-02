@@ -9,7 +9,6 @@ package pt.babyHelp.servlets; /**
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
-import pt.babyHelp.bd.UserFromApp;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
@@ -25,16 +24,9 @@ public class Serve extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws IOException {
-        Object attr = req.getSession().getAttribute("currentUser");
-        if (attr != null) {
-            UserFromApp userFromApp = (UserFromApp) attr;
-            res.getWriter().println(userFromApp.getEmail());
-        } else {
-            res.getWriter().println("nulo");
-        }
 
-        for (Object par : UrlParameters.getParameters(req))
-            res.getWriter().println(par);
+
+        doPhoto(req,res);
     }
 
     private Cookie getCoockie(HttpServletRequest req, String name) {
@@ -61,8 +53,7 @@ public class Serve extends HttpServlet {
 
     public void doPhoto(HttpServletRequest req, HttpServletResponse res)
             throws IOException {
-        String par = req.getParameter("blob-key");
-        BlobKey blobKey = new BlobKey(req.getParameter("blob-key"));
+        BlobKey blobKey = new BlobKey(UrlParameters.getParameters(req).get(0));
         blobstoreService.serve(blobKey, res);
     }
 }

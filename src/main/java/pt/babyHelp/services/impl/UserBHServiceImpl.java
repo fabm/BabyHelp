@@ -105,6 +105,11 @@ public class UserBHServiceImpl implements UserBHService {
     }
 
     @Override
+    public Map<String, Object> uploadToken(String token) {
+        return null;
+    }
+
+    @Override
     public void setUserContext(UserContext userContext) throws EndPointError {
         this.userContext = userContext;
     }

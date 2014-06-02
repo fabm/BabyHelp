@@ -8,13 +8,6 @@
     <servlet>
         <servlet-name>Services</servlet-name>
         <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
-        <init-param>
-            <param-name>services</param-name>
-            <param-value>
-                pt.babyHelp.endPoints.nextHelthTecEndPoint.NextHelthTecEndPoint,
-                pt.babyHelp.endPoints.userEndPoint.UserBHEndpoint
-            </param-value>
-        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>Services</servlet-name>
@@ -31,15 +24,16 @@
         <url-pattern>/photo/*</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>photoRequestUpload</servlet-name>
+        <servlet-class>pt.babyHelp.servlets.Upload</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>photoRequestUpload</servlet-name>
         <url-pattern>/upload</url-pattern>
     </servlet-mapping>
 
-    <servlet>
-        <servlet-name>photoRequestUpload</servlet-name>
-        <servlet-class>pt.babyHelp.servlets.Upload</servlet-class>
-    </servlet>
 
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
