@@ -104,16 +104,28 @@ testes.upload = function () {
 app.service('fUpload', function ($http) {
     var self = this;
     var upEvent;
+    var data;
 
-    function afterUrl(file,url){
+
+
+    this.up = function(file, updateEvent, url, email){
+        upEvent = updateEvent;
+        console.log("serviço de upload");
+
         var fd = new FormData();
         fd.append('file', file);
+        fd.append('email',email);
+        token = gapi.auth.getToken();
+        var headers = {'Content-Type': undefined};
+
+        if(!isNull(token)){
+            token = token.token_type+" "+token.access_token;
+            headers.Authorization = token;
+        }
 
         $http.post(url, fd, {
             transformRequest: angular.identity,
-            headers: {
-                'Content-Type': undefined
-            }
+            headers: headers
         })
         .success(function(data){
             console.log("imagekey:");
@@ -124,43 +136,47 @@ app.service('fUpload', function ($http) {
             console.log("erro imagekey:");
             console.log(data);
         });
-    }
-
-    this.up = function(file, updateEvent){
-        upEvent = updateEvent;
-        console.log("serviço de upload");
-
-        $http.get('/upload')
-        .success(function(data){
-            console.log("sessão url:");
-            console.log(data);
-            afterUrl(file,data.url);
-        })
-        .error(function(data){
-            console.log("sessão url erro:");
-            console.log(data);
-        });
-    }
+     }
 });
 
+testes.loadClientPhotoToken = function(callback){
+        clientBabyHelp = new ClientBabyHelp();
+        clientBabyHelp.client = 'photoToken';
+        clientBabyHelp.loadApi(function(client){
+            callback(client);
+        });
+}
 
 function InnerController($scope,$http,fUpload) {
+    var clientUrlTokenService = null;
+
     function updateImage(imagekey){
         $scope.imagekey = imagekey;
     }
 
+    function loadResponse(response){
+        fUpload.up($scope.upFile, updateImage, response.url, response.email);
+    }
+
     $scope.send = function(){
-        fUpload.up($scope.upFile, updateImage);
+        if(clientUrlTokenService == null)
+            testes.loadClientPhotoToken(function(client){
+                clientUrlTokenService = client;
+                clientUrlTokenService.getuploadurl().execute(loadResponse);
+            });
+        else
+            clientUrlTokenService.getuploadurl().execute(loadResponse);
     }
 }
 testes.login = function(){
     var ch = new ClientBabyHelp();
     cfg = ch.getAuthConfig(false);
     cfg.approval_prompt = 'force';
-    //sem authuser portanto tirar no getconfig
     delete cfg.authuser;
     gapi.auth.authorize(cfg,Log.cbr);
 }
+
+
 
 
 

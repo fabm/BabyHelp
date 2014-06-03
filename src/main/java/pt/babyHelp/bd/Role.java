@@ -3,7 +3,7 @@ package pt.babyHelp.bd;
 import java.util.*;
 
 public enum Role {
-    ADMINISTRATOR, HEALTHTEC;
+    ADMINISTRATOR, HEALTHTEC, PARENT;
 
     public static Role convert(String string) throws ConvertException {
         try {
