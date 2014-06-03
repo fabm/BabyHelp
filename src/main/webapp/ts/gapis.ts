@@ -93,7 +93,7 @@ class ClientLoader {
         this.config['immediate'] = immediate;
 
         if (!immediate) {
-            this.config['authuser'] = "";
+            this.config['approval_prompt'] = 'force';
         }
         return this.config;
     }

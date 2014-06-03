@@ -10,12 +10,12 @@ var app = angular.module("babyhelp", ['ui.router', 'ui.growl', 'ngCookies']);
 app.directive('fileModel', function ($parse) {
     return {
         restrict: 'A',
-        link: function(scope, element, attrs) {
+        link: function (scope, element, attrs) {
             var model = $parse(attrs.fileModel);
             var modelSetter = model.assign;
 
-            element.bind('change', function(){
-                scope.$apply(function(){
+            element.bind('change', function () {
+                scope.$apply(function () {
                     modelSetter(scope, element[0].files[0]);
                 });
             });
@@ -24,24 +24,24 @@ app.directive('fileModel', function ($parse) {
 });
 
 app.service('fileUpload', function ($http) {
-    this.uploadFileToUrl = function(file, uploadUrl){
+    this.uploadFileToUrl = function (file, uploadUrl) {
         var fd = new FormData();
         fd.append('file', file);
         $http.post(uploadUrl, fd, {
             transformRequest: angular.identity,
             headers: {'Content-Type': undefined}
         })
-            .success(function(){
+            .success(function () {
             })
-            .error(function(){
+            .error(function () {
             });
     }
 
 });
 
-app.controller('myCtrlUpload', ['$scope', 'fileUpload', function($scope, fileUpload){
+app.controller('myCtrlUpload', ['$scope', 'fileUpload', function ($scope, fileUpload) {
 
-    $scope.uploadFile = function(){
+    $scope.uploadFile = function () {
         var file = $scope.myFile;
         console.log('file is ' + JSON.stringify(file));
         var uploadUrl = "/fileUpload";
@@ -59,7 +59,7 @@ class AppEngineUpload {
         var ajax = new XMLHttpRequest();
         ajax.open("GET", this.urlToGetSessionUrl, false);
         ajax.onload = function () {
-            var response = eval('('+ajax.responseText+')');
+            var response = eval('(' + ajax.responseText + ')');
             if (!response.error)
                 self.urlSession = response.url;
         }
@@ -120,6 +120,53 @@ app.factory('gns', ($state, $growl)=> {
         }
     };
 });
+
+class FUploadArgs {
+    public options:{
+        file:string;
+        url:string;
+        email:string
+    } = {
+        file:null,
+        url:null,
+        email:null
+    };
+    public events:{
+        success:(response)=>void;
+        error:(response)=>void;
+    } = {
+        success: Log.cbr,
+        error: Log.cbr
+    };
+}
+
+app.service('fUploadAppEngine', function ($http) {
+        this.up = function (args:FUploadArgs) {
+
+            var fd = new FormData();
+            fd.append('file', args.options.file);
+            fd.append('email', args.options.email);
+            var token = gapi.auth.getToken();
+            var headers = {'Content-Type': undefined};
+
+            if (!isNull(token)) {
+                headers['Authorization'] = token.access_token;
+            }else{
+                args.events.error('É obbrigatório estar autenticado com o cliente Google API javascript')
+            }
+
+            $http.post(args.options.url, fd, {
+                transformRequest: angular.identity,
+                headers: headers
+            })
+                .success(function (data) {
+                    args.events.success(data.imagekey);
+                })
+                .error(args.events.error);
+        }
+    }
+);
+
 
 
 app.factory('userService', ()=> {

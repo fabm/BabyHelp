@@ -74,7 +74,7 @@ var ClientLoader = (function () {
             _this.config['immediate'] = immediate;
 
             if (!immediate) {
-                _this.config['authuser'] = "";
+                _this.config['approval_prompt'] = 'force';
             }
             return _this.config;
         };

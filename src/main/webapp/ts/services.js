@@ -111,6 +111,44 @@ app.factory('gns', function ($state, $growl) {
     };
 });
 
+var FUploadArgs = (function () {
+    function FUploadArgs() {
+        this.options = {
+            file: null,
+            url: null,
+            email: null
+        };
+        this.events = {
+            success: Log.cbr,
+            error: Log.cbr
+        };
+    }
+    return FUploadArgs;
+})();
+
+app.service('fUploadAppEngine', function ($http) {
+    this.up = function (args) {
+        var fd = new FormData();
+        fd.append('file', args.options.file);
+        fd.append('email', args.options.email);
+        var token = gapi.auth.getToken();
+        var headers = { 'Content-Type': undefined };
+
+        if (!isNull(token)) {
+            headers['Authorization'] = token.access_token;
+        } else {
+            args.events.error('É obbrigatório estar autenticado com o cliente Google API javascript');
+        }
+
+        $http.post(args.options.url, fd, {
+            transformRequest: angular.identity,
+            headers: headers
+        }).success(function (data) {
+            args.events.success(data.imagekey);
+        }).error(args.events.error);
+    };
+});
+
 app.factory('userService', function () {
     return new UserService();
 });

@@ -156,7 +156,8 @@ module Users {
         }
 
         if ($scope.create) {
-            userService.getRoles(user);
+            user.roles = UserService.loadAllRoles();
+            resetLoading();
         } else {
             user.email = $stateParams.email;
             $scope.user = user;
@@ -176,6 +177,7 @@ module Users {
             );
         }
 
+        $scope.user = user;
         $scope.save = () => {
             userService.updateRoles($scope.user).then(
                 (response)=> {

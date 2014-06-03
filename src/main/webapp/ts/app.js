@@ -120,7 +120,8 @@ var Users;
         }
 
         if ($scope.create) {
-            userService.getRoles(user);
+            user.roles = UserService.loadAllRoles();
+            resetLoading();
         } else {
             user.email = $stateParams.email;
             $scope.user = user;
@@ -138,6 +139,7 @@ var Users;
             });
         }
 
+        $scope.user = user;
         $scope.save = function () {
             userService.updateRoles($scope.user).then(function (response) {
                 gns.growl.setMessage('Utilizador atualizado', GrowlBH.typeMessage.success);
