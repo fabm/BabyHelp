@@ -3,8 +3,10 @@
 /// <reference path="ext/angular/angular-ui-router.d.ts" />
 /// <reference path="ext/angular/angular-resource.d.ts" />
 /// <reference path="services.ts" />
+/// <reference path="testes.ts" />
 
 var RouteState = {
+    articleEdit: 'article-edit',
     userList: 'users-list',
     usersEdit: 'users-edit',
     home: 'default'
@@ -21,6 +23,10 @@ app.config(function ($stateProvider, $urlRouterProvider) {
         url: "/users/edit/:email",
         templateUrl: "views/usersmng/usersup.html",
         controller: Users.UpdateUsersCtrl
+    }).state(RouteState.articleEdit, {
+        url: "/article/edit/:id",
+        templateUrl: "views/artmng/articleedit.html",
+        controller: Articles.EditArticleCtrl
     }).state(RouteState.home, {
         url: "/",
         templateUrl: "views/default.html",
@@ -53,7 +59,40 @@ app.directive('modalDialog', function () {
 
 var Articles;
 (function (Articles) {
-    function EditArticleCtrl($scope, gns) {
+    function EditArticleCtrl($scope, $stateParams, gns, articleService) {
+        $scope.create = $stateParams.id === '';
+
+        if ($scope.create) {
+            $scope.article = {
+                body: '',
+                photoUrl: '',
+                title: '',
+                summary: ''
+            };
+        } else {
+        }
+
+        $scope.save = function () {
+            if ($scope.create) {
+                articleService.create($scope.article).then(function (success) {
+                    console.log('success:');
+                    console.log(success);
+                }, function (error) {
+                    console.log('error:');
+                    console.log(error);
+                }, function (unauthorized) {
+                    console.log('unauthorized:');
+                    console.log(unauthorized);
+                });
+            }
+        };
+
+        $scope.buttonLabel = function () {
+            if ($scope.create)
+                return 'criar';
+            else
+                return 'atualizar';
+        };
     }
     Articles.EditArticleCtrl = EditArticleCtrl;
 

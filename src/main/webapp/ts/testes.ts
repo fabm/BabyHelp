@@ -1,4 +1,5 @@
 /// <reference path="def/testes.d.ts" />
+
 var cbh = new ClientBabyHelp();
 cbh.client = ("userBH");
 var resToken;
@@ -10,63 +11,60 @@ cbh.loadApi(function () {
     });
 });
 
+
+
 var testes = {
     success: null,
-    error: function (x) {
+    error: (x)=>{},
+    unauthorized: (x)=>{},
+    users:{
+        list:()=>{}
     },
-    unauthorized: function (x) {
-    },
-    users: {
-        list: function () {
-        }
-    },
-    articles: {
-        getService: function () {
+    articles:{
+        getService:()=>{
             return null;
         },
-        create: function () {
-        },
-        alterLast: function (order) {
-        },
-        list: function () {
-        },
-        delete: function (orders) {
-        }
+        create:()=>{},
+        alterLast:(order:number)=>{},
+        list:()=>{},
+        delete:(orders)=>{}
     },
-    upload: function () {
-    },
-    loadClientPhotoToken: function (x) {
-    }
+    upload:()=>{},
+    loadClientPhotoToken:(x)=>{}
 };
 
 function resolveThen(resolve) {
-    resolve.then(function (success) {
-        console.log('success:');
-        console.log(success);
-        testes.success = success;
-    }, function (error) {
-        console.log('error:');
-        console.log(error);
-        testes.error = error;
-    }, function (unauthorized) {
-        console.log('unauthorized:');
-        console.log(unauthorized);
-        testes.unauthorized;
-    });
+    resolve.then(
+        function (success) {
+            console.log('success:');
+            console.log(success);
+            testes.success = success;
+        }, function (error) {
+            console.log('error:');
+            console.log(error);
+            testes.error = error;
+        },
+        function (unauthorized) {
+            console.log('unauthorized:');
+            console.log(unauthorized);
+            testes.unauthorized;
+        }
+    );
 }
 
 function injector(service) {
     return angular.element(document.body).injector().get(service);
 }
 
+
 testes.users.list = function loadTestUserService() {
     var userService = injector('userService');
     resolveThen(userService.list());
-};
+}
 
 testes.articles.getService = function () {
     return injector('articleService');
-};
+}
 
 testes.articles.create = function () {
     var articleService = testes.articles.getService();
@@ -79,7 +77,7 @@ testes.articles.create = function () {
     };
 
     resolveThen(articleService.create(newArticle));
-};
+}
 testes.articles.alterLast = function (order) {
     var articleService = testes.articles.getService();
 
@@ -95,14 +93,14 @@ testes.articles.alterLast = function (order) {
     };
 
     resolveThen(articleService.update(updateArticle));
-};
+}
 
 testes.articles.list = function () {
     var articleService = testes.articles.getService();
     resolveThen(articleService.listMy());
-};
+}
 
-testes.articles.delete = function (orders) {
+testes.articles.delete = function (orders:Array<number>) {
     var ids = [];
     orders.forEach(function (value, index, arr) {
         ids.push(testes.success.body[value].id);
@@ -110,13 +108,14 @@ testes.articles.delete = function (orders) {
     console.log('ids:');
     console.log(ids);
     resolveThen(testes.articles.getService().delete(ids));
-};
+}
 
 testes.upload = function () {
     var appengineUplad = new AppEngineUpload();
     appengineUplad.processUrlSession();
     return appengineUplad;
-};
+}
+
 
 testes.loadClientPhotoToken = function (callback) {
     var clientBabyHelp = new ClientBabyHelp();
@@ -124,18 +123,18 @@ testes.loadClientPhotoToken = function (callback) {
     clientBabyHelp.loadApi(function (client) {
         callback(client);
     });
-};
+}
 
 function InnerController($scope, $http, fUploadAppEngine) {
     var clientUrlTokenService = null;
 
     var fargs = new FUploadArgs();
-    fargs.events.error = function (error) {
+    fargs.events.error = function(error){
         alert(error);
-    };
-    fargs.events.success = function (success) {
+    }
+    fargs.events.success = function(success){
         $scope.imagekey = success;
-    };
+    }
 
     function loadResponse(response) {
         fargs.options.email = response.email;
@@ -152,10 +151,15 @@ function InnerController($scope, $http, fUploadAppEngine) {
             });
         else
             clientUrlTokenService.getuploadurl().execute(loadResponse);
-    };
-    // fim do teste de upload
+    }
+
+        // fim do teste de upload
+
 }
+
+
+
+
 //C:\Users\User\Documents\BabyHelp\src\main\webapp\ts\testes.ts(16,5): error TS2134: Subsequent variable declarations must have the same type.  Variable 'testes' must be of type
 //                  '{ success: any; error: (error: any) => void;   unauthorized: (unauthorized: any) => void; users: { list: () => void; }; articles: { create: () => void; getService: () => any; alterLast: (order: number) => void; list: () => void; delete: (orders: any) => void; }; upload: () => void; loadClientPhotoToken: (callback: any) => void; }',
 //but here has type '{ success: any; error: (x: any) => void;       unauthorized: (x: any) => void; users:            { list: () => void; }; articles: { getService: () => any; create: () => void; alterLast: (order: number) => void; list: () => void; delete: (orders: any) => void; }; upload: () => void; loadClientPhotoToken: () => void; }'.
-//# sourceMappingURL=testes.js.map

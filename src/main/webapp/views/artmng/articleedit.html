@@ -1,10 +1,20 @@
 <h2 if="create">Criação de um novo artigo</h2>
 <h2 if="!create">Edição do artigo</h2>
 <div>
-    <span class="label" style="width: 100px;">Titulo</span>
-    <input type="text" ng-model="article.email"/>
-    <span class="label" style="width: 100px;">Conteúdo</span>
-    <textarea ng-model="article.content"></textarea>
-    <button ng-click="save()">{{buttonLabel()}}</button>
+    <div>
+        <span class="label" style="width: 100px;">Titulo</span>
+        <input type="text" ng-model="article.title"/>
+    </div>
+    <div>
+        <span class="label" style="width: 100px;">Conteúdo</span>
+        <textarea ng-model="article.body"></textarea>
+    </div>
+    <div>
+        <span class="label" style="width: 100px;">Resumo</span>
+        <input type="text" ng-model="article.summary"/>
+    </div>
 
+    <p>Falta por o fileupload aqui</p>
+
+    <button ng-click="save()">{{buttonLabel()}}</button>
 </div>

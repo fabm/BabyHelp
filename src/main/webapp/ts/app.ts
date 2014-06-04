@@ -3,6 +3,7 @@
 /// <reference path="ext/angular/angular-ui-router.d.ts" />
 /// <reference path="ext/angular/angular-resource.d.ts" />
 /// <reference path="services.ts" />
+/// <reference path="testes.ts" />
 
 interface ScopeUserList extends ng.IScope {
     showwait:boolean
@@ -34,6 +35,7 @@ interface GrowlAndState {
 }
 
 var RouteState = {
+    articleEdit: 'article-edit',
     userList: 'users-list',
     usersEdit: 'users-edit',
     home: 'default'
@@ -53,6 +55,10 @@ app.config(
                 url: "/users/edit/:email",
                 templateUrl: "views/usersmng/usersup.html",
                 controller: Users.UpdateUsersCtrl
+            }).state(RouteState.articleEdit, {
+                    url: "/article/edit/:id",
+                    templateUrl: "views/artmng/articleedit.html",
+                    controller: Articles.EditArticleCtrl
             })
             .state(RouteState.home, {
                 url: "/",
@@ -87,7 +93,40 @@ app.directive('modalDialog', function () {
 
 
 module Articles {
-    export function EditArticleCtrl($scope, gns:GrowlAndState) {
+    export function EditArticleCtrl($scope, $stateParams, gns:GrowlAndState, articleService) {
+
+        $scope.create = $stateParams.id === '';
+
+        if($scope.create){
+            $scope.article={
+                body:'',
+                photoUrl:'',
+                title:'',
+                summary:''
+            }
+        }else{
+
+        }
+
+        $scope.save = function(){
+            if($scope.create){
+                articleService.create($scope.article).then((success)=>{
+                    console.log('success:');
+                    console.log(success);
+                },(error)=>{
+                    console.log('error:');
+                    console.log(error);
+                },(unauthorized)=>{
+                    console.log('unauthorized:');
+                    console.log(unauthorized);
+                });
+            }
+        }
+
+        $scope.buttonLabel = function(){
+            if ($scope.create) return 'criar';
+            else return 'atualizar';
+        }
     }
 
     export function ListArticles($scope, gns:GrowlAndState) {
@@ -265,5 +304,4 @@ function AuthButtonCtrl($scope:AuthButtonCtrlScope, $cookies, gns, $location, $r
 
 
 app.controller(['AuthButtonCtrl', AuthButtonCtrl]);
-
 

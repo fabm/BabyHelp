@@ -329,5 +329,3 @@ class ArticlesService extends ClientBabyHelp {
         });
     }
 }
-
-
