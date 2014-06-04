@@ -43,7 +43,7 @@ public class ArticleServiceImpl implements ArticleService {
         }
 
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("state", "created");
+        map.put("message", "Artigo atualizado com sucesso");
         return map;
     }
 
@@ -96,6 +96,8 @@ public class ArticleServiceImpl implements ArticleService {
         return map;
     }
 
+
+
     @Override
     public Map<String, Object> getMyArticles() {
 
@@ -115,6 +117,18 @@ public class ArticleServiceImpl implements ArticleService {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("body", list);
         return map;
+    }
+
+    @Override
+    public Map<String, Object> get(long id) {
+        Article article = BD.ofy().load().type(Article.class).id(id).now();
+        HashMap<String, Object> articleMap = new HashMap<String, Object>();
+        articleMap.put("id", article.getId());
+        articleMap.put("body", article.getBody());
+        articleMap.put("title", article.getTitle());
+        articleMap.put("photo", article.getPhotoUrl());
+        articleMap.put("author", article.getAuthor().getName());
+        return articleMap;
     }
 
 

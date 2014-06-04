@@ -14,7 +14,9 @@
         <input type="text" ng-model="article.summary"/>
     </div>
 
-    <p>Falta por o fileupload aqui</p>
+    <div ng-if="!create">
+        <input type="file" file-model="file"/>
+    </div>
 
     <button ng-click="save()">{{buttonLabel()}}</button>
 </div>

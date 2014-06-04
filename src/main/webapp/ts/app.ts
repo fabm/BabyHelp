@@ -56,9 +56,9 @@ app.config(
                 templateUrl: "views/usersmng/usersup.html",
                 controller: Users.UpdateUsersCtrl
             }).state(RouteState.articleEdit, {
-                    url: "/article/edit/:id",
-                    templateUrl: "views/artmng/articleedit.html",
-                    controller: Articles.EditArticleCtrl
+                url: "/article/edit/:id",
+                templateUrl: "views/artmng/articleedit.html",
+                controller: Articles.EditArticleCtrl
             })
             .state(RouteState.home, {
                 url: "/",
@@ -93,37 +93,62 @@ app.directive('modalDialog', function () {
 
 
 module Articles {
-    export function EditArticleCtrl($scope, $stateParams, gns:GrowlAndState, articleService) {
+    var id:number = null;
 
-        $scope.create = $stateParams.id === '';
+    export function EditArticleCtrl($scope, $stateParams, gns:GrowlAndState, articleService:ArticlesService) {
 
-        if($scope.create){
-            $scope.article={
-                body:'',
-                photoUrl:'',
-                title:'',
-                summary:''
-            }
-        }else{
+        if ($stateParams.id === '')
+            id = $stateParams.id;
+        $scope.create = id != null || $stateParams.id === '';
 
+        function setErrorMessage(message) {
+            gns.growl.setMessage(message, GrowlBH.typeMessage.error);
         }
 
-        $scope.save = function(){
-            if($scope.create){
-                articleService.create($scope.article).then((success)=>{
-                    console.log('success:');
-                    console.log(success);
-                },(error)=>{
-                    console.log('error:');
-                    console.log(error);
-                },(unauthorized)=>{
-                    console.log('unauthorized:');
-                    console.log(unauthorized);
+        function loadId(callback:(success)=>void) {
+            articleService.get(id).then(callback
+                , (error)=> {
+                    setErrorMessage(error.message);
+                    gns.growl.showGrowl();
+                }, (unauthorized)=> {
+                    setErrorMessage(unauthorized.message);
+                });
+        }
+
+        if ($scope.create) {
+            $scope.article = {
+                body: '',
+                photoUrl: '',
+                title: '',
+                summary: ''
+            }
+        } else {
+            loadId((success)=> {
+                $scope.article = success;
+            });
+        }
+
+
+        $scope.save = function () {
+            if ($scope.create) {
+                articleService.create($scope.article).then((success)=> {
+                    gns.growl.setMessage(success.message, GrowlBH.typeMessage.success);
+                    gns.state.goto(RouteState.home);
+                }, (error)=> {
+                    setErrorMessage(error.message);
+                    gns.growl.showGrowl();
+                }, (unauthorized)=> {
+                    setErrorMessage(unauthorized.message);
+                });
+            } else {
+                loadId((success)=> {
+                    $scope.article = success;
+                    id = null;
                 });
             }
         }
 
-        $scope.buttonLabel = function(){
+        $scope.buttonLabel = function () {
             if ($scope.create) return 'criar';
             else return 'atualizar';
         }
@@ -285,9 +310,9 @@ function AuthButtonCtrl($scope:AuthButtonCtrlScope, $cookies, gns, $location, $r
         gns.goto(RouteState.home);
     }
     $scope.login = () => {
-        bh.login(()=>{
-            if(ClientLoader.logged)
-            update(true);
+        bh.login(()=> {
+            if (ClientLoader.logged)
+                update(true);
         });
     }
 

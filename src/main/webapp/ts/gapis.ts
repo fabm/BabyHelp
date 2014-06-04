@@ -73,12 +73,12 @@ class ClientLoader {
     public cbState:(state:StateLoading)=>void;
     private config = {};
 
-    public static logout(){
+    public static logout() {
         gapi.auth.setToken(null);
     }
 
-    public login(callback:()=>void){
-        this.checkAuth(false,callback);
+    public login(callback:()=>void) {
+        this.checkAuth(false, callback);
     }
 
     setClientID(clientID:string) {
@@ -296,7 +296,7 @@ interface ArticleCreation {
     photoUrl:string;
 }
 
-interface ArticleUpdate extends ArticleCreation{
+interface ArticleUpdate extends ArticleCreation {
     id:number;
 }
 
@@ -306,26 +306,33 @@ class ArticlesService extends ClientBabyHelp {
         this.client = 'article';
     }
 
-    create(article:ArticleCreation):Resolve {
+    get(id) {
         return super.load((client)=> {
-            {
-                return client.create(article);
-            }
+            return client.get(id);
         });
     }
-    listMy(){
-        return super.load((client)=>{
+
+    create(article:ArticleCreation):Resolve {
+        return super.load((client)=> {
+            return client.create(article);
+        });
+    }
+
+    listMy() {
+        return super.load((client)=> {
             return client.list.my();
         });
     }
-    update(article:ArticleUpdate){
-        return super.load((client)=>{
+
+    update(article:ArticleUpdate) {
+        return super.load((client)=> {
             return client.update(article);
         });
     }
-    delete(ids){
-        return super.load((client)=>{
-            return client.delete({ids:ids});
+
+    delete(ids) {
+        return super.load((client)=> {
+            return client.delete({ids: ids});
         });
     }
 }

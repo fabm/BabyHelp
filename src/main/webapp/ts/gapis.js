@@ -289,23 +289,30 @@ var ArticlesService = (function (_super) {
         _super.call(this);
         this.client = 'article';
     }
-    ArticlesService.prototype.create = function (article) {
+    ArticlesService.prototype.get = function (id) {
         return _super.prototype.load.call(this, function (client) {
-             {
-                return client.create(article);
-            }
+            return client.get(id);
         });
     };
+
+    ArticlesService.prototype.create = function (article) {
+        return _super.prototype.load.call(this, function (client) {
+            return client.create(article);
+        });
+    };
+
     ArticlesService.prototype.listMy = function () {
         return _super.prototype.load.call(this, function (client) {
             return client.list.my();
         });
     };
+
     ArticlesService.prototype.update = function (article) {
         return _super.prototype.load.call(this, function (client) {
             return client.update(article);
         });
     };
+
     ArticlesService.prototype.delete = function (ids) {
         return _super.prototype.load.call(this, function (client) {
             return client.delete({ ids: ids });

@@ -19,6 +19,8 @@ public interface ArticleService extends UserAcessible {
 
     Map<String,Object>getMyArticles();
 
+    Map<String,Object>get(long id);
+
     enum Error implements ErrorReturn {
         WRONG_ROLE(1, "Não tem previlégios suficientes para executar esta ação"),
         FIELD_TITLE_REQUIRED(2, "O campo titulo é obrigatório"),

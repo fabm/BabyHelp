@@ -59,8 +59,25 @@ app.directive('modalDialog', function () {
 
 var Articles;
 (function (Articles) {
+    var id = null;
+
     function EditArticleCtrl($scope, $stateParams, gns, articleService) {
-        $scope.create = $stateParams.id === '';
+        if ($stateParams.id === '')
+            id = $stateParams.id;
+        $scope.create = id != null || $stateParams.id === '';
+
+        function setErrorMessage(message) {
+            gns.growl.setMessage(message, GrowlBH.typeMessage.error);
+        }
+
+        function loadId(callback) {
+            articleService.get(id).then(callback, function (error) {
+                setErrorMessage(error.message);
+                gns.growl.showGrowl();
+            }, function (unauthorized) {
+                setErrorMessage(unauthorized.message);
+            });
+        }
 
         if ($scope.create) {
             $scope.article = {
@@ -70,19 +87,26 @@ var Articles;
                 summary: ''
             };
         } else {
+            loadId(function (success) {
+                $scope.article = success;
+            });
         }
 
         $scope.save = function () {
             if ($scope.create) {
                 articleService.create($scope.article).then(function (success) {
-                    console.log('success:');
-                    console.log(success);
+                    gns.growl.setMessage(success.message, GrowlBH.typeMessage.success);
+                    gns.state.goto(RouteState.home);
                 }, function (error) {
-                    console.log('error:');
-                    console.log(error);
+                    setErrorMessage(error.message);
+                    gns.growl.showGrowl();
                 }, function (unauthorized) {
-                    console.log('unauthorized:');
-                    console.log(unauthorized);
+                    setErrorMessage(unauthorized.message);
+                });
+            } else {
+                loadId(function (success) {
+                    $scope.article = success;
+                    id = null;
                 });
             }
         };

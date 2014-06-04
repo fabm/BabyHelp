@@ -31,7 +31,7 @@ public class ArticleEndPoint {
     private ArticleService articleService = new ArticleServiceImpl();
     private UserContext userContext;
 
-    private void initUserContext(User user){
+    private void initUserContext(User user) {
         userContext = UserContext.createUserContext(user);
     }
 
@@ -83,4 +83,15 @@ public class ArticleEndPoint {
         }
     }
 
+    @ApiMethod(name = "get", httpMethod = HttpMethod.GET, path = "get")
+    public Map<String, Object> delete(User user, long id) throws UnauthorizedException {
+        try {
+            initUserContext(user);
+            Authorization.check(userContext, "carregamento do artigo");
+            this.articleService.setUserContext(userContext);
+            return this.articleService.get(id);
+        } catch (EndPointError endPointError) {
+            return endPointError.getMap();
+        }
+    }
 }

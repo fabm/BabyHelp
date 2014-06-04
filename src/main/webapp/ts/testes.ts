@@ -1,4 +1,5 @@
 /// <reference path="def/testes.d.ts" />
+/// <reference path="app.ts" />
 
 var cbh = new ClientBabyHelp();
 cbh.client = ("userBH");
