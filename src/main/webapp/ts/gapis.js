@@ -186,6 +186,10 @@ var ClientLoader = (function () {
             });
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, function () {
+                var loadedClient = gapi.client[self.client];
+                if (isNull(loadedClient)) {
+                    Log.prtError("Houve um problema a carregar o serviço " + self.client + " por favor contacte o administrador");
+                }
                 self.callCBState(3 /* callService */);
                 execute(callback(gapi.client[self.client]));
             }, self.apiUrl);

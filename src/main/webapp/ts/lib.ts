@@ -27,7 +27,7 @@ class Log {
     }
 
     static prtError(msg:any) {
-        window.console.log(msg);
+        window.console.error(msg);
     }
 
     static cbr(response):void {

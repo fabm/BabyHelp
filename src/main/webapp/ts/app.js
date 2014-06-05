@@ -204,14 +204,14 @@ var Users;
 
         $scope.user = user;
         $scope.save = function () {
-            userService.updateRoles($scope.user).then(function (response) {
+            userService.updateRoles($scope.user).then(function (success) {
                 gns.growl.setMessage('Utilizador atualizado', GrowlBH.typeMessage.success);
                 gns.state.goto(RouteState.userList);
-            }, function (response) {
-                setErrorMessage(response);
+            }, function (error) {
+                setErrorMessage(error);
                 gns.growl.showGrowl();
-            }, function (response) {
-                setErrorMessage(response);
+            }, function (unauthorized) {
+                setErrorMessage(unauthorized);
                 gns.state.goto(RouteState.userList);
             });
         };

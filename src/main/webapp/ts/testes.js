@@ -3,13 +3,6 @@
 var cbh = new ClientBabyHelp();
 cbh.client = ("userBH");
 var resToken;
-cbh.loadApi(function () {
-    var t = gapi.client.userBH.create.session();
-    t.execute(function (res) {
-        resToken = res;
-        console.log("iniciado");
-    });
-});
 
 var testes = {
     success: null,

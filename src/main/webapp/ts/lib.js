@@ -6,7 +6,7 @@ var Log = (function () {
     };
 
     Log.prtError = function (msg) {
-        window.console.log(msg);
+        window.console.error(msg);
     };
 
     Log.cbr = function (response) {

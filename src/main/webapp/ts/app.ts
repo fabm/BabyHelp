@@ -244,16 +244,16 @@ module Users {
         $scope.user = user;
         $scope.save = () => {
             userService.updateRoles($scope.user).then(
-                (response)=> {
+                (success)=> {
                     gns.growl.setMessage('Utilizador atualizado',
                         GrowlBH.typeMessage.success);
                     gns.state.goto(RouteState.userList);
-                }, (response)=> {
-                    setErrorMessage(response);
+                }, (error)=> {
+                    setErrorMessage(error);
                     gns.growl.showGrowl();
 
-                }, (response)=> {
-                    setErrorMessage(response);
+                }, (unauthorized)=> {
+                    setErrorMessage(unauthorized);
                     gns.state.goto(RouteState.userList);
                 }
             );

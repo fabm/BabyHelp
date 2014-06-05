@@ -192,6 +192,10 @@ class ClientLoader {
             });
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, ()=> {
+                var loadedClient = gapi.client[self.client];
+                if(isNull(loadedClient)){
+                    Log.prtError("Houve um problema a carregar o serviço "+self.client+ " por favor contacte o administrador");
+                }
                 self.callCBState(StateLoading.callService);
                 execute(callback(gapi.client[self.client]));
             }, self.apiUrl);
@@ -306,7 +310,7 @@ class ArticlesService extends ClientBabyHelp {
         this.client = 'article';
     }
 
-    get(id) {
+    get(id):Resolve {
         return super.load((client)=> {
             return client.get(id);
         });
@@ -318,19 +322,19 @@ class ArticlesService extends ClientBabyHelp {
         });
     }
 
-    listMy() {
+    listMy():Resolve {
         return super.load((client)=> {
             return client.list.my();
         });
     }
 
-    update(article:ArticleUpdate) {
+    update(article:ArticleUpdate):Resolve {
         return super.load((client)=> {
             return client.update(article);
         });
     }
 
-    delete(ids) {
+    delete(ids):Resolve {
         return super.load((client)=> {
             return client.delete({ids: ids});
         });

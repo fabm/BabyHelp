@@ -3,6 +3,7 @@ package pt.babyHelp.endPoints.article;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
 import pt.babyHelp.bd.Role;
@@ -84,7 +85,7 @@ public class ArticleEndPoint {
     }
 
     @ApiMethod(name = "get", httpMethod = HttpMethod.GET, path = "get")
-    public Map<String, Object> delete(User user, long id) throws UnauthorizedException {
+    public Map<String, Object> get(User user,@Named long id) throws UnauthorizedException {
         try {
             initUserContext(user);
             Authorization.check(userContext, "carregamento do artigo");
