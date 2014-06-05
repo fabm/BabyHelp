@@ -31,7 +31,7 @@
 
     <servlet-mapping>
         <servlet-name>photoRequestUpload</servlet-name>
-        <url-pattern>/upload</url-pattern>
+        <url-pattern>/upload/*</url-pattern>
     </servlet-mapping>
 
 

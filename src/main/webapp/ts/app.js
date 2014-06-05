@@ -94,9 +94,10 @@ var Articles;
 
         function upPhoto() {
             photoTokenService.getPhotoToken().then(function (success) {
+                Log.prt("passou");
                 var fargs;
                 fargs.events.success = function (success) {
-                    console.log('teste:');
+                    console.log('ficheiro inserido com sucesso:');
                     console.log(success);
                 };
                 fargs.events.error = function (error) {
@@ -107,10 +108,11 @@ var Articles;
                 fargs.options.url = success.url;
                 fargs.options.email = success.email;
 
-                fUploadAppEngine.up();
+                fUploadAppEngine.up(fargs);
             }, function (error) {
                 gns.growl.setMessage;
             }, function (unauthorized) {
+                console.log('sem autorização');
             });
             Log.prt(id);
         }

@@ -130,12 +130,15 @@ module Articles {
         }
 
 
+
+
         function upPhoto(){
             photoTokenService.getPhotoToken().then(
                 (success)=>{
+                    Log.prt("passou");
                     var fargs:FUploadArgs;
                     fargs.events.success = (success) => {
-                        console.log('teste:');
+                        console.log('ficheiro inserido com sucesso:');
                         console.log(success);
                     }
                     fargs.events.error = (error) =>{
@@ -146,11 +149,11 @@ module Articles {
                     fargs.options.url = success.url;
                     fargs.options.email = success.email;
 
-                    fUploadAppEngine.up();
+                    fUploadAppEngine.up(fargs);
                 },(error)=>{
                     gns.growl.setMessage
                 },(unauthorized)=>{
-
+                   console.log('sem autorização');
                 }
             );
             Log.prt(id);
