@@ -205,7 +205,7 @@ class ClientLoader {
         }
 
         return {
-            then: (cbOnSuccess:(response)=>void, cbOnError:(response)=>void, cbOnNotAuthorized?:(response)=>void)=> {
+            then: (cbOnSuccess:(success)=>void, cbOnError:(error)=>void, cbOnNotAuthorized?:(notAuthorized)=>void)=> {
                 onSuccess = cbOnSuccess;
                 onError = cbOnError;
                 onNotAuthorized = cbOnNotAuthorized;
@@ -213,7 +213,6 @@ class ClientLoader {
             }
         }
     }
-
 }
 
 class ClientBabyHelp extends ClientLoader {
@@ -312,7 +311,7 @@ class ArticlesService extends ClientBabyHelp {
 
     get(id):Resolve {
         return super.load((client)=> {
-            return client.get(id);
+            return client.get({id:id});
         });
     }
 
@@ -337,6 +336,18 @@ class ArticlesService extends ClientBabyHelp {
     delete(ids):Resolve {
         return super.load((client)=> {
             return client.delete({ids: ids});
+        });
+    }
+}
+
+class PhotoTokenService extends ClientBabyHelp {
+    constructor() {
+        super();
+        this.client = 'photoToken';
+    }
+    getPhotoToken(){
+        return this.load((client)=>{
+            return client.getuploadurl();
         });
     }
 }

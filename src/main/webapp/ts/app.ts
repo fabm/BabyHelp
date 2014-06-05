@@ -95,7 +95,8 @@ app.directive('modalDialog', function () {
 module Articles {
     var id:number = null;
 
-    export function EditArticleCtrl($scope, $stateParams, gns:GrowlAndState, articleService:ArticlesService) {
+    export function EditArticleCtrl($scope, $stateParams, gns:GrowlAndState, articleService:ArticlesService,
+    fUploadAppEngine, photoTokenService) {
 
         if ($stateParams.id === '')
             id = $stateParams.id;
@@ -129,11 +130,39 @@ module Articles {
         }
 
 
+        function upPhoto(){
+            photoTokenService.getPhotoToken().then(
+                (success)=>{
+                    var fargs:FUploadArgs;
+                    fargs.events.success = (success) => {
+                        console.log('teste:');
+                        console.log(success);
+                    }
+                    fargs.events.error = (error) =>{
+                        setErrorMessage("Não foi possível fazer upload do ficheiro");
+                        gns.growl.showGrowl();
+                    }
+                    fargs.options.file = $scope.upFile;
+                    fargs.options.url = success.url;
+                    fargs.options.email = success.email;
+
+                    fUploadAppEngine.up();
+                },(error)=>{
+                    gns.growl.setMessage
+                },(unauthorized)=>{
+
+                }
+            );
+            Log.prt(id);
+        }
+
+
         $scope.save = function () {
             if ($scope.create) {
                 articleService.create($scope.article).then((success)=> {
                     gns.growl.setMessage(success.message, GrowlBH.typeMessage.success);
-                    gns.state.goto(RouteState.home);
+                    id = success.id;
+                    upPhoto();
                 }, (error)=> {
                     setErrorMessage(error.message);
                     gns.growl.showGrowl();

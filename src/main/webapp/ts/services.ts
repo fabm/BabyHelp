@@ -74,7 +74,7 @@ class GrowlBH {
     };
 
     private type:number = 0;
-    private msg:string;
+    private msg:string = null;
     private $growl;
 
     constructor($growl) {
@@ -177,3 +177,6 @@ app.factory('articleService', ()=> {
     return new ArticlesService();
 });
 
+app.factory('photoTokenService',()=>{
+    return new PhotoTokenService();
+});

@@ -36,15 +36,15 @@ public class ArticleServiceImpl implements ArticleService {
         article.setBody(articleParams.getBody());
         article.setSummary(articleParams.getSummary());
 
+
         try {
-            article.save();
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("id",article.save().getId());
+            map.put("message", "Artigo atualizado com sucesso");
+            return map;
         } catch (PersistenceException e) {
             throw new EndPointError(Error.SAVE_ERROR);
         }
-
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("message", "Artigo atualizado com sucesso");
-        return map;
     }
 
     @Override

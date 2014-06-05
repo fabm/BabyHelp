@@ -149,7 +149,26 @@ function InnerController($scope, $http, fUploadAppEngine) {
     };
     // fim do teste de upload
 }
-//C:\Users\User\Documents\BabyHelp\src\main\webapp\ts\testes.ts(16,5): error TS2134: Subsequent variable declarations must have the same type.  Variable 'testes' must be of type
-//                  '{ success: any; error: (error: any) => void;   unauthorized: (unauthorized: any) => void; users: { list: () => void; }; articles: { create: () => void; getService: () => any; alterLast: (order: number) => void; list: () => void; delete: (orders: any) => void; }; upload: () => void; loadClientPhotoToken: (callback: any) => void; }',
-//but here has type '{ success: any; error: (x: any) => void;       unauthorized: (x: any) => void; users:            { list: () => void; }; articles: { getService: () => any; create: () => void; alterLast: (order: number) => void; list: () => void; delete: (orders: any) => void; }; upload: () => void; loadClientPhotoToken: () => void; }'.
+
+function logThen(resolve, trace) {
+    var cbSuccess = function (success) {
+        console.log('success:');
+        console.info(success);
+        if (trace)
+            console.trace();
+    };
+    var cbError = function (error) {
+        console.log('error:');
+        console.info(error);
+        if (trace)
+            console.trace();
+    };
+    var cbUnauthorized = function (unauthorized) {
+        console.log('unauthorized:');
+        console.info(unauthorized);
+        if (trace)
+            console.trace();
+    };
+    resolve.then(cbSuccess, cbError, cbUnauthorized);
+}
 //# sourceMappingURL=testes.js.map

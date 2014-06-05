@@ -2,5 +2,6 @@
 <div ng-controller="InnerController">
     <input type="file" file-model="upFile"/>
     <button ng-click="send()">send</button>
+    <button ng-click="cancel()">Cancelar</button>
     <img ng-if="imagekey" ng-srcset="/photo/{{imagekey}}" style="width:100px;height:100px;"/>
 </div>

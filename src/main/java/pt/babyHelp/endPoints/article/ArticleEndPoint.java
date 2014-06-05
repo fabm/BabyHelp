@@ -85,7 +85,7 @@ public class ArticleEndPoint {
     }
 
     @ApiMethod(name = "get", httpMethod = HttpMethod.GET, path = "get")
-    public Map<String, Object> get(User user,@Named long id) throws UnauthorizedException {
+    public Map<String, Object> get(User user,@Named(value = "id") long id) throws UnauthorizedException {
         try {
             initUserContext(user);
             Authorization.check(userContext, "carregamento do artigo");

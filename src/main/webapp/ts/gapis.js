@@ -295,7 +295,7 @@ var ArticlesService = (function (_super) {
     }
     ArticlesService.prototype.get = function (id) {
         return _super.prototype.load.call(this, function (client) {
-            return client.get(id);
+            return client.get({ id: id });
         });
     };
 
@@ -323,5 +323,19 @@ var ArticlesService = (function (_super) {
         });
     };
     return ArticlesService;
+})(ClientBabyHelp);
+
+var PhotoTokenService = (function (_super) {
+    __extends(PhotoTokenService, _super);
+    function PhotoTokenService() {
+        _super.call(this);
+        this.client = 'photoToken';
+    }
+    PhotoTokenService.prototype.getPhotoToken = function () {
+        return this.load(function (client) {
+            return client.getuploadurl();
+        });
+    };
+    return PhotoTokenService;
 })(ClientBabyHelp);
 //# sourceMappingURL=gapis.js.map

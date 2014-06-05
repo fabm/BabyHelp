@@ -61,7 +61,7 @@ var Articles;
 (function (Articles) {
     var id = null;
 
-    function EditArticleCtrl($scope, $stateParams, gns, articleService) {
+    function EditArticleCtrl($scope, $stateParams, gns, articleService, fUploadAppEngine, photoTokenService) {
         if ($stateParams.id === '')
             id = $stateParams.id;
         $scope.create = id != null || $stateParams.id === '';
@@ -92,11 +92,35 @@ var Articles;
             });
         }
 
+        function upPhoto() {
+            photoTokenService.getPhotoToken().then(function (success) {
+                var fargs;
+                fargs.events.success = function (success) {
+                    console.log('teste:');
+                    console.log(success);
+                };
+                fargs.events.error = function (error) {
+                    setErrorMessage("Não foi possível fazer upload do ficheiro");
+                    gns.growl.showGrowl();
+                };
+                fargs.options.file = $scope.upFile;
+                fargs.options.url = success.url;
+                fargs.options.email = success.email;
+
+                fUploadAppEngine.up();
+            }, function (error) {
+                gns.growl.setMessage;
+            }, function (unauthorized) {
+            });
+            Log.prt(id);
+        }
+
         $scope.save = function () {
             if ($scope.create) {
                 articleService.create($scope.article).then(function (success) {
                     gns.growl.setMessage(success.message, GrowlBH.typeMessage.success);
-                    gns.state.goto(RouteState.home);
+                    id = success.id;
+                    upPhoto();
                 }, function (error) {
                     setErrorMessage(error.message);
                     gns.growl.showGrowl();

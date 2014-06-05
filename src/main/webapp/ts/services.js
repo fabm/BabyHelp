@@ -65,6 +65,7 @@ var AppEngineUpload = (function () {
 var GrowlBH = (function () {
     function GrowlBH($growl) {
         this.type = 0;
+        this.msg = null;
         this.$growl = $growl;
     }
     GrowlBH.prototype.setMessage = function (message, type) {
@@ -155,5 +156,9 @@ app.factory('userService', function () {
 
 app.factory('articleService', function () {
     return new ArticlesService();
+});
+
+app.factory('photoTokenService', function () {
+    return new PhotoTokenService();
 });
 //# sourceMappingURL=services.js.map
