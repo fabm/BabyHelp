@@ -26,9 +26,7 @@ public interface UserBHService extends UserAcessible {
         PERSISTENCE(1, "Problema ao tentar guardar %s"),
         ROLE_NOT_MATCH(2, "Não é possível corresponder o role %s a nenhum role existente"),
         EMAIL_REQUIRED(3, "O campo email é obrigatório"),
-        EMAIL_MALFORMED(4, "O campo email está mal formatado"),
-        NOT_AUTENTICATED(5, "É necessário autenticar-se para aceder à área de '%s'"),
-        WITHOUT_PREVILEGES(6, "Não tem previlégios suficientes para aceder à área de '%s'");
+        EMAIL_MALFORMED(4, "O campo email está mal formatado");
 
         private String msg;
         private int code;

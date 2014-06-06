@@ -123,19 +123,16 @@ testes.loadClientPhotoToken = function (callback) {
 function InnerController($scope, $http, fUploadAppEngine) {
     var clientUrlTokenService = null;
 
-    var fargs = new FUploadArgs();
-    fargs.events.error = function (error) {
+    fUploadAppEngine.error = function (error) {
         alert(error);
     };
-    fargs.events.success = function (success) {
+    fUploadAppEngine.success = function (success) {
         $scope.imagekey = success;
     };
 
     function loadResponse(response) {
-        fargs.options.email = response.email;
-        fargs.options.url = response.url;
-        fargs.options.file = $scope.upFile;
-        fUploadAppEngine.up(fargs);
+        fUploadAppEngine.url = response.url;
+        fUploadAppEngine.up($scope.upFile);
     }
 
     $scope.send = function () {

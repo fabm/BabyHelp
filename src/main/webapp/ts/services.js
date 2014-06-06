@@ -112,41 +112,31 @@ app.factory('gns', function ($state, $growl) {
     };
 });
 
-var FUploadArgs = (function () {
-    function FUploadArgs() {
-        this.options = {
-            file: null,
-            url: null,
-            email: null
-        };
-        this.events = {
-            success: Log.cbr,
-            error: Log.cbr
-        };
-    }
-    return FUploadArgs;
-})();
-
 app.service('fUploadAppEngine', function ($http) {
-    this.up = function (args) {
-        var fd = new FormData();
-        fd.append('file', args.options.file);
-        fd.append('email', args.options.email);
+    var self = this;
+    self.form = new FormData();
+    self.url;
+
+    self.success = Log.cbr;
+    self.error = Log.cbr;
+
+    this.up = function (file) {
+        self.form.append('file', file);
         var token = gapi.auth.getToken();
         var headers = { 'Content-Type': undefined };
 
         if (!isNull(token)) {
             headers['Authorization'] = token.access_token;
         } else {
-            args.events.error('É obbrigatório estar autenticado com o cliente Google API javascript');
+            self.error('É obbrigatório estar autenticado com o cliente Google API javascript');
         }
 
-        $http.post(args.options.url, fd, {
+        $http.post(self.url, self.form, {
             transformRequest: angular.identity,
             headers: headers
         }).success(function (data) {
-            args.events.success(data.imagekey);
-        }).error(args.events.error);
+            self.success(data.imagekey);
+        }).error(self.error);
     };
 });
 

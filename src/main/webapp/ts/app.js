@@ -95,20 +95,16 @@ var Articles;
         function upPhoto() {
             photoTokenService.getPhotoToken().then(function (success) {
                 Log.prt("passou");
-                var fargs;
-                fargs.events.success = function (success) {
+                fUploadAppEngine.success = function (success) {
                     console.log('ficheiro inserido com sucesso:');
                     console.log(success);
                 };
-                fargs.events.error = function (error) {
+                fUploadAppEngine.error = function (error) {
                     setErrorMessage("Não foi possível fazer upload do ficheiro");
                     gns.growl.showGrowl();
                 };
-                fargs.options.file = $scope.upFile;
-                fargs.options.url = success.url;
-                fargs.options.email = success.email;
-
-                fUploadAppEngine.up(fargs);
+                fUploadAppEngine.url = success.url;
+                fUploadAppEngine.up($scope.upFile);
             }, function (error) {
                 gns.growl.setMessage;
             }, function (unauthorized) {

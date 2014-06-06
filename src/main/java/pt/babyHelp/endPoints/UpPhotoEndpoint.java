@@ -9,7 +9,7 @@ import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.UploadToken;
 import pt.babyHelp.core.endpoints.EndPointError;
 import pt.babyHelp.core.endpoints.ErrorReturn;
-import pt.babyHelp.services.UserBHService;
+import pt.babyHelp.services.BabyHelpConstants;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -26,7 +26,7 @@ public class UpPhotoEndpoint {
     @ApiMethod(name = "getuploadurl", httpMethod = ApiMethod.HttpMethod.GET, path = "getuploadurl")
     public Map<String, Object> getUrl(User user, HttpServletRequest req) throws UnauthorizedException {
         try {
-            if (user == null) throw new EndPointError(UserBHService.Error.NOT_AUTENTICATED);
+            if (user == null) throw new EndPointError(BabyHelpConstants.Error.NOT_AUTHENTICATED);
             UploadToken uploadToken = new UploadToken();
             uploadToken.setEmail(user.getEmail());
             String authorizationHeader = req.getHeader("Authorization");

@@ -18,7 +18,6 @@ import java.util.Map;
 
 import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 
-
 @Api(name = "article",
         version = "v1",
         description = "Endpoint dos artigos do BabyHelp",

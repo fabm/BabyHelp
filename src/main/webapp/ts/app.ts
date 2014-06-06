@@ -136,20 +136,16 @@ module Articles {
             photoTokenService.getPhotoToken().then(
                 (success)=>{
                     Log.prt("passou");
-                    var fargs:FUploadArgs;
-                    fargs.events.success = (success) => {
+                    fUploadAppEngine.success = (success) => {
                         console.log('ficheiro inserido com sucesso:');
                         console.log(success);
                     }
-                    fargs.events.error = (error) =>{
+                    fUploadAppEngine.error = (error) =>{
                         setErrorMessage("Não foi possível fazer upload do ficheiro");
                         gns.growl.showGrowl();
                     }
-                    fargs.options.file = $scope.upFile;
-                    fargs.options.url = success.url;
-                    fargs.options.email = success.email;
-
-                    fUploadAppEngine.up(fargs);
+                    fUploadAppEngine.url = success.url;
+                    fUploadAppEngine.up($scope.upFile);
                 },(error)=>{
                     gns.growl.setMessage
                 },(unauthorized)=>{

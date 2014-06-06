@@ -14,8 +14,6 @@ import pt.babyHelp.endPoints.Constants;
 import pt.babyHelp.services.UserBHService;
 import pt.babyHelp.services.impl.UserBHServiceImpl;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
@@ -36,21 +34,6 @@ public class UserBHEndpoint {
 
     void setUserContext(User user) {
         userContext = UserContext.createUserContext(user);
-    }
-
-    @ApiMethod(name = "create.session", httpMethod = HttpMethod.GET, path = "create/session")
-    public Map<String, Object> createSession(HttpServletRequest req, User user) throws UnauthorizedException {
-        try {
-            setUserContext(user);
-            req.getSession().setAttribute("currentUser", userContext.getUserFromApp());
-            Authorization.check(userContext, "criação de um token para áreas reservadas");
-            this.userBHService.setUserContext(userContext);
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("session", "created");
-            return map;
-        } catch (EndPointError endPointError) {
-            return endPointError.getMap();
-        }
     }
 
 
