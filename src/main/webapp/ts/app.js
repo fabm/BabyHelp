@@ -94,7 +94,6 @@ var Articles;
 
         function upPhoto() {
             photoTokenService.getPhotoToken().then(function (success) {
-                Log.prt("passou");
                 fUploadAppEngine.success = function (success) {
                     console.log('ficheiro inserido com sucesso:');
                     console.log(success);
@@ -104,13 +103,14 @@ var Articles;
                     gns.growl.showGrowl();
                 };
                 fUploadAppEngine.url = success.url;
+                fUploadAppEngine.form.append('action', 'article-edit');
+                fUploadAppEngine.form.append('id', id);
                 fUploadAppEngine.up($scope.upFile);
             }, function (error) {
                 gns.growl.setMessage;
             }, function (unauthorized) {
                 console.log('sem autorização');
             });
-            Log.prt(id);
         }
 
         $scope.save = function () {

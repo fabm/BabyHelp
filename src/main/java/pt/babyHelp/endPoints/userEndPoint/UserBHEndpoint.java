@@ -6,10 +6,7 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
-import pt.babyHelp.bd.Role;
 import pt.babyHelp.core.endpoints.EndPointError;
-import pt.babyHelp.core.session.UserContext;
-import pt.babyHelp.endPoints.Authorization;
 import pt.babyHelp.endPoints.Constants;
 import pt.babyHelp.services.UserBHService;
 import pt.babyHelp.services.impl.UserBHServiceImpl;
@@ -30,11 +27,6 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 public class UserBHEndpoint {
 
     private UserBHService userBHService = new UserBHServiceImpl();
-    private UserContext userContext;
-
-    void setUserContext(User user) {
-        userContext = UserContext.createUserContext(user);
-    }
 
 
     @ApiMethod(name = "updateRoles", httpMethod = HttpMethod.POST)
@@ -42,9 +34,7 @@ public class UserBHEndpoint {
             (User user, @Named("email") String email, RolesParameters rolesParameters)
             throws UnauthorizedException {
         try {
-            setUserContext(user);
-            Authorization.check(userContext, "atualização de utilizadores", Role.ADMINISTRATOR);
-            this.userBHService.setUserContext(userContext);
+            this.userBHService.setUser(user);
             return this.userBHService.updateRoles(email, rolesParameters);
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
@@ -54,9 +44,7 @@ public class UserBHEndpoint {
     @ApiMethod(name = "list")
     public Map<String, Object> list(User user) throws UnauthorizedException {
         try {
-            setUserContext(user);
-            Authorization.check(userContext, "listagem de utilizadores", Role.ADMINISTRATOR);
-            this.userBHService.setUserContext(userContext);
+            this.userBHService.setUser(user);
             return this.userBHService.list();
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
@@ -66,26 +54,10 @@ public class UserBHEndpoint {
     @ApiMethod(name = "getRoles")
     public Map<String, Object> getRoles(User user, @Named("email") String email) throws UnauthorizedException {
         try {
-            setUserContext(user);
-            Authorization.check(userContext, "verificação de roles", Role.ADMINISTRATOR);
-            this.userBHService.setUserContext(userContext);
+            this.userBHService.setUser(user);
             return this.userBHService.getRoles(email);
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
         }
     }
-
-    @ApiMethod(name = "upload.token", path = "uptoken", httpMethod = HttpMethod.GET)
-    public Map<String, Object> createUploadToken(User user, @Named("token") String token) throws UnauthorizedException {
-        try {
-            setUserContext(user);
-            Authorization.check(userContext, "criação de um token para fazer upload", Role.ADMINISTRATOR);
-            this.userBHService.setUserContext(userContext);
-            return this.userBHService.uploadToken(token);
-        } catch (EndPointError endPointError) {
-            return endPointError.getMap();
-        }
-    }
-
-
 }

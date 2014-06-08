@@ -13,12 +13,12 @@ public enum Role {
         }
     }
 
-    public static Set<Role> toSet(Collection<String> sRoles){
-        Set<Role> set = new HashSet<Role>();
-        for(String sRole:sRoles){
-            set.add(Role.convert(sRole));
+    public static Role[] toRolesArray(String[] sRoles){
+        Role[] roles = new Role[sRoles.length];
+        for (int i = 0; i < sRoles.length; i++) {
+            roles[i] = Role.convert(sRoles[i]);
         }
-        return set;
+        return roles;
     }
 
     public static Set<String> toStringSet(Collection<Role> roles){

@@ -127,8 +127,6 @@ app.service('fUploadAppEngine', function ($http) {
 
         if (!isNull(token)) {
             headers['Authorization'] = token.access_token;
-        } else {
-            self.error('É obbrigatório estar autenticado com o cliente Google API javascript');
         }
 
         $http.post(self.url, self.form, {

@@ -121,6 +121,13 @@ app.factory('gns', ($state, $growl)=> {
     };
 });
 
+interface FUploadAppEngine{
+    form:FormData;
+    url:string;
+    success:(success)=>void;
+    error:(error)=>void;
+}
+
 app.service('fUploadAppEngine', function ($http) {
         var self = this;
         self.form = new FormData();
@@ -136,8 +143,6 @@ app.service('fUploadAppEngine', function ($http) {
 
             if (!isNull(token)) {
                 headers['Authorization'] = token.access_token;
-            }else{
-                self.error('É obbrigatório estar autenticado com o cliente Google API javascript');
             }
 
             $http.post(self.url, self.form, {

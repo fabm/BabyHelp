@@ -19,8 +19,6 @@ public class UserFromApp extends BD implements Serializable {
     @Index
     private String email;
     @Index
-    private String hash;
-    private Date dateHash;
 
     private Set<Role> roles;
     private List<Son> sons;

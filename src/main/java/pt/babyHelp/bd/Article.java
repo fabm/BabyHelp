@@ -1,12 +1,17 @@
 package pt.babyHelp.bd;
 
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 
 @Entity
 public class Article extends BD {
+    static {
+        ObjectifyService.register(Article.class);
+    }
+
 
     @Id
     private Long id;

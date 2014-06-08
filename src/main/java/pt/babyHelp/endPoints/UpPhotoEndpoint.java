@@ -5,11 +5,8 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.users.User;
-import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.UploadToken;
-import pt.babyHelp.core.endpoints.EndPointError;
 import pt.babyHelp.core.endpoints.ErrorReturn;
-import pt.babyHelp.services.BabyHelpConstants;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -23,27 +20,29 @@ import java.util.Map;
                 Constants.IOS_CLIENT_ID, Constants.API_EXPLORER_CLIENT_ID},
         audiences = {Constants.ANDROID_AUDIENCE})
 public class UpPhotoEndpoint {
+    Authorization authorization;
+
+
+
+
     @ApiMethod(name = "getuploadurl", httpMethod = ApiMethod.HttpMethod.GET, path = "getuploadurl")
-    public Map<String, Object> getUrl(User user, HttpServletRequest req) throws UnauthorizedException {
-        try {
-            if (user == null) throw new EndPointError(BabyHelpConstants.Error.NOT_AUTHENTICATED);
-            UploadToken uploadToken = new UploadToken();
-            uploadToken.setEmail(user.getEmail());
-            String authorizationHeader = req.getHeader("Authorization");
-            if (authorizationHeader == null) throw new EndPointError(Error.AUTHORIZATION_MISSING);
-            uploadToken.setAuthToken(authorizationHeader.substring(7));
+    public Map<String, Object> getUrl(User user) throws UnauthorizedException {
+        authorization = new Authorization(user);
+        return delegate();
+    }
 
-            BD.ofy().save().entity(uploadToken).now();
+    private Map<String, Object> delegate() throws UnauthorizedException {
+        authorization.check("pedido de url para upload");
 
-            Map<String, Object> map = new HashMap<String, Object>();
-            String url = BlobstoreServiceFactory.getBlobstoreService().createUploadUrl("/upload");
+        UploadToken uploadToken = new UploadToken();
+        uploadToken.setEmail(authorization.getUserFromApp().getEmail());
 
-            map.put("url", url);
-            map.put("email", user.getEmail());
-            return map;
-        } catch (EndPointError endPointError) {
-            return endPointError.getMap();
-        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        String url = BlobstoreServiceFactory.getBlobstoreService().createUploadUrl("/upload");
+
+        map.put("url", url);
+        map.put("email", authorization.getUserFromApp().getEmail());
+        return map;
     }
 
 

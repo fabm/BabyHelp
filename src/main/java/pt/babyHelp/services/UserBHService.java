@@ -1,5 +1,6 @@
 package pt.babyHelp.services;
 
+import com.google.api.server.spi.response.UnauthorizedException;
 import pt.babyHelp.core.endpoints.EndPointError;
 import pt.babyHelp.core.endpoints.ErrorReturn;
 import pt.babyHelp.endPoints.UserAcessible;
@@ -8,18 +9,16 @@ import pt.babyHelp.endPoints.userEndPoint.RolesParameters;
 import java.util.Map;
 
 public interface UserBHService extends UserAcessible {
-    Map<String, Object> createSession() throws EndPointError;
 
     Map<String, Object> updateRoles(String email, RolesParameters rolesParameters)
-            throws EndPointError;
+            throws EndPointError, UnauthorizedException;
 
     Map<String, Object> list()
             throws EndPointError;
 
     Map<String, Object> getRoles(String email)
-            throws EndPointError;
+            throws EndPointError, UnauthorizedException;
 
-    Map<String, Object> uploadToken(String token);
 
 
     enum Error implements ErrorReturn {

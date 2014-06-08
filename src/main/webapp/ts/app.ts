@@ -135,7 +135,6 @@ module Articles {
         function upPhoto(){
             photoTokenService.getPhotoToken().then(
                 (success)=>{
-                    Log.prt("passou");
                     fUploadAppEngine.success = (success) => {
                         console.log('ficheiro inserido com sucesso:');
                         console.log(success);
@@ -145,6 +144,8 @@ module Articles {
                         gns.growl.showGrowl();
                     }
                     fUploadAppEngine.url = success.url;
+                    fUploadAppEngine.form.append('action','article-edit');
+                    fUploadAppEngine.form.append('id',id);
                     fUploadAppEngine.up($scope.upFile);
                 },(error)=>{
                     gns.growl.setMessage
@@ -152,7 +153,6 @@ module Articles {
                    console.log('sem autorização');
                 }
             );
-            Log.prt(id);
         }
 
 
