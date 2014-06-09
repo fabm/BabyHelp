@@ -70,9 +70,15 @@ var Articles;
             gns.growl.setMessage(message, GrowlBH.typeMessage.error);
         }
 
+        $scope.fileModelSetter = {
+            upFile: function (file) {
+                $scope.upFileName = file.name;
+            }
+        };
+
         function loadId(callback) {
             articleService.get(id).then(callback, function (error) {
-                setErrorMessage(error.message);
+                setErrorMessage(error.error.message);
                 gns.growl.showGrowl();
             }, function (unauthorized) {
                 setErrorMessage(unauthorized.message);
@@ -95,8 +101,8 @@ var Articles;
         function upPhoto() {
             photoTokenService.getPhotoToken().then(function (success) {
                 fUploadAppEngine.success = function (success) {
-                    console.log('ficheiro inserido com sucesso:');
-                    console.log(success);
+                    gns.growl.setMessage("Atualizou o artigo com sucesso", GrowlBH.typeMessage.success);
+                    gns.growl.showGrowl();
                 };
                 fUploadAppEngine.error = function (error) {
                     setErrorMessage("Não foi possível fazer upload do ficheiro");
@@ -131,6 +137,10 @@ var Articles;
                     id = null;
                 });
             }
+        };
+
+        $scope.cancel = function () {
+            gns.state.goto(RouteState.home);
         };
 
         $scope.buttonLabel = function () {
@@ -276,7 +286,7 @@ function AuthButtonCtrl($scope, $cookies, gns, $location, $rootScope) {
 
     $scope.logout = function () {
         ClientLoader.logout();
-        gns.goto(RouteState.home);
+        gns.state.goto(RouteState.home);
     };
     $scope.login = function () {
         bh.login(function () {
@@ -285,13 +295,11 @@ function AuthButtonCtrl($scope, $cookies, gns, $location, $rootScope) {
         });
     };
 
-    $scope.state = ClientLoader.logged;
-
     var update = function (apply) {
-        var scope = $scope;
-        scope.authvar = $scope.state ? "logout" : "login";
+        $scope.state = ClientLoader.logged;
+        $scope.authvar = $scope.state ? "logout" : "login";
         if (apply)
-            scope.$digest();
+            $scope.$digest();
     };
     update(false);
 }

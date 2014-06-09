@@ -9,11 +9,16 @@ app.directive('fileModel', function ($parse) {
     return {
         restrict: 'A',
         link: function (scope, element, attrs) {
-            var model = $parse(attrs.fileModel);
+            var modelName = attrs.fileModel;
+            var model = $parse(modelName);
             var modelSetter = model.assign;
 
             element.bind('change', function () {
                 scope.$apply(function () {
+                    if (scope.fileModelSetter)
+                        var callback = scope.fileModelSetter[modelName];
+                    if (callback && typeof (callback) === 'function')
+                        callback(element[0].files[0]);
                     modelSetter(scope, element[0].files[0]);
                 });
             });
@@ -52,6 +57,7 @@ var AppEngineUpload = (function () {
         var self = this;
         var ajax = new XMLHttpRequest();
         ajax.open("GET", this.urlToGetSessionUrl, false);
+
         ajax.onload = function () {
             var response = eval('(' + ajax.responseText + ')');
             if (!response.error)

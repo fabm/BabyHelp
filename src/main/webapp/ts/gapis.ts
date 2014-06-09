@@ -75,6 +75,7 @@ class ClientLoader {
 
     public static logout() {
         gapi.auth.setToken(null);
+        this.logged = false;
     }
 
     public login(callback:()=>void) {

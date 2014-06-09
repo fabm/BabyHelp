@@ -106,15 +106,22 @@ module Articles {
             gns.growl.setMessage(message, GrowlBH.typeMessage.error);
         }
 
+        $scope.fileModelSetter = {
+            upFile:(file)=>{
+                $scope.upFileName = file.name;
+            }
+        };
+
         function loadId(callback:(success)=>void) {
             articleService.get(id).then(callback
-                , (error)=> {
-                    setErrorMessage(error.message);
+                ,(error)=> {
+                    setErrorMessage(error.error.message);
                     gns.growl.showGrowl();
                 }, (unauthorized)=> {
                     setErrorMessage(unauthorized.message);
                 });
         }
+
 
         if ($scope.create) {
             $scope.article = {
@@ -136,8 +143,8 @@ module Articles {
             photoTokenService.getPhotoToken().then(
                 (success)=>{
                     fUploadAppEngine.success = (success) => {
-                        console.log('ficheiro inserido com sucesso:');
-                        console.log(success);
+                        gns.growl.setMessage("Atualizou o artigo com sucesso",GrowlBH.typeMessage.success);
+                        gns.growl.showGrowl();
                     }
                     fUploadAppEngine.error = (error) =>{
                         setErrorMessage("Não foi possível fazer upload do ficheiro");
@@ -148,7 +155,7 @@ module Articles {
                     fUploadAppEngine.form.append('id',id);
                     fUploadAppEngine.up($scope.upFile);
                 },(error)=>{
-                    gns.growl.setMessage
+                    //gns.growl.setMessage
                 },(unauthorized)=>{
                    console.log('sem autorização');
                 }
@@ -174,6 +181,10 @@ module Articles {
                     id = null;
                 });
             }
+        }
+
+        $scope.cancel = function(){
+            gns.state.goto(RouteState.home);
         }
 
         $scope.buttonLabel = function () {
@@ -307,7 +318,6 @@ interface AuthButtonCtrlScope extends ng.IScope {
     authaction:()=>void;
 }
 
-
 function DefaultCtrl($scope, $cookies, $location, gns:GrowlAndState) {
     if (gns.growl.isMsgShowed())
         gns.growl.showGrowl();
@@ -335,7 +345,7 @@ function AuthButtonCtrl($scope:AuthButtonCtrlScope, $cookies, gns, $location, $r
 
     $scope.logout = () => {
         ClientLoader.logout();
-        gns.goto(RouteState.home);
+        gns.state.goto(RouteState.home);
     }
     $scope.login = () => {
         bh.login(()=> {
@@ -344,13 +354,11 @@ function AuthButtonCtrl($scope:AuthButtonCtrlScope, $cookies, gns, $location, $r
         });
     }
 
-    $scope.state = ClientLoader.logged;
-
     var update = (apply:boolean)=> {
-        var scope = $scope;
-        scope.authvar = $scope.state ? "logout" : "login";
+        $scope.state = ClientLoader.logged;
+        $scope.authvar = $scope.state ? "logout" : "login";
         if (apply)
-            scope.$digest();
+            $scope.$digest();
     }
     update(false);
 }

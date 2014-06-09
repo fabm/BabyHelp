@@ -81,6 +81,7 @@ var ClientLoader = (function () {
     }
     ClientLoader.logout = function () {
         gapi.auth.setToken(null);
+        this.logged = false;
     };
 
     ClientLoader.prototype.login = function (callback) {
