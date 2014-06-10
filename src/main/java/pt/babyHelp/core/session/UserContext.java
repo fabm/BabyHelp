@@ -1,7 +1,7 @@
 package pt.babyHelp.core.session;
 
 import com.google.appengine.api.users.User;
-import pt.babyHelp.bd.Role;
+import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.bd.UserFromApp;
 
 import java.util.Queue;

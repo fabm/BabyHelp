@@ -1,31 +1,24 @@
 package pt.babyHelp.bd;
 
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.ObjectifyService;
-import com.googlecode.objectify.annotation.Entity;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 
-@Entity
 public class Son {
-    static {
-        ObjectifyService.register(Son.class);
-    }
-
-    private List<Key<UserFromApp>> parentsList = null;
     private String photoKey;
     private Date birthDate;
-    private String livesin;
+    private String livesWith;
+    private List<Key<UserFromApp>> parents = new ArrayList<Key<UserFromApp>>();
 
-    public String getLivesin() {
-        return livesin;
+    public List<Key<UserFromApp>> getParents() {
+        return parents;
     }
 
-    public void setLivesin(String livesin) {
-        this.livesin = livesin;
+    public void setParents(List<Key<UserFromApp>> parents) {
+        this.parents = parents;
     }
 
     public String getPhotoKey() {
@@ -44,10 +37,11 @@ public class Son {
         this.birthDate = birthDate;
     }
 
-    public List<Key<UserFromApp>> getParentsList() {
-        if (parentsList == null) parentsList = new ArrayList<Key<UserFromApp>>();
-        return parentsList;
+    public String getLivesWith() {
+        return livesWith;
     }
 
-
+    public void setLivesWith(String livesWith) {
+        this.livesWith = livesWith;
+    }
 }

@@ -1,15 +1,16 @@
 package pt.babyHelp.endPoints;
 
 
+import com.google.api.client.util.Sets;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.utils.SystemProperty;
 import pt.babyHelp.bd.BD;
-import pt.babyHelp.bd.Role;
 import pt.babyHelp.bd.UserFromApp;
+import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.services.BabyHelpConstants;
 
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class Authorization {
 
@@ -78,11 +79,22 @@ public class Authorization {
     }
 
     private UserFromApp devMode() {
+        if (Testes.userCurrent != null && !Testes.userCurrent.isLogged()) return null;
+
+
         UserFromApp userFromApp = new UserFromApp();
-        ResourceBundle bundle = ResourceBundle.getBundle("user");
-        userFromApp.setEmail(bundle.getString("email"));
-        this.userRegistered = (bundle.getString("registered")).equals("true");
-        userFromApp.setRoles(Role.toRolesArray(bundle.getString("roles").split(",")));
+
+        if (Testes.userCurrent == null) {
+            ResourceBundle bundle = ResourceBundle.getBundle("user");
+            Testes.userCurrent.setEmail(bundle.getString("email"));
+            Testes.userCurrent.setRegistered(bundle.getString("registered").equals("true"));
+            Role[] arrRoles = Role.toRolesArray(bundle.getString("roles").split(","));
+            Testes.userCurrent.setRoles(Arrays.asList(arrRoles));
+        }
+        userFromApp.setEmail(Testes.userCurrent.getEmail());
+        this.userRegistered = Testes.userCurrent.isRegistered();
+        userFromApp.setRoles((Role[]) Testes.userCurrent.getRoles().toArray());
+
         return userFromApp;
     }
 

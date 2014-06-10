@@ -1,4 +1,4 @@
-package pt.babyHelp.bd;
+package pt.babyHelp.bd.embededs;
 
 import java.util.*;
 

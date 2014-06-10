@@ -7,7 +7,7 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 
 @Entity
-public class Article extends BD {
+public class Article {
     static {
         ObjectifyService.register(Article.class);
     }

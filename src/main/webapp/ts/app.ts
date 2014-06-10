@@ -155,7 +155,8 @@ module Articles {
                     fUploadAppEngine.form.append('id',id);
                     fUploadAppEngine.up($scope.upFile);
                 },(error)=>{
-                    //gns.growl.setMessage
+                    gns.growl.setMessage(error.error.message,GrowlBH.typeMessage.error);
+                    gns.growl.showGrowl();
                 },(unauthorized)=>{
                    console.log('sem autorização');
                 }
@@ -170,7 +171,7 @@ module Articles {
                     id = success.id;
                     upPhoto();
                 }, (error)=> {
-                    setErrorMessage(error.message);
+                    setErrorMessage(error.error.message);
                     gns.growl.showGrowl();
                 }, (unauthorized)=> {
                     setErrorMessage(unauthorized.message);

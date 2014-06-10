@@ -1,6 +1,6 @@
 package pt.babyHelp.endPoints.userEndPoint;
 
-import pt.babyHelp.bd.Role;
+import pt.babyHelp.bd.embededs.Role;
 
 public class RolesParameters {
     private String[] roles;

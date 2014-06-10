@@ -34,7 +34,6 @@ public class UsersPersistence {
 
         UserFromApp userFromApp = new UserFromApp();
         userFromApp.setEmail(createUser(3).getEmail());
-        userFromApp.save();
 
         Assert.assertEquals(1, BD.ofy().load().type(UserFromApp.class).list().size());
         UserFromApp saved = BD.ofy().load().type(UserFromApp.class).first().now();
@@ -42,11 +41,9 @@ public class UsersPersistence {
 
         userFromApp = new UserFromApp();
         userFromApp.setEmail(createUser(1).getEmail());
-        userFromApp.save();
 
         userFromApp = new UserFromApp();
         userFromApp.setEmail(createUser(2).getEmail());
-        userFromApp.save();
 
         Assert.assertEquals(3, BD.ofy().load().type(UserFromApp.class).list().size());
         UserFromApp located = BD.ofy().load().type(UserFromApp.class).filter("user = ", createUser(1)).first().now();
@@ -58,7 +55,6 @@ public class UsersPersistence {
         UserFromApp user = BD.ofy().load().type(UserFromApp.class).filter("user = ", createUser(2)).first().now();
         //user.createRoles();
         //user.getRoles().add(Role.HEALTHTEC);
-        user.save();
         user = null;
 
         user = BD.ofy().load().type(UserFromApp.class).filter("user = ", createUser(2)).first().now();

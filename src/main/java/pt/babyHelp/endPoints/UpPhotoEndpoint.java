@@ -5,7 +5,6 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.users.User;
-import pt.babyHelp.bd.UploadToken;
 import pt.babyHelp.core.endpoints.ErrorReturn;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,8 +33,6 @@ public class UpPhotoEndpoint {
     private Map<String, Object> delegate() throws UnauthorizedException {
         authorization.check("pedido de url para upload");
 
-        UploadToken uploadToken = new UploadToken();
-        uploadToken.setEmail(authorization.getUserFromApp().getEmail());
 
         Map<String, Object> map = new HashMap<String, Object>();
         String url = BlobstoreServiceFactory.getBlobstoreService().createUploadUrl("/upload");

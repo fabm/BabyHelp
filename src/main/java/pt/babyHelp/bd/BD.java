@@ -10,10 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 public class BD {
-    static {
-        ObjectifyService.register(Photo.class);
-        ObjectifyService.register(UserFromApp.class);
-    }
 
     public static Objectify ofy() {
         return ObjectifyService.ofy();
@@ -70,13 +66,6 @@ public class BD {
         return BD.ofy().load().type(cl).id(id).safe();
     }
 
-    public Key<BD> save() throws PersistenceException {
-        Key<BD> key = BD.ofy().save().entity(this).now();
-        if (key == null) {
-            throw new PersistenceException(this);
-        }
-        return key;
-    }
 
     public void delete() {
         BD.ofy().delete().entity(this).now();

@@ -1,10 +1,12 @@
 package pt.babyHelp.services;
 
 import com.google.api.server.spi.response.UnauthorizedException;
+import pt.babyHelp.bd.Son;
 import pt.babyHelp.core.endpoints.EndPointError;
 import pt.babyHelp.core.endpoints.ErrorReturn;
 import pt.babyHelp.endPoints.UserAcessible;
 import pt.babyHelp.endPoints.userEndPoint.RolesParameters;
+import pt.babyHelp.services.impl.UserBHServiceImpl;
 
 import java.util.Map;
 
@@ -19,7 +21,9 @@ public interface UserBHService extends UserAcessible {
     Map<String, Object> getRoles(String email)
             throws EndPointError, UnauthorizedException;
 
+    Map<String,Object> actionsPending();
 
+    Map<String,Object> setSons(Son[] sons);
 
     enum Error implements ErrorReturn {
         PERSISTENCE(1, "Problema ao tentar guardar %s"),

@@ -4,10 +4,10 @@ import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.users.User;
+import com.googlecode.objectify.Key;
 import pt.babyHelp.bd.Article;
 import pt.babyHelp.bd.BD;
-import pt.babyHelp.bd.PersistenceException;
-import pt.babyHelp.bd.Role;
+import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.core.endpoints.EndPointError;
 import pt.babyHelp.endPoints.Authorization;
 import pt.babyHelp.endPoints.article.ArticleParams;
@@ -52,14 +52,15 @@ public class ArticleServiceImpl implements ArticleService {
         article.setSummary(articleParams.getSummary());
 
 
-        try {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("id", article.save().getId());
-            map.put("message", "Artigo atualizado com sucesso");
-            return map;
-        } catch (PersistenceException e) {
+        Map<String, Object> map = new HashMap<String, Object>();
+
+        Key<Article> id = BD.ofy().save().entity(article).now();
+        if (id == null)
             throw new EndPointError(Error.SAVE_ERROR);
-        }
+
+        map.put("id", id);
+        map.put("message", "Artigo atualizado com sucesso");
+        return map;
     }
 
     @Override

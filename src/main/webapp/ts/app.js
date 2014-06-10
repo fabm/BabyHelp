@@ -113,7 +113,8 @@ var Articles;
                 fUploadAppEngine.form.append('id', id);
                 fUploadAppEngine.up($scope.upFile);
             }, function (error) {
-                gns.growl.setMessage;
+                gns.growl.setMessage(error.error.message, GrowlBH.typeMessage.error);
+                gns.growl.showGrowl();
             }, function (unauthorized) {
                 console.log('sem autorização');
             });
@@ -126,7 +127,7 @@ var Articles;
                     id = success.id;
                     upPhoto();
                 }, function (error) {
-                    setErrorMessage(error.message);
+                    setErrorMessage(error.error.message);
                     gns.growl.showGrowl();
                 }, function (unauthorized) {
                     setErrorMessage(unauthorized.message);
