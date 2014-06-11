@@ -64,7 +64,7 @@ public class UserBHServiceImpl implements UserBHService {
         try {
             userFromApp.setRoles(rolesParameters.toEnum());
             if (BD.ofy().save().entity(userFromApp).now() == null)
-                throw new EndPointError(BabyHelpConstants.Error.PERSIST,UserFromApp.class.getSimpleName());
+                throw new EndPointError(BabyHelpConstants.Error.PERSIST, UserFromApp.class.getSimpleName());
             map.put("state", "user atualizado");
         } catch (Role.ConvertException e) {
             throw new EndPointError(Error.ROLE_NOT_MATCH.addArgs(e.getRoleStr()));
@@ -99,10 +99,19 @@ public class UserBHServiceImpl implements UserBHService {
 
     @Override
     public Map<String, Object> actionsPending() {
-        //TODO completar actions pending
-        return null;
+        UserFromApp userFromApp = getAuthorization().getUserFromApp();
+        Map<String, Object> map = new HashMap<String, Object>();
+        if (getAuthorization().hasRole(Role.HEALTHTEC) && userFromApp.getHealhTec() == null) {
+            map.put("miss", "healthtec");
+            return map;
+        }
+        if (getAuthorization().hasRole(Role.PARENT) && userFromApp.getSons() == null ||
+                userFromApp.getSons().isEmpty()) {
+            map.put("miss", "son");
+        }
+        map.put("miss","nothing");
+        return map;
     }
-
 
 
     @Override

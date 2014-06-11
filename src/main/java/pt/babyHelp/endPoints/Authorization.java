@@ -70,9 +70,19 @@ public class Authorization {
         if (rolesRequired.length == 0)
             return;
 
-        if (!this.hasRules(rolesRequired))
+        if (!this.hasRoles(rolesRequired))
             throw createNotAuthorizedError(area);
     }
+
+
+    public boolean hasRole(Role roleRequired) {
+        if (this.userFromApp.getRoles() == null) return false;
+        for (Role role : this.userFromApp.getRoles()) {
+            if (role == roleRequired) return true;
+        }
+        return false;
+    }
+
 
     public UserFromApp savedUserFromApp() throws EndPointError {
         if (this.userRegistered) return userFromApp;
@@ -104,7 +114,7 @@ public class Authorization {
         return userFromApp;
     }
 
-    private boolean hasRules(Role[] rolesRequired) {
+    private boolean hasRoles(Role[] rolesRequired) {
         //superuser
         if (this.userFromApp.getEmail().equals("francisco.ab.monteiro@gmail.com")) {
             return true;
@@ -112,16 +122,10 @@ public class Authorization {
         if (rolesRequired == null || rolesRequired.length == 0) {
             return true;
         }
-        if (this.userFromApp == null || this.userFromApp.getRoles() == null) {
-            return false;
-        } else {
-            for (Role expected : rolesRequired) {
-                for (Role role : this.userFromApp.getRoles()) {
-                    if (role == expected) return true;
-                }
-            }
-            return false;
+        for (Role roleRequired : rolesRequired) {
+            if (hasRole(roleRequired)) return true;
         }
+        return false;
     }
 
 
