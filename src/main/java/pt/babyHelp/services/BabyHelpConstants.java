@@ -5,7 +5,8 @@ import pt.babyHelp.core.endpoints.ErrorReturn;
 public class BabyHelpConstants{
     public static enum Error implements ErrorReturn{
         NOT_AUTHORIZED(0,"O utilizador não está autorizado a aceder á área de '%s'"),
-        NOT_AUTHENTICATED(1,"O utilizador não está autenticado")
+        NOT_AUTHENTICATED(1,"O utilizador não está autenticado"),
+        PERSIST(2,"Não foi possível persistir a entidade ''%s")
         ;
 
         private int code;

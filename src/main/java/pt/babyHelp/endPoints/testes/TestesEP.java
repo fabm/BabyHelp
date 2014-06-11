@@ -1,13 +1,18 @@
-package pt.babyHelp.endPoints;
+package pt.babyHelp.endPoints.testes;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.Named;
+import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.oauth.OAuthServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import pt.babyHelp.bd.embededs.Role;
+import pt.babyHelp.core.endpoints.EndPointError;
+import pt.babyHelp.endPoints.Constants;
+import pt.babyHelp.services.impl.TestesImpl;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -17,7 +22,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -29,9 +33,10 @@ import java.util.Properties;
                 Constants.IOS_CLIENT_ID, Constants.API_EXPLORER_CLIENT_ID},
         audiences = {Constants.ANDROID_AUDIENCE}
 )
-public class Testes {
+public class TestesEP {
 
     public static UserEntry userCurrent = null;
+    private TestesImpl testesService = new TestesImpl();
 
     @ApiMethod(name = "sendMail", httpMethod = ApiMethod.HttpMethod.POST, path = "send/mail")
     public void sendEmailTest(SendMailParams sendParams) {
@@ -43,11 +48,11 @@ public class Testes {
 
         Message msg = new MimeMessage(session);
         try {
-            msg.setFrom(new InternetAddress(sendParams.emailEmissor, sendParams.emissor));
+            msg.setFrom(new InternetAddress(sendParams.getEmailEmissor(), sendParams.getEmissor()));
             msg.addRecipient(Message.RecipientType.TO,
-                    new InternetAddress(sendParams.emailDestinatario, sendParams.destinatario));
-            msg.setSubject(sendParams.assunto);
-            msg.setText(sendParams.corpo);
+                    new InternetAddress(sendParams.getEmailDestinatario(), sendParams.getDestinatario()));
+            msg.setSubject(sendParams.getAssunto());
+            msg.setText(sendParams.getCorpo());
             Transport.send(msg);
         } catch (MessagingException e) {
             e.printStackTrace();
@@ -74,7 +79,7 @@ public class Testes {
     public Map<String, Object> dadosDaConsola(UserEntry userCurrent) {
         Map<String, Object> map = new HashMap<String, Object>();
         if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Development) {
-            Testes.userCurrent = userCurrent;
+            TestesEP.userCurrent = userCurrent;
         }
         map.put("message", "console");
         return map;
@@ -84,107 +89,31 @@ public class Testes {
     public Map<String, Object> logout() {
         Map<String, Object> map = new HashMap<String, Object>();
         if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Development) {
-            Testes.userCurrent = null;
+            TestesEP.userCurrent = null;
         }
         map.put("message", "console");
         return map;
     }
 
-    public static class SendMailParams {
-
-
-        private String corpo;
-        private String destinatario;
-        private String emissor;
-        private String emailDestinatario;
-        private String emailEmissor;
-        private String assunto;
-
-        public String getCorpo() {
-            return corpo;
-        }
-
-        public void setCorpo(String corpo) {
-            this.corpo = corpo;
-        }
-
-        public String getDestinatario() {
-            return destinatario;
-        }
-
-        public void setDestinatario(String destinatario) {
-            this.destinatario = destinatario;
-        }
-
-        public String getEmissor() {
-            return emissor;
-        }
-
-        public void setEmissor(String emissor) {
-            this.emissor = emissor;
-        }
-
-        public String getEmailDestinatario() {
-            return emailDestinatario;
-        }
-
-        public void setEmailDestinatario(String emailDestinatario) {
-            this.emailDestinatario = emailDestinatario;
-        }
-
-        public String getEmailEmissor() {
-            return emailEmissor;
-        }
-
-        public void setEmailEmissor(String emailEmissor) {
-            this.emailEmissor = emailEmissor;
-        }
-
-        public String getAssunto() {
-            return assunto;
-        }
-
-        public void setAssunto(String assunto) {
-            this.assunto = assunto;
-        }
+    @ApiMethod(name = "insert.son", httpMethod = ApiMethod.HttpMethod.POST, path = "insert/son")
+    public Map<String, Object> insertson(User user,SonParameter sonParameter) throws UnauthorizedException, EndPointError {
+        testesService.setUser(user);
+        testesService.getAuthorization().check("teste de inserção do filho", Role.PARENT);
+        return testesService.insertSun(sonParameter);
     }
 
-    public static class UserEntry {
-        private String email;
-        private List<Role> roles;
-        private boolean registered;
-        private boolean logged;
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public List<Role> getRoles() {
-            return roles;
-        }
-
-        public void setRoles(List<Role> roles) {
-            this.roles = roles;
-        }
-
-        public boolean isRegistered() {
-            return registered;
-        }
-
-        public void setRegistered(boolean registered) {
-            this.registered = registered;
-        }
-
-        public boolean isLogged() {
-            return logged;
-        }
-
-        public void setLogged(boolean logged) {
-            this.logged = logged;
-        }
+    @ApiMethod(name = "list.sons", httpMethod = ApiMethod.HttpMethod.POST, path = "list/sons")
+    public Map<String, Object> listSons(User user,@Named("email")String email) throws UnauthorizedException, EndPointError {
+        testesService.setUser(user);
+        testesService.getAuthorization().check("teste de listagem de filhos", Role.PARENT);
+        return testesService.getSonsList();
     }
+
+    @ApiMethod(name = "list.parents", httpMethod = ApiMethod.HttpMethod.POST, path = "list/parents")
+    public Map<String, Object> listParents(User user,@Named("name")String name) throws UnauthorizedException, EndPointError {
+        testesService.setUser(user);
+        testesService.getAuthorization().check("teste de listagem de filhos", Role.PARENT);
+        return testesService.getParentsList(name);
+    }
+
 }

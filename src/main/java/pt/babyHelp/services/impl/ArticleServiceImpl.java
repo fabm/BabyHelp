@@ -13,6 +13,7 @@ import pt.babyHelp.endPoints.Authorization;
 import pt.babyHelp.endPoints.article.ArticleParams;
 import pt.babyHelp.endPoints.article.ListIDs;
 import pt.babyHelp.services.ArticleService;
+import pt.babyHelp.services.BabyHelpConstants;
 import pt.babyHelp.services.annotations.InstanceType;
 import pt.babyHelp.services.annotations.PhotoUploadClass;
 import pt.babyHelp.services.annotations.PhotoUploadMethod;
@@ -44,7 +45,7 @@ public class ArticleServiceImpl implements ArticleService {
 
 
         Article article = new Article();
-        article.setAuthor(getAuthorization().getRegisteredUser());
+        article.setAuthor(getAuthorization().getUserFromAppKey());
 
         article.setTitle(articleParams.getTitle());
         article.setPhotoUrl(articleParams.getPhotoUrl());
@@ -56,7 +57,7 @@ public class ArticleServiceImpl implements ArticleService {
 
         Key<Article> id = BD.ofy().save().entity(article).now();
         if (id == null)
-            throw new EndPointError(Error.SAVE_ERROR);
+            throw new EndPointError(BabyHelpConstants.Error.PERSIST,Article.class.getSimpleName());
 
         map.put("id", id);
         map.put("message", "Artigo atualizado com sucesso");

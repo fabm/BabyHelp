@@ -1,24 +1,28 @@
 package pt.babyHelp.bd;
 
-import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Id;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 
+@Entity
 public class Son {
-    private String photoKey;
-    private Date birthDate;
-    private String livesWith;
-    private List<Key<UserFromApp>> parents = new ArrayList<Key<UserFromApp>>();
-
-    public List<Key<UserFromApp>> getParents() {
-        return parents;
+    static {
+        BD.register(Son.class);
     }
 
-    public void setParents(List<Key<UserFromApp>> parents) {
-        this.parents = parents;
+    @Id
+    private String name;
+    private String photoKey;
+    private Date birthDate;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPhotoKey() {
@@ -37,11 +41,4 @@ public class Son {
         this.birthDate = birthDate;
     }
 
-    public String getLivesWith() {
-        return livesWith;
-    }
-
-    public void setLivesWith(String livesWith) {
-        this.livesWith = livesWith;
-    }
 }

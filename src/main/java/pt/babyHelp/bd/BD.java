@@ -3,6 +3,8 @@ package pt.babyHelp.bd;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
+import pt.babyHelp.core.endpoints.EndPointError;
+import pt.babyHelp.services.BabyHelpConstants;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,6 +16,12 @@ public class BD {
     public static Objectify ofy() {
         return ObjectifyService.ofy();
     }
+
+    public static <T>Key<T> checkKey(Key<T> key,Class<T> clazz) throws EndPointError {
+        if(key == null)throw new EndPointError(BabyHelpConstants.Error.PERSIST,clazz.getSimpleName());
+        return key;
+    }
+
     public static <T> List<Key<T>> keys(Class<T> entityClass, long...ids){
         List<Key<T>> list = new ArrayList<Key<T>>(ids.length);
         for (long id:ids){
@@ -69,6 +77,11 @@ public class BD {
 
     public void delete() {
         BD.ofy().delete().entity(this).now();
+    }
+
+
+    public static void register(Class<?> clazz) {
+        ObjectifyService.register(clazz);
     }
 
 

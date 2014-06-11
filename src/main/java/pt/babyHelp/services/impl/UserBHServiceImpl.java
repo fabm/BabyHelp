@@ -2,7 +2,6 @@ package pt.babyHelp.services.impl;
 
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
-import com.googlecode.objectify.Key;
 import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.Son;
 import pt.babyHelp.bd.UserFromApp;
@@ -11,6 +10,7 @@ import pt.babyHelp.core.endpoints.EndPointError;
 import pt.babyHelp.core.validators.EmailChecker;
 import pt.babyHelp.endPoints.Authorization;
 import pt.babyHelp.endPoints.userEndPoint.RolesParameters;
+import pt.babyHelp.services.BabyHelpConstants;
 import pt.babyHelp.services.UserBHService;
 
 import java.util.*;
@@ -64,7 +64,7 @@ public class UserBHServiceImpl implements UserBHService {
         try {
             userFromApp.setRoles(rolesParameters.toEnum());
             if (BD.ofy().save().entity(userFromApp).now() == null)
-                throw new EndPointError(Error.PERSISTENCE.addArgs("UserFromApp"));
+                throw new EndPointError(BabyHelpConstants.Error.PERSIST,UserFromApp.class.getSimpleName());
             map.put("state", "user atualizado");
         } catch (Role.ConvertException e) {
             throw new EndPointError(Error.ROLE_NOT_MATCH.addArgs(e.getRoleStr()));

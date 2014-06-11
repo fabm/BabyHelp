@@ -6,7 +6,6 @@ import pt.babyHelp.core.endpoints.EndPointError;
 import pt.babyHelp.core.endpoints.ErrorReturn;
 import pt.babyHelp.endPoints.UserAcessible;
 import pt.babyHelp.endPoints.userEndPoint.RolesParameters;
-import pt.babyHelp.services.impl.UserBHServiceImpl;
 
 import java.util.Map;
 
@@ -26,10 +25,9 @@ public interface UserBHService extends UserAcessible {
     Map<String,Object> setSons(Son[] sons);
 
     enum Error implements ErrorReturn {
-        PERSISTENCE(1, "Problema ao tentar guardar %s"),
-        ROLE_NOT_MATCH(2, "Não é possível corresponder o role %s a nenhum role existente"),
-        EMAIL_REQUIRED(3, "O campo email é obrigatório"),
-        EMAIL_MALFORMED(4, "O campo email está mal formatado");
+        ROLE_NOT_MATCH(0, "Não é possível corresponder o role %s a nenhum role existente"),
+        EMAIL_REQUIRED(1, "O campo email é obrigatório"),
+        EMAIL_MALFORMED(2, "O campo email está mal formatado");
 
         private String msg;
         private int code;

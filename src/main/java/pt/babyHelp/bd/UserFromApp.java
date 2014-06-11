@@ -1,6 +1,5 @@
 package pt.babyHelp.bd;
 
-import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
@@ -14,7 +13,7 @@ import java.util.Set;
 @Entity
 public class UserFromApp {
     static {
-        ObjectifyService.register(UserFromApp.class);
+        BD.register(UserFromApp.class);
     }
 
     HealhTec healhTec;

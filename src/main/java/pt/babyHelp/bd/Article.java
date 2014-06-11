@@ -1,7 +1,6 @@
 package pt.babyHelp.bd;
 
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
@@ -9,9 +8,8 @@ import com.googlecode.objectify.annotation.Index;
 @Entity
 public class Article {
     static {
-        ObjectifyService.register(Article.class);
+        BD.register(Article.class);
     }
-
 
     @Id
     private Long id;
@@ -38,8 +36,8 @@ public class Article {
         return author;
     }
 
-    public void setAuthor(UserFromApp author) {
-        this.author = Key.create(UserFromApp.class, author.getEmail());
+    public void setAuthor(Key<UserFromApp> author) {
+        this.author = author;
     }
 
     public String getTitle() {

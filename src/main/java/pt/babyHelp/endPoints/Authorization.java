@@ -1,16 +1,19 @@
 package pt.babyHelp.endPoints;
 
 
-import com.google.api.client.util.Sets;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.utils.SystemProperty;
 import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.bd.embededs.Role;
+import pt.babyHelp.core.endpoints.EndPointError;
+import pt.babyHelp.endPoints.testes.TestesEP;
+import pt.babyHelp.endPoints.testes.UserEntry;
 import pt.babyHelp.services.BabyHelpConstants;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.ResourceBundle;
 
 public class Authorization {
 
@@ -71,29 +74,32 @@ public class Authorization {
             throw createNotAuthorizedError(area);
     }
 
-    public UserFromApp getRegisteredUser() {
-        if (this.userRegistered) return getUserFromApp();
-        BD.ofy().save().entity(getUserFromApp()).now();
-        this.userRegistered = true;
-        return getUserFromApp();
+    public UserFromApp savedUserFromApp() throws EndPointError {
+        if (this.userRegistered) return userFromApp;
+        BD.checkKey(BD.ofy().save().entity(getUserFromApp()).now(), UserFromApp.class);
+        userRegistered = true;
+        return userFromApp;
     }
 
     private UserFromApp devMode() {
-        if (Testes.userCurrent != null && !Testes.userCurrent.isLogged()) return null;
-
-
+        if (TestesEP.userCurrent != null && !TestesEP.userCurrent.isLogged()) return null;
         UserFromApp userFromApp = new UserFromApp();
 
-        if (Testes.userCurrent == null) {
+        if (TestesEP.userCurrent == null) {
             ResourceBundle bundle = ResourceBundle.getBundle("user");
-            Testes.userCurrent.setEmail(bundle.getString("email"));
-            Testes.userCurrent.setRegistered(bundle.getString("registered").equals("true"));
+            String loggedParam = bundle.getString("logged");
+            if (loggedParam == null || !loggedParam.equals("true")) return null;
+            TestesEP.userCurrent = new UserEntry();
+            TestesEP.userCurrent.setLogged(true);
+            TestesEP.userCurrent.setEmail(bundle.getString("email"));
+            TestesEP.userCurrent.setRegistered(bundle.getString("registered").equals("true"));
             Role[] arrRoles = Role.toRolesArray(bundle.getString("roles").split(","));
-            Testes.userCurrent.setRoles(Arrays.asList(arrRoles));
+            TestesEP.userCurrent.setRoles(Arrays.asList(arrRoles));
         }
-        userFromApp.setEmail(Testes.userCurrent.getEmail());
-        this.userRegistered = Testes.userCurrent.isRegistered();
-        userFromApp.setRoles((Role[]) Testes.userCurrent.getRoles().toArray());
+        userFromApp.setEmail(TestesEP.userCurrent.getEmail());
+        this.userRegistered = TestesEP.userCurrent.isRegistered();
+        Role[] roles = (Role[]) TestesEP.userCurrent.getRoles().toArray();
+        userFromApp.setRoles(roles);
 
         return userFromApp;
     }
