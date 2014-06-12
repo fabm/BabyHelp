@@ -9,7 +9,6 @@ import pt.babyHelp.core.endpoints.EndPointError;
 import pt.babyHelp.endPoints.Authorization;
 import pt.babyHelp.endPoints.UserAcessible;
 import pt.babyHelp.endPoints.testes.SonParameter;
-import pt.babyHelp.endPoints.userEndPoint.SonsParameters;
 
 import java.util.*;
 
@@ -64,25 +63,15 @@ public class TestesImpl implements UserAcessible {
 
         List<Map<String, Object>> sonList = new ArrayList<Map<String, Object>>();
 
-        List<String> sonsName = new ArrayList<String>();
-
-        String names[] = new String[loaded.count()];
-        Key<Son> keys[] = new Key[loaded.count()];
-
-
-        int i = 0;
-        for (Parentality par : loaded) {
-            names[i] = par.getSon().getName();
-            keys[i] = par.getSon();
-            i++;
-        }
-
 
         Map<String, Object> sonMap = new HashMap<String, Object>();
-        Map<String, Son> m = BD.ofy().load().type(Son.class).ids(names);
-        Collection<Son> values = m.values();
+        List<Key<Son>> keys = new ArrayList<Key<Son>>(loaded.count());
 
-        for (Son son : values) {
+        for(Parentality par: loaded){
+            keys.add(par.getSon());
+        }
+
+        for (Son son : BD.ofy().load().keys(keys).values()) {
             sonMap.put("name", son.getName());
             sonMap.put("birthDate", son.getBirthDate());
             sonMap.put("photoKey", son.getPhotoKey());
@@ -95,7 +84,12 @@ public class TestesImpl implements UserAcessible {
         return map;
     }
 
+    public Map<String,Object> getSonsFilters(){
+        return null;
+    }
+
     public Map<String, Object> getParentsList(String name) {
+
         return null;
     }
 
