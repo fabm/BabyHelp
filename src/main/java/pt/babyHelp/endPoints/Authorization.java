@@ -103,13 +103,11 @@ public class Authorization {
             TestesEP.userCurrent.setLogged(true);
             TestesEP.userCurrent.setEmail(bundle.getString("email"));
             TestesEP.userCurrent.setRegistered(bundle.getString("registered").equals("true"));
-            Role[] arrRoles = Role.toRolesArray(bundle.getString("roles").split(","));
-            TestesEP.userCurrent.setRoles(Arrays.asList(arrRoles));
+            TestesEP.userCurrent.setRoles(Arrays.asList(bundle.getString("roles").split(",")));
         }
         userFromApp.setEmail(TestesEP.userCurrent.getEmail());
         this.userRegistered = TestesEP.userCurrent.isRegistered();
-        Role[] roles = (Role[]) TestesEP.userCurrent.getRoles().toArray();
-        userFromApp.setRoles(roles);
+        userFromApp.setRoles(Role.toRolesArray(TestesEP.userCurrent.getRoles()));
 
         return userFromApp;
     }

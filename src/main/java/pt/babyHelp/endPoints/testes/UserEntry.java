@@ -6,7 +6,7 @@ import java.util.List;
 
 public class UserEntry {
     private String email;
-    private List<Role> roles;
+    private List<String> roles;
     private boolean registered;
     private boolean logged;
 
@@ -18,11 +18,11 @@ public class UserEntry {
         this.email = email;
     }
 
-    public List<Role> getRoles() {
+    public List<String> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<Role> roles) {
+    public void setRoles(List<String> roles) {
         this.roles = roles;
     }
 

@@ -7,9 +7,6 @@ import com.googlecode.objectify.annotation.Index;
 
 @Entity
 public class Parentality {
-    static {
-        BD.register(Parentality.class);
-    }
 
     public static Class<Parentality> getThisClass(){
         return Parentality.class;

@@ -96,21 +96,29 @@ public class TestesEP {
     }
 
     @ApiMethod(name = "insert.son", httpMethod = ApiMethod.HttpMethod.POST, path = "insert/son")
-    public Map<String, Object> insertson(User user,SonParameter sonParameter) throws UnauthorizedException, EndPointError {
+    public Map<String, Object> insertson(User user,SonParameter sonParameter) throws UnauthorizedException{
         testesService.setUser(user);
         testesService.getAuthorization().check("teste de inserção do filho", Role.PARENT);
-        return testesService.insertSun(sonParameter);
+        try {
+            return testesService.insertSun();
+        } catch (EndPointError endPointError) {
+            return endPointError.getMap();
+        }
     }
 
     @ApiMethod(name = "list.sons", httpMethod = ApiMethod.HttpMethod.POST, path = "list/sons")
-    public Map<String, Object> listSons(User user,@Named("email")String email) throws UnauthorizedException, EndPointError {
+    public Map<String, Object> listSons(User user,@Named("email")String email) throws UnauthorizedException{
         testesService.setUser(user);
         testesService.getAuthorization().check("teste de listagem de filhos", Role.PARENT);
-        return testesService.getSonsList();
+        try {
+            return testesService.getSonsList();
+        } catch (EndPointError endPointError) {
+            return endPointError.getMap();
+        }
     }
 
     @ApiMethod(name = "list.parents", httpMethod = ApiMethod.HttpMethod.POST, path = "list/parents")
-    public Map<String, Object> listParents(User user,@Named("name")String name) throws UnauthorizedException, EndPointError {
+    public Map<String, Object> listParents(User user,@Named("name")String name) throws UnauthorizedException{
         testesService.setUser(user);
         testesService.getAuthorization().check("teste de listagem de filhos", Role.PARENT);
         return testesService.getParentsList(name);

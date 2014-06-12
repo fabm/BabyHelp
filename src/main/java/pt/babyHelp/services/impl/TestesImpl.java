@@ -9,13 +9,27 @@ import pt.babyHelp.core.endpoints.EndPointError;
 import pt.babyHelp.endPoints.Authorization;
 import pt.babyHelp.endPoints.UserAcessible;
 import pt.babyHelp.endPoints.testes.SonParameter;
+import pt.babyHelp.endPoints.userEndPoint.SonsParameters;
 
 import java.util.*;
 
 public class TestesImpl implements UserAcessible {
     private Authorization authorization;
 
-    public Map<String, Object> insertSun(SonParameter sonParameter) throws EndPointError {
+    private SonParameter putSomeValuesForMe(){
+        SonParameter sonParameter = new SonParameter();
+        MyDate myDate = new MyDate();
+        myDate.setDay(25);
+        myDate.setMonth(5);
+        myDate.setYear(2000);
+        sonParameter.setBirthDay(myDate);
+        sonParameter.setName("test name");
+        sonParameter.setPhotokey("asddfhnrtnas");
+        return sonParameter;
+    }
+
+    public Map<String, Object> insertSun() throws EndPointError {
+        SonParameter sonParameter = putSomeValuesForMe();
         Map<String, Object> map = new HashMap<String, Object>();
 
         Son son = new Son();
@@ -26,15 +40,12 @@ public class TestesImpl implements UserAcessible {
         son.setPhotoKey(sonParameter.getPhotokey());
 
         Key<Son> sonKey = BD.checkKey(BD.ofy().save().entity(son).now(), Son.class);
-        Key<UserFromApp> userParentKey = Key.create(sonKey, UserFromApp.class, getAuthorization().savedUserFromApp().getEmail());
-        Key<Son> sonParentKey = Key.create(Key.create(getAuthorization().getUserFromApp()), Son.class, sonKey.getName());
-
-        BD.register(Parentality.class);
+        Key<UserFromApp> userParentKey = Key.create(getAuthorization().savedUserFromApp());
 
         Parentality parentality = new Parentality();
         parentality.setConfirmed(true);
         parentality.setUserFromApp(userParentKey);
-        parentality.setSon(sonParentKey);
+        parentality.setSon(sonKey);
 
         Key<Parentality> id = BD.ofy().save().entity(parentality).now();
         BD.checkKey(id, Parentality.class);
@@ -75,6 +86,7 @@ public class TestesImpl implements UserAcessible {
             sonMap.put("name", son.getName());
             sonMap.put("birthDate", son.getBirthDate());
             sonMap.put("photoKey", son.getPhotoKey());
+            sonList.add(sonMap);
         }
 
         Map<String, Object> map = new HashMap<String, Object>();

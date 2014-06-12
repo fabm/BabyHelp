@@ -13,6 +13,13 @@ import java.util.Map;
 
 public class BD {
 
+    static {
+        ObjectifyService.register(UserFromApp.class);
+        ObjectifyService.register(Article.class);
+        ObjectifyService.register(Son.class);
+        ObjectifyService.register(Parentality.class);
+    }
+
     public static Objectify ofy() {
         return ObjectifyService.ofy();
     }

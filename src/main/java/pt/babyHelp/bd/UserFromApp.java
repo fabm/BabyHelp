@@ -12,9 +12,6 @@ import java.util.Set;
 
 @Entity
 public class UserFromApp {
-    static {
-        BD.register(UserFromApp.class);
-    }
 
     HealhTec healhTec;
     @Id

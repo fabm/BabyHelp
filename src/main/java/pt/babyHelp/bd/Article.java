@@ -7,9 +7,6 @@ import com.googlecode.objectify.annotation.Index;
 
 @Entity
 public class Article {
-    static {
-        BD.register(Article.class);
-    }
 
     @Id
     private Long id;

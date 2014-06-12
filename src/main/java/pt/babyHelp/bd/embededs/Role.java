@@ -13,12 +13,12 @@ public enum Role {
         }
     }
 
-    public static Role[] toRolesArray(String[] sRoles){
-        Role[] roles = new Role[sRoles.length];
-        for (int i = 0; i < sRoles.length; i++) {
-            roles[i] = Role.convert(sRoles[i]);
+    public static Role[] toRolesArray(List<String> sRoles){
+        List<Role>list = new ArrayList<Role>(sRoles.size());
+        for(String strRole:sRoles){
+            list.add(Role.convert(strRole));
         }
-        return roles;
+        return list.toArray(new Role[list.size()]);
     }
 
     public static Set<String> toStringSet(Collection<Role> roles){

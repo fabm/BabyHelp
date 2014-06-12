@@ -8,9 +8,6 @@ import java.util.Date;
 
 @Entity
 public class Son {
-    static {
-        BD.register(Son.class);
-    }
 
     @Id
     private String name;

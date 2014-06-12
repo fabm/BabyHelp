@@ -45,7 +45,7 @@ public class ArticleServiceImpl implements ArticleService {
 
 
         Article article = new Article();
-        article.setAuthor(getAuthorization().getUserFromAppKey());
+        article.setAuthor(Key.create(getAuthorization().savedUserFromApp()));
 
         article.setTitle(articleParams.getTitle());
         article.setPhotoUrl(articleParams.getPhotoUrl());

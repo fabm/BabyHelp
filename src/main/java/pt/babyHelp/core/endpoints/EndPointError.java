@@ -6,6 +6,7 @@ import java.util.Map;
 
 public class EndPointError extends Exception {
 
+
     private ErrorReturn errorReturn;
 
     public EndPointError(ErrorReturn errorReturn,String...parameters) {
