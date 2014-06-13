@@ -3,6 +3,7 @@ package pt.babyHelp.endPoints.testes;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
+import com.google.api.server.spi.config.Nullable;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.oauth.OAuthServiceFactory;
@@ -96,18 +97,19 @@ public class TestesEP {
     }
 
     @ApiMethod(name = "insert.son", httpMethod = ApiMethod.HttpMethod.POST, path = "insert/son")
-    public Map<String, Object> insertson(User user,SonParameter sonParameter) throws UnauthorizedException{
+    public Map<String, Object> insertson(User user, SonParameter sonParameter) throws UnauthorizedException {
         testesService.setUser(user);
         testesService.getAuthorization().check("teste de inserção do filho", Role.PARENT);
         try {
-            return testesService.insertSun();
+            testesService.getAuthorization().checkDevMode();
+            return testesService.insertSuns();
         } catch (EndPointError endPointError) {
             return endPointError.getMap();
         }
     }
 
     @ApiMethod(name = "list.sons", httpMethod = ApiMethod.HttpMethod.POST, path = "list/sons")
-    public Map<String, Object> listSons(User user,@Named("email")String email) throws UnauthorizedException{
+    public Map<String, Object> listSons(User user, @Named("email") String email) throws UnauthorizedException {
         testesService.setUser(user);
         testesService.getAuthorization().check("teste de listagem de filhos", Role.PARENT);
         try {
@@ -118,10 +120,24 @@ public class TestesEP {
     }
 
     @ApiMethod(name = "list.parents", httpMethod = ApiMethod.HttpMethod.POST, path = "list/parents")
-    public Map<String, Object> listParents(User user,@Named("name")String name) throws UnauthorizedException{
+    public Map<String, Object> listParents(User user, @Named("name") String name) throws UnauthorizedException {
         testesService.setUser(user);
         testesService.getAuthorization().check("teste de listagem de filhos", Role.PARENT);
         return testesService.getParentsList(name);
     }
+
+    @ApiMethod(name = "list.sonsq", httpMethod = ApiMethod.HttpMethod.POST, path = "list/sonsq")
+    public Map<String, Object> listsonsq(User user, @Named("q") String q,
+                                         @Nullable
+                                         @Named("cursor")
+                                         String cursor
+
+    ) throws UnauthorizedException {
+        testesService.setUser(user);
+        testesService.getAuthorization().checkDevMode();
+        testesService.getAuthorization().check("teste de listagem de filhos com query", Role.PARENT);
+        return testesService.getParentsListQ(q);
+    }
+
 
 }

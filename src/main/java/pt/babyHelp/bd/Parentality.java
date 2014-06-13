@@ -1,6 +1,5 @@
 package pt.babyHelp.bd;
 
-import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
@@ -8,32 +7,28 @@ import com.googlecode.objectify.annotation.Index;
 @Entity
 public class Parentality {
 
-    public static Class<Parentality> getThisClass(){
-        return Parentality.class;
-    }
-
     @Id
     private Long id;
     @Index
-    private Key<UserFromApp> userFromApp;
+    private String userFromAppEmail;
     @Index
-    private Key<Son> son;
+    private String sonName;
     private boolean confirmed = false;
 
-    public Key<UserFromApp> getUserFromApp() {
-        return userFromApp;
+    public static Class<Parentality> getThisClass() {
+        return Parentality.class;
     }
 
-    public void setUserFromApp(Key<UserFromApp> userFromApp) {
-        this.userFromApp = userFromApp;
+    public Long getId() {
+        return id;
     }
 
-    public Key<Son> getSon() {
-        return son;
+    public String getUserFromAppEmail() {
+        return userFromAppEmail;
     }
 
-    public void setSon(Key<Son> son) {
-        this.son = son;
+    public void setUserFromAppEmail(String userFromAppEmail) {
+        this.userFromAppEmail = userFromAppEmail;
     }
 
     public boolean isConfirmed() {
@@ -42,5 +37,13 @@ public class Parentality {
 
     public void setConfirmed(boolean confirmed) {
         this.confirmed = confirmed;
+    }
+
+    public String getSonName() {
+        return sonName;
+    }
+
+    public void setSonName(String sonName) {
+        this.sonName = sonName;
     }
 }

@@ -74,6 +74,10 @@ public class Authorization {
             throw createNotAuthorizedError(area);
     }
 
+    public void checkDevMode() {
+        if (SystemProperty.Environment.Value.Development != SystemProperty.Environment.Value.Development)
+            createNotAuthenticatedError("Área apenas premitida em devmode");
+    }
 
     public boolean hasRole(Role roleRequired) {
         if (this.userFromApp.getRoles() == null) return false;

@@ -2,6 +2,17 @@ package pt.babyHelp.bd;
 
 public class MyDate {
     int day;
+    int month;
+    int year;
+
+    public MyDate() {
+    }
+
+    public MyDate(int day, int month, int year) {
+        this.day = day;
+        this.month = month;
+        this.year = year;
+    }
 
     public int getDay() {
         return day;
@@ -26,7 +37,4 @@ public class MyDate {
     public void setYear(int year) {
         this.year = year;
     }
-
-    int month;
-    int year;
 }

@@ -15,63 +15,79 @@ import java.util.*;
 public class TestesImpl implements UserAcessible {
     private Authorization authorization;
 
-    private SonParameter putSomeValuesForMe(){
+    private List<SonParameter> putSomeValuesForMe() {
+        List<SonParameter> list = new ArrayList<SonParameter>();
         SonParameter sonParameter = new SonParameter();
-        MyDate myDate = new MyDate();
-        myDate.setDay(25);
-        myDate.setMonth(5);
-        myDate.setYear(2000);
+        MyDate myDate = new MyDate(25, 5, 2000);
         sonParameter.setBirthDay(myDate);
         sonParameter.setName("test name");
         sonParameter.setPhotokey("asddfhnrtnas");
-        return sonParameter;
+        list.add(sonParameter);
+
+        sonParameter = new SonParameter();
+        myDate = new MyDate(10, 1, 1999);
+        sonParameter.setBirthDay(myDate);
+        sonParameter.setName("blabla");
+        sonParameter.setPhotokey("asdfgh");
+        list.add(sonParameter);
+
+        sonParameter = new SonParameter();
+        myDate = new MyDate(2, 3, 1998);
+        sonParameter.setBirthDay(myDate);
+        sonParameter.setName("another name");
+        sonParameter.setPhotokey("xxxxxx");
+        list.add(sonParameter);
+        return list;
     }
 
-    public Map<String, Object> insertSun() throws EndPointError {
-        SonParameter sonParameter = putSomeValuesForMe();
+    public Map<String, Object> insertSuns() throws EndPointError {
         Map<String, Object> map = new HashMap<String, Object>();
 
-        Son son = new Son();
-        MyDate bdParameter = sonParameter.getBirthDay();
-        Calendar calendar = new GregorianCalendar(bdParameter.getYear(), bdParameter.getMonth() - 1, bdParameter.getDay());
-        son.setBirthDate(calendar.getTime());
-        son.setName(sonParameter.getName());
-        son.setPhotoKey(sonParameter.getPhotokey());
+        for (SonParameter sonParameter : putSomeValuesForMe()) {
 
-        Key<Son> sonKey = BD.checkKey(BD.ofy().save().entity(son).now(), Son.class);
-        Key<UserFromApp> userParentKey = Key.create(getAuthorization().savedUserFromApp());
+            Son son = new Son();
+            MyDate bdParameter = sonParameter.getBirthDay();
+            Calendar calendar = new GregorianCalendar(bdParameter.getYear(), bdParameter.getMonth() - 1, bdParameter.getDay());
+            son.setBirthDate(calendar.getTime());
+            son.setName(sonParameter.getName());
+            son.setPhotoKey(sonParameter.getPhotokey());
 
-        Parentality parentality = new Parentality();
-        parentality.setConfirmed(true);
-        parentality.setUserFromApp(userParentKey);
-        parentality.setSon(sonKey);
+            String sonName = BD.checkKey(BD.ofy().save().entity(son).now(), Son.class).getName();
+            String userParentEmail = getAuthorization().savedUserFromApp().getEmail();
 
-        Key<Parentality> id = BD.ofy().save().entity(parentality).now();
-        BD.checkKey(id, Parentality.class);
+            Parentality parentality = new Parentality();
+            parentality.setConfirmed(true);
+            parentality.setUserFromAppEmail(userParentEmail);
+            parentality.setSonName(sonName);
 
+            Key<Parentality> id = BD.ofy().save().entity(parentality).now();
+            BD.checkKey(id, Parentality.class);
+
+        }
         map.put("created", "parentality");
         return map;
     }
 
 
+    private Collection<Son> queriedSons() {
+        String email = getAuthorization().getUserFromApp().getEmail();
+
+        Query<Parentality> loaded = BD.ofy().load().type(Parentality.class).filter("userFromAppEmail = ", email);
+
+
+        List<String> sonIds = new ArrayList<String>(loaded.count());
+
+        for (Parentality par : loaded) {
+            sonIds.add(par.getSonName());
+        }
+        return BD.ofy().load().type(Son.class).ids(sonIds).values();
+    }
+
     public Map<String, Object> getSonsList() throws EndPointError {
-
-
-        Key<UserFromApp> uk = Key.create(getAuthorization().getUserFromApp());
-
-        Query<Parentality> loaded = BD.ofy().load().type(Parentality.getThisClass()).filter("userFromApp = ", uk);
-
+        Map<String, Object> sonMap = new HashMap<String, Object>();
         List<Map<String, Object>> sonList = new ArrayList<Map<String, Object>>();
 
-
-        Map<String, Object> sonMap = new HashMap<String, Object>();
-        List<Key<Son>> keys = new ArrayList<Key<Son>>(loaded.count());
-
-        for(Parentality par: loaded){
-            keys.add(par.getSon());
-        }
-
-        for (Son son : BD.ofy().load().keys(keys).values()) {
+        for (Son son : queriedSons()) {
             sonMap.put("name", son.getName());
             sonMap.put("birthDate", son.getBirthDate());
             sonMap.put("photoKey", son.getPhotoKey());
@@ -84,7 +100,7 @@ public class TestesImpl implements UserAcessible {
         return map;
     }
 
-    public Map<String,Object> getSonsFilters(){
+    public Map<String, Object> getSonsFilters() {
         return null;
     }
 
@@ -103,4 +119,19 @@ public class TestesImpl implements UserAcessible {
         return authorization;
     }
 
+    public Map<String, Object> getParentsListQ(String q) {
+        List<Map<String, Object>> sons = new ArrayList<Map<String, Object>>();
+        for (Son son : queriedSons()) {
+            if (son.getName().contains(q)) {
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("name", son.getName());
+                map.put("birthday", son.getBirthDate());
+                map.put("photokey", son.getPhotoKey());
+                sons.add(map);
+            }
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("sons", sons);
+        return map;
+    }
 }

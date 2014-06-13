@@ -8,7 +8,6 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import pt.babyHelp.bd.BD;
-import pt.babyHelp.bd.PersistenceException;
 import pt.babyHelp.bd.UserFromApp;
 
 import java.lang.reflect.Field;
@@ -21,12 +20,12 @@ public class UsersPersistence {
     public Environment store = new Environment(true);
 
     @Test
-    public void testBattery() throws NoSuchFieldException, IllegalAccessException, InstantiationException, PersistenceException {
+    public void testBattery() throws NoSuchFieldException, IllegalAccessException, InstantiationException{
         saveAndSearch();
         updateAndRoles();
     }
 
-    public void saveAndSearch() throws NoSuchFieldException, IllegalAccessException, InstantiationException, PersistenceException {
+    public void saveAndSearch() throws NoSuchFieldException, IllegalAccessException, InstantiationException {
 
 
         UserService userService = UserServiceFactory.getUserService();
@@ -51,7 +50,7 @@ public class UsersPersistence {
         Assert.assertEquals("first@mail.pt", located.getEmail());
     }
 
-    public void updateAndRoles() throws NoSuchFieldException, IllegalAccessException, PersistenceException {
+    public void updateAndRoles() throws NoSuchFieldException, IllegalAccessException{
         UserFromApp user = BD.ofy().load().type(UserFromApp.class).filter("user = ", createUser(2)).first().now();
         //user.createRoles();
         //user.getRoles().add(Role.HEALTHTEC);
