@@ -80,6 +80,7 @@ public class TestesImpl implements UserAcessible {
         for (Parentality par : loaded) {
             sonIds.add(par.getSonName());
         }
+        sonIds.add("aa");
         return BD.ofy().load().type(Son.class).ids(sonIds).values();
     }
 
