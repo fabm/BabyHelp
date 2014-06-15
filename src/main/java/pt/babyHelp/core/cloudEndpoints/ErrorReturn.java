@@ -1,4 +1,4 @@
-package pt.babyHelp.core.endpoints;
+package pt.babyHelp.core.cloudEndpoints;
 
 public interface ErrorReturn {
     String getContext();

@@ -5,9 +5,8 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.users.User;
-import pt.babyHelp.core.endpoints.ErrorReturn;
+import pt.babyHelp.core.cloudEndpoints.ErrorReturn;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 

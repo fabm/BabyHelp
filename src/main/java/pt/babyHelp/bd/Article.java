@@ -1,21 +1,44 @@
 package pt.babyHelp.bd;
 
-import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
+import pt.babyHelp.core.pojoMap.ToMap;
 
 @Entity
 public class Article {
 
     @Id
+    @ToMap
     private Long id;
+
     @Index
-    private Key<UserFromApp> author;
+    @ToMap("author")
+    private String authorEmail;
+
+    @ToMap
     private String title;
+
+    @ToMap
     private String body;
+
+    @ToMap
     private String summary;
-    private String photoUrl;
+
+    @ToMap
+    private String photoKey;
+
+    @Index
+    @ToMap("public")
+    private boolean isPublic;
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
 
     public String getSummary() {
         return summary;
@@ -27,14 +50,6 @@ public class Article {
 
     public Long getId() {
         return id;
-    }
-
-    public Key getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(Key<UserFromApp> author) {
-        this.author = author;
     }
 
     public String getTitle() {
@@ -53,12 +68,19 @@ public class Article {
         this.body = body;
     }
 
-    public String getPhotoUrl() {
-        return photoUrl;
+    public String getPhotoKey() {
+        return photoKey;
     }
 
-    public void setPhotoUrl(String photoUrl) {
-        this.photoUrl = photoUrl;
+    public void setPhotoKey(String photoKey) {
+        this.photoKey = photoKey;
     }
 
+    public String getAuthorEmail() {
+        return authorEmail;
+    }
+
+    public void setAuthorEmail(String authorEmail) {
+        this.authorEmail = authorEmail;
+    }
 }

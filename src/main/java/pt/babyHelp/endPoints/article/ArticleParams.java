@@ -1,49 +1,61 @@
 package pt.babyHelp.endPoints.article;
 
+import pt.babyHelp.core.cloudEndpoints.CEPUtils;
+import pt.babyHelp.core.cloudEndpoints.EndPointError;
+import pt.babyHelp.services.ArticleService;
+
+import java.util.Map;
+
 public class ArticleParams {
     private String title;
     private String photoUrl;
     private String body;
     private String summary;
-    private Long id = null;
+    private boolean isPublic;
+    private Long id;
 
-    public String getSummary() {
-        return summary;
+    public ArticleParams(Map<String, Object> entryMap, Type type) throws EndPointError {
+        try {
+            this.title = CEPUtils.requiredField(entryMap, "title", "Titulo");
+            this.photoUrl = CEPUtils.notRequiredField(entryMap, "photoUrl");
+            this.body = CEPUtils.requiredField(entryMap, "body", "Conteúdo");
+            this.summary = CEPUtils.requiredField(entryMap, "summary", "Resumo");
+            this.isPublic = CEPUtils.requiredField(entryMap, "isPublic", "Público");
+            if (type == Type.UPDATE)
+                CEPUtils.requiredField(entryMap, "id", "Id");
+        } catch (EndPointError endPointError) {
+            if (endPointError.getErrorReturn() == EndPointError.GlobalErrorReturn.FIELD_REQUIRED) {
+                throw new EndPointError(ArticleService.Error.FIELD_REQUIRED, endPointError.getParameters());
+            }
+        }
     }
 
-    public void setSummary(String summary) {
-        this.summary = summary;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getBody() {
-        return body;
-    }
-
-    public void setBody(String body) {
-        this.body = body;
-    }
 
     public String getTitle() {
         return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getPhotoUrl() {
         return photoUrl;
     }
 
-    public void setPhotoUrl(String photoUrl) {
-        this.photoUrl = photoUrl;
+    public String getBody() {
+        return body;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public static enum Type {
+        CREATE, UPDATE
     }
 }

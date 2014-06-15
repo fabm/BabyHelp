@@ -95,8 +95,7 @@ app.directive('modalDialog', function () {
 module Articles {
     var id:number = null;
 
-    export function EditArticleCtrl($scope, $stateParams, gns:GrowlAndState, articleService:ArticlesService,
-    fUploadAppEngine, photoTokenService) {
+    export function EditArticleCtrl($scope, $stateParams, gns:GrowlAndState, articleService:ArticlesService, fUploadAppEngine, photoTokenService) {
 
         if ($stateParams.id === '')
             id = $stateParams.id;
@@ -107,18 +106,19 @@ module Articles {
         }
 
         $scope.fileModelSetter = {
-            upFile:(file)=>{
+            upFile: (file)=> {
                 $scope.upFileName = file.name;
             }
         };
 
         function loadId(callback:(success)=>void) {
             articleService.get(id).then(callback
-                ,(error)=> {
+                , (error)=> {
                     setErrorMessage(error.error.message);
                     gns.growl.showGrowl();
                 }, (unauthorized)=> {
                     setErrorMessage(unauthorized.message);
+                    gns.state.goto(RouteState.home);
                 });
         }
 
@@ -137,30 +137,34 @@ module Articles {
         }
 
 
-
-
-        function upPhoto(){
-            photoTokenService.getPhotoToken().then(
-                (success)=>{
-                    fUploadAppEngine.success = (success) => {
-                        gns.growl.setMessage("Atualizou o artigo com sucesso",GrowlBH.typeMessage.success);
+        function upPhoto() {
+            if ($scope.upFile) {
+                photoTokenService.getPhotoToken().then(
+                    (success)=> {
+                        fUploadAppEngine.success = (success) => {
+                            gns.growl.setMessage("Atualizou o artigo com sucesso", GrowlBH.typeMessage.success);
+                            gns.state.goto(RouteState.home);
+                        }
+                        fUploadAppEngine.error = (error) => {
+                            setErrorMessage("Não foi possível fazer upload do ficheiro");
+                            gns.growl.showGrowl();
+                        }
+                        fUploadAppEngine.url = success.url;
+                        fUploadAppEngine.form.append('action', 'article-edit');
+                        fUploadAppEngine.form.append('id', id);
+                        fUploadAppEngine.up($scope.upFile);
+                    }, (error)=> {
+                        gns.growl.setMessage(error.error.message, GrowlBH.typeMessage.error);
                         gns.growl.showGrowl();
+                    }, (unauthorized)=> {
+                        gns.growl.setMessage(unauthorized.error.message, GrowlBH.typeMessage.error);
+                        gns.state.goto(RouteState.home);
                     }
-                    fUploadAppEngine.error = (error) =>{
-                        setErrorMessage("Não foi possível fazer upload do ficheiro");
-                        gns.growl.showGrowl();
-                    }
-                    fUploadAppEngine.url = success.url;
-                    fUploadAppEngine.form.append('action','article-edit');
-                    fUploadAppEngine.form.append('id',id);
-                    fUploadAppEngine.up($scope.upFile);
-                },(error)=>{
-                    gns.growl.setMessage(error.error.message,GrowlBH.typeMessage.error);
-                    gns.growl.showGrowl();
-                },(unauthorized)=>{
-                   console.log('sem autorização');
-                }
-            );
+                );
+            }else{
+                gns.growl.setMessage("Atualizou o artigo com sucesso", GrowlBH.typeMessage.success);
+                gns.state.goto(RouteState.home);
+            }
         }
 
 
@@ -184,7 +188,7 @@ module Articles {
             }
         }
 
-        $scope.cancel = function(){
+        $scope.cancel = function () {
             gns.state.goto(RouteState.home);
         }
 
@@ -195,6 +199,15 @@ module Articles {
     }
 
     export function ListArticles($scope, gns:GrowlAndState) {
+        //TODO alterar para ver artigos
+        $scope.showArticles = function () {
+            return true;
+        }
+
+        $scope.loading = "A carregar artigos...";
+
+        $scope.hasHTRole = false;
+
 
     }
 }
@@ -320,7 +333,7 @@ interface AuthButtonCtrlScope extends ng.IScope {
 }
 
 function DefaultCtrl($scope, $cookies, $location, gns:GrowlAndState) {
-    if (gns.growl.isMsgShowed())
+    if (!gns.growl.isMsgShowed())
         gns.growl.showGrowl();
     $scope.goToUsers = ()=> {
         gns.state.goto(RouteState.userList);

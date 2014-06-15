@@ -1,6 +1,6 @@
 package pt.babyHelp.services;
 
-import pt.babyHelp.core.endpoints.ErrorReturn;
+import pt.babyHelp.core.cloudEndpoints.ErrorReturn;
 
 public class BabyHelpConstants{
     public static enum Error implements ErrorReturn{

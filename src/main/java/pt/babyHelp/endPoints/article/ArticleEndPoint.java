@@ -6,7 +6,9 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
-import pt.babyHelp.core.endpoints.EndPointError;
+import pt.babyHelp.bd.embededs.Role;
+import pt.babyHelp.core.cloudEndpoints.EndPointError;
+import pt.babyHelp.core.cloudEndpoints.EndPointReturn;
 import pt.babyHelp.endPoints.Constants;
 import pt.babyHelp.services.ArticleService;
 import pt.babyHelp.services.impl.ArticleServiceImpl;
@@ -29,40 +31,54 @@ public class ArticleEndPoint {
 
 
     @ApiMethod(name = "create", httpMethod = HttpMethod.PUT, path = "create")
-    public Map<String, Object> createArticle(User user, ArticleParams articleParams) throws UnauthorizedException {
-        try {
-            this.articleService.setUser(user);
-            return this.articleService.create(articleParams);
-        } catch (EndPointError endPointError) {
-            return endPointError.getMap();
-        }
+    public EndPointReturn createArticle(User user, final Map<String,Object> map) throws UnauthorizedException {
+        this.articleService.setUser(user);
+        articleService.getAuthorization().check("criação de um artigo", Role.HEALTHTEC);
+
+        return new EndPointReturn() {
+            @Override
+            public Object getEndPointResponse() throws EndPointError {
+                return articleService.create(map);
+            }
+        };
+
     }
 
     @ApiMethod(name = "update", httpMethod = HttpMethod.POST, path = "update")
-    public Map<String, Object> currentEmail(User user, ArticleParams articleParams) throws UnauthorizedException {
-        try {
-            this.articleService.setUser(user);
-            return this.articleService.update(articleParams);
-        } catch (EndPointError endPointError) {
-            return endPointError.getMap();
-        }
+    public EndPointReturn currentEmail(User user, final Map<String,Object> entryMap) throws UnauthorizedException {
+        this.articleService.setUser(user);
+        this.articleService.getAuthorization().check("atualização de um artigo", Role.HEALTHTEC);
+        return new EndPointReturn() {
+            @Override
+            public Object getEndPointResponse() throws EndPointError {
+                return articleService.update(entryMap);
+            }
+        };
     }
-
 
     @ApiMethod(name = "list.my", httpMethod = HttpMethod.GET, path = "list-my")
     public Map<String, Object> myArticles(User user) throws UnauthorizedException {
         this.articleService.setUser(user);
+        this.articleService.getAuthorization().check("artigos do utilizador atual", Role.HEALTHTEC);
         return this.articleService.getMyArticles();
     }
 
+    @ApiMethod(name = "list.public", httpMethod = HttpMethod.GET, path = "list-public")
+    public Map<String, Object> listPublicArticles(User user) {
+        this.articleService.setUser(user);
+        return this.articleService.listPublic();
+    }
+
     @ApiMethod(name = "delete", httpMethod = HttpMethod.PUT, path = "delete")
-    public Map<String, Object> delete(User user, ListIDs listIDs) throws UnauthorizedException {
-        try {
-            this.articleService.setUser(user);
-            return this.articleService.delete(listIDs);
-        } catch (EndPointError endPointError) {
-            return endPointError.getMap();
-        }
+    public EndPointReturn delete(User user, final ListIDs listIDs) throws UnauthorizedException {
+        this.articleService.setUser(user);
+        this.articleService.getAuthorization().check("remoção de artigos");
+        return new EndPointReturn() {
+            @Override
+            public Object getEndPointResponse() throws EndPointError {
+                return articleService.delete(listIDs);
+            }
+        };
     }
 
     @ApiMethod(name = "get", httpMethod = HttpMethod.GET, path = "get")

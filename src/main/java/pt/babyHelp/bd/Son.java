@@ -10,6 +10,7 @@ import java.util.Date;
 public class Son {
 
     @Id
+    private Long id;
     private String name;
     private String photoKey;
     private Date birthDate;

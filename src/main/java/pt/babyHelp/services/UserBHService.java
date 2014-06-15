@@ -2,8 +2,8 @@ package pt.babyHelp.services;
 
 import com.google.api.server.spi.response.UnauthorizedException;
 import pt.babyHelp.bd.Son;
-import pt.babyHelp.core.endpoints.EndPointError;
-import pt.babyHelp.core.endpoints.ErrorReturn;
+import pt.babyHelp.core.cloudEndpoints.EndPointError;
+import pt.babyHelp.core.cloudEndpoints.ErrorReturn;
 import pt.babyHelp.endPoints.UserAcessible;
 import pt.babyHelp.endPoints.userEndPoint.RolesParameters;
 
@@ -20,7 +20,7 @@ public interface UserBHService extends UserAcessible {
     Map<String, Object> getRoles(String email)
             throws EndPointError, UnauthorizedException;
 
-    Map<String,Object> actionsPending();
+    Map<String,Object> pendingActions();
 
     Map<String,Object> setSons(Son[] sons);
 

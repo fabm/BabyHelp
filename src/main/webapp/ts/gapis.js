@@ -7,55 +7,6 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 
-var auth = {
-    _getConfig: function (immediate) {
-        var config = {
-            client_id: '942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com',
-            scope: ['https://www.googleapis.com/auth/userinfo.email'],
-            immediate: immediate
-        };
-
-        if (!immediate) {
-            config['authuser'] = "";
-        }
-        return config;
-    },
-    login: function (callbacks, immediate) {
-        if (isNull(immediate))
-            immediate = false;
-
-        var config = isNull(config) ? auth._getConfig(immediate) : config;
-
-        gapi.auth.authorize(config, function (response) {
-            if (!isNull(response) && isNull(response.error)) {
-                auth.islogged = true;
-                callbacks.logged();
-            } else {
-                auth.islogged = false;
-                callbacks.notlogged();
-            }
-        });
-    },
-    checkauth: function (callbacks) {
-        if (auth.islogged) {
-            callbacks.logged();
-        } else {
-            auth._getConfig(true);
-            auth.login(callbacks, true);
-        }
-    },
-    islogged: false,
-    load: function (callbacks) {
-        var authLoad = function () {
-            auth.checkauth(callbacks);
-        };
-        gapi.load('auth', authLoad);
-    }, logout: function () {
-        gapi.auth.setToken(null);
-        this.islogged = false;
-    }
-};
-
 var StateLoading;
 (function (StateLoading) {
     StateLoading[StateLoading["loadingGAPI"] = 0] = "loadingGAPI";
@@ -241,6 +192,7 @@ var UserService = (function (_super) {
         var all = [];
         all.push(create('técnico de saúde', 'HEALTHTEC'));
         all.push(create('administrador', 'ADMINISTRATOR'));
+        all.push(create('educador', 'PARENT'));
         return all;
     };
 
@@ -309,6 +261,12 @@ var ArticlesService = (function (_super) {
     ArticlesService.prototype.listMy = function () {
         return _super.prototype.load.call(this, function (client) {
             return client.list.my();
+        });
+    };
+
+    ArticlesService.prototype.listPublic = function () {
+        return _super.prototype.load.call(this, function (client) {
+            return client.list.public();
         });
     };
 

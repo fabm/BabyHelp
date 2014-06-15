@@ -7,7 +7,7 @@ import com.google.appengine.api.utils.SystemProperty;
 import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.bd.embededs.Role;
-import pt.babyHelp.core.endpoints.EndPointError;
+import pt.babyHelp.core.cloudEndpoints.EndPointError;
 import pt.babyHelp.endPoints.testes.TestesEP;
 import pt.babyHelp.endPoints.testes.UserEntry;
 import pt.babyHelp.services.BabyHelpConstants;
@@ -38,6 +38,11 @@ public class Authorization {
 
     public static UnauthorizedException createNotAuthorizedError(String area) {
         return new UnauthorizedException(String.format(BabyHelpConstants.Error.NOT_AUTHORIZED.getMsg(), area));
+    }
+
+    public static void checkDevMode() {
+        if (SystemProperty.Environment.Value.Development != SystemProperty.Environment.Value.Development)
+            createNotAuthenticatedError("Área apenas premitida em devmode");
     }
 
     private void init(String email) {
@@ -72,11 +77,6 @@ public class Authorization {
 
         if (!this.hasRoles(rolesRequired))
             throw createNotAuthorizedError(area);
-    }
-
-    public void checkDevMode() {
-        if (SystemProperty.Environment.Value.Development != SystemProperty.Environment.Value.Development)
-            createNotAuthenticatedError("Área apenas premitida em devmode");
     }
 
     public boolean hasRole(Role roleRequired) {

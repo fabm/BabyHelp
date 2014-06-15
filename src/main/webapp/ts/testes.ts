@@ -6,26 +6,33 @@ cbh.client = ("userBH");
 var resToken;
 
 
-
-
 var testes = {
     success: null,
-    error: (x)=>{},
-    unauthorized: (x)=>{},
-    users:{
-        list:()=>{}
+    error: (x)=> {
     },
-    articles:{
-        getService:()=>{
+    unauthorized: (x)=> {
+    },
+    users: {
+        list: ()=> {
+        }
+    },
+    articles: {
+        getService: ()=> {
             return null;
         },
-        create:()=>{},
-        alterLast:(order:number)=>{},
-        list:()=>{},
-        delete:(orders)=>{}
+        create: ()=> {
+        },
+        alterLast: (order:number)=> {
+        },
+        list: ()=> {
+        },
+        delete: (orders)=> {
+        }
     },
-    upload:()=>{},
-    loadClientPhotoToken:(x)=>{}
+    upload: ()=> {
+    },
+    loadClientPhotoToken: (x)=> {
+    }
 };
 
 function resolveThen(resolve) {
@@ -123,10 +130,10 @@ testes.loadClientPhotoToken = function (callback) {
 function InnerController($scope, $http, fUploadAppEngine) {
     var clientUrlTokenService = null;
 
-    fUploadAppEngine.error = function(error){
+    fUploadAppEngine.error = function (error) {
         alert(error);
     }
-    fUploadAppEngine.success = function(success){
+    fUploadAppEngine.success = function (success) {
         $scope.imagekey = success;
     }
 
@@ -145,28 +152,133 @@ function InnerController($scope, $http, fUploadAppEngine) {
             clientUrlTokenService.getuploadurl().execute(loadResponse);
     }
 
-        // fim do teste de upload
+    // fim do teste de upload
 
 }
 
-function logThen(resolve:Resolve,trace?:boolean){
-    var cbSuccess = (success)=>{
+function logThen(resolve:Resolve, trace?:boolean) {
+    var cbSuccess = (success)=> {
         console.log('success:');
         console.info(success);
-        if(trace)
+        if (trace)
             console.trace();
     }
-    var cbError = (error)=>{
+    var cbError = (error)=> {
         console.log('error:');
         console.info(error);
-        if(trace)
+        if (trace)
             console.trace();
     }
-    var cbUnauthorized = (unauthorized)=>{
+    var cbUnauthorized = (unauthorized)=> {
         console.log('unauthorized:');
         console.info(unauthorized);
-        if(trace)
+        if (trace)
             console.trace();
     }
-    resolve.then(cbSuccess,cbError,cbUnauthorized);
+    resolve.then(cbSuccess, cbError, cbUnauthorized);
+}
+
+class ArticleParamTest implements ArticleCreation {
+    isPublic:boolean = true;
+    body:string = 'bla bla body';
+    summary:string = 'bla bla summary';
+    title:string = 'bla, title';
+    photoUrl:string = 'xxx';
+}
+
+class ApisHelper extends ClientBabyHelp {
+
+    c:{[index:string]:any};
+    afterLoad = function (name) {
+        console.log('loaded ' + name);
+    }
+
+    static attribClient(client, context) {
+        for (var m in client) {
+            if (typeof (client[m]) === 'function')
+                context[m] = {
+                    args: undefined,
+                    mName: m,
+                    execute: function () {
+                        client[this.mName](this.args).execute((response)=> {
+                            console.log(response);
+                        });
+                    }
+                }
+            else {
+                context[m] = {};
+                ApisHelper.attribClient(client[m], context[m]);
+            }
+        }
+    }
+
+    static getRoles() {
+        var allRoles = UserService.loadAllRoles();
+        var myRoles = {};
+        for (var i in allRoles) {
+            myRoles[allRoles[i].name] = allRoles[i].name;
+        }
+        return myRoles;
+    }
+
+    helpLoader(name) {
+        var self = this;
+        this.client = name;
+        super.loadApi((client=> {
+            self.c = {};
+            ApisHelper.attribClient(client, self.c);
+            self.afterLoad(name);
+        }));
+    }
+
+    public loadTestes() {
+        this.helpLoader('testes');
+    }
+
+    public loadArticle() {
+        this.helpLoader('article');
+    }
+
+}
+
+class UserEntry {
+    email:string = 'a@a.pt';
+    roles:Array<string> = ['PARENT'];
+    registered:boolean = false;
+    logged:boolean = true;
+}
+
+var apiTestes = {
+    article: new ApisHelper(),
+    user: new ApisHelper(),
+    testes: new ApisHelper()
+}
+
+apiTestes.article.helpLoader('article');
+apiTestes.user.helpLoader('userBH');
+apiTestes.testes.helpLoader('testes');
+
+apiTestes.article.afterLoad = function (name) {
+    apiTestes.article.c['create'].args = new ArticleParamTest();
+    console.log('loaded ' + name);
+}
+apiTestes.testes.afterLoad = function (name) {
+    apiTestes.testes.c['userEntry'].args = new UserEntry();
+    var roles = ApisHelper.getRoles();
+
+    var appRoles = {};
+    for (var r in roles) {
+        appRoles[r] = {
+            name: r,
+            add: function () {
+                apiTestes.testes.c['userEntry'].args.roles.push(this.name);
+            }
+        };
+        apiTestes.testes.c['userEntry'].appRoles = appRoles;
+    }
+    apiTestes.testes.c['userEntry'].appRoles.HEALTHTEC.add();
+    apiTestes.testes.c['userEntry'].execute();
+
+    console.log('loaded ' + name);
+
 }

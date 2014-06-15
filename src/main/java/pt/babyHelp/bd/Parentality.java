@@ -13,7 +13,6 @@ public class Parentality {
     private String userFromAppEmail;
     @Index
     private String sonName;
-    private boolean confirmed = false;
 
     public static Class<Parentality> getThisClass() {
         return Parentality.class;
@@ -29,14 +28,6 @@ public class Parentality {
 
     public void setUserFromAppEmail(String userFromAppEmail) {
         this.userFromAppEmail = userFromAppEmail;
-    }
-
-    public boolean isConfirmed() {
-        return confirmed;
-    }
-
-    public void setConfirmed(boolean confirmed) {
-        this.confirmed = confirmed;
     }
 
     public String getSonName() {

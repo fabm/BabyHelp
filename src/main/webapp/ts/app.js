@@ -82,6 +82,7 @@ var Articles;
                 gns.growl.showGrowl();
             }, function (unauthorized) {
                 setErrorMessage(unauthorized.message);
+                gns.state.goto(RouteState.home);
             });
         }
 
@@ -99,25 +100,31 @@ var Articles;
         }
 
         function upPhoto() {
-            photoTokenService.getPhotoToken().then(function (success) {
-                fUploadAppEngine.success = function (success) {
-                    gns.growl.setMessage("Atualizou o artigo com sucesso", GrowlBH.typeMessage.success);
+            if ($scope.upFile) {
+                photoTokenService.getPhotoToken().then(function (success) {
+                    fUploadAppEngine.success = function (success) {
+                        gns.growl.setMessage("Atualizou o artigo com sucesso", GrowlBH.typeMessage.success);
+                        gns.state.goto(RouteState.home);
+                    };
+                    fUploadAppEngine.error = function (error) {
+                        setErrorMessage("Não foi possível fazer upload do ficheiro");
+                        gns.growl.showGrowl();
+                    };
+                    fUploadAppEngine.url = success.url;
+                    fUploadAppEngine.form.append('action', 'article-edit');
+                    fUploadAppEngine.form.append('id', id);
+                    fUploadAppEngine.up($scope.upFile);
+                }, function (error) {
+                    gns.growl.setMessage(error.error.message, GrowlBH.typeMessage.error);
                     gns.growl.showGrowl();
-                };
-                fUploadAppEngine.error = function (error) {
-                    setErrorMessage("Não foi possível fazer upload do ficheiro");
-                    gns.growl.showGrowl();
-                };
-                fUploadAppEngine.url = success.url;
-                fUploadAppEngine.form.append('action', 'article-edit');
-                fUploadAppEngine.form.append('id', id);
-                fUploadAppEngine.up($scope.upFile);
-            }, function (error) {
-                gns.growl.setMessage(error.error.message, GrowlBH.typeMessage.error);
-                gns.growl.showGrowl();
-            }, function (unauthorized) {
-                console.log('sem autorização');
-            });
+                }, function (unauthorized) {
+                    gns.growl.setMessage(unauthorized.error.message, GrowlBH.typeMessage.error);
+                    gns.state.goto(RouteState.home);
+                });
+            } else {
+                gns.growl.setMessage("Atualizou o artigo com sucesso", GrowlBH.typeMessage.success);
+                gns.state.goto(RouteState.home);
+            }
         }
 
         $scope.save = function () {
@@ -154,6 +161,14 @@ var Articles;
     Articles.EditArticleCtrl = EditArticleCtrl;
 
     function ListArticles($scope, gns) {
+        //TODO alterar para ver artigos
+        $scope.showArticles = function () {
+            return true;
+        };
+
+        $scope.loading = "A carregar artigos...";
+
+        $scope.hasHTRole = false;
     }
     Articles.ListArticles = ListArticles;
 })(Articles || (Articles = {}));
@@ -263,7 +278,7 @@ var Users;
 })(Users || (Users = {}));
 
 function DefaultCtrl($scope, $cookies, $location, gns) {
-    if (gns.growl.isMsgShowed())
+    if (!gns.growl.isMsgShowed())
         gns.growl.showGrowl();
     $scope.goToUsers = function () {
         gns.state.goto(RouteState.userList);

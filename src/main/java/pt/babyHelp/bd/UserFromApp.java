@@ -19,6 +19,7 @@ public class UserFromApp {
     private String email;
     @Index
 
+    private String name;
     private Set<Role> roles;
     private Set<Son> sons;
 
@@ -28,6 +29,14 @@ public class UserFromApp {
 
     public static Iterator<UserFromApp> iterateAll() {
         return BD.loadALL(UserFromApp.class);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Set<Son> getSons() {
@@ -60,15 +69,15 @@ public class UserFromApp {
         return roles;
     }
 
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
     public void setRoles(Role... roles) {
         this.roles = new HashSet<Role>(roles.length);
         for (Role role : roles) {
             this.roles.add(role);
         }
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
     }
 
 

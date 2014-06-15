@@ -3,7 +3,7 @@ package pt.babyHelp.bd;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
-import pt.babyHelp.core.endpoints.EndPointError;
+import pt.babyHelp.core.cloudEndpoints.EndPointError;
 import pt.babyHelp.services.BabyHelpConstants;
 
 import java.util.ArrayList;
@@ -18,6 +18,7 @@ public class BD {
         ObjectifyService.register(Article.class);
         ObjectifyService.register(Son.class);
         ObjectifyService.register(Parentality.class);
+        ObjectifyService.register(PendingParentality.class);
     }
 
     public static Objectify ofy() {

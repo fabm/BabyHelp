@@ -2,11 +2,14 @@ package pt.babyHelp.services.impl;
 
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
+import com.googlecode.objectify.cmd.Query;
 import pt.babyHelp.bd.BD;
+import pt.babyHelp.bd.PendingParentality;
 import pt.babyHelp.bd.Son;
 import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.bd.embededs.Role;
-import pt.babyHelp.core.endpoints.EndPointError;
+import pt.babyHelp.core.cloudEndpoints.CEPUtils;
+import pt.babyHelp.core.cloudEndpoints.EndPointError;
 import pt.babyHelp.core.validators.EmailChecker;
 import pt.babyHelp.endPoints.Authorization;
 import pt.babyHelp.endPoints.userEndPoint.RolesParameters;
@@ -98,19 +101,59 @@ public class UserBHServiceImpl implements UserBHService {
 
 
     @Override
-    public Map<String, Object> actionsPending() {
+    public Map<String, Object> pendingActions() {
         UserFromApp userFromApp = getAuthorization().getUserFromApp();
-        Map<String, Object> map = new HashMap<String, Object>();
         if (getAuthorization().hasRole(Role.HEALTHTEC) && userFromApp.getHealhTec() == null) {
-            map.put("miss", "healthtec");
-            return map;
+            return CEPUtils.createMapAndPut("pending", "healthtec");
         }
-        if (getAuthorization().hasRole(Role.PARENT) && userFromApp.getSons() == null ||
-                userFromApp.getSons().isEmpty()) {
-            map.put("miss", "son");
+        Map<String, Object> map;
+
+        Query<PendingParentality> query = BD.ofy().load().type(PendingParentality.class)
+                .filter("parent", userFromApp.getEmail());
+
+        if (query.count() > 0) {
+            List<String> emails = new ArrayList<String>();
+            List<Long> sonsList = new ArrayList<Long>();
+            List<PendingParentality> pendingsList = new ArrayList<PendingParentality>();
+
+            for (PendingParentality pp : query) {
+                emails.add(pp.getParent());
+                emails.add(pp.getAskedFor());
+                pendingsList.add(pp);
+                sonsList.add(pp.getSonId());
+            }
+            Map<String, UserFromApp> usersMap = BD.ofy().load().type(UserFromApp.class).ids(emails);
+            Map<Long, Son> sonsMap = BD.ofy().load().type(Son.class).ids(sonsList);
+            List<Map<String, Object>> pendingParentalityList = new ArrayList<Map<String, Object>>();
+            for (PendingParentality pp : pendingsList) {
+                UserFromApp userWhoAsk = usersMap.get(pp.getAskedFor());
+                UserFromApp userWhoConfirms = usersMap.get(pp.getParent());
+                Son son = sonsMap.get(pp.getParent());
+                Map<String, Object> pendingParentalityMap = new HashMap<String, Object>();
+
+                HashMap<String, Object> mapper = new HashMap<String, Object>();
+                mapper.put("name", userWhoAsk.getName());
+                mapper.put("email", userWhoAsk.getEmail());
+                pendingParentalityMap.put("asker", mapper);
+
+                mapper = new HashMap<String, Object>();
+                mapper.put("name", userWhoConfirms.getName());
+                mapper.put("email", userWhoConfirms.getEmail());
+                pendingParentalityMap.put("confirmer", mapper);
+
+                mapper = new HashMap<String, Object>();
+                mapper.put("name", son.getName());
+                mapper.put("photoKey", son.getPhotoKey());
+                mapper.put("birthDay", son.getBirthDate());
+                pendingParentalityMap.put("son", mapper);
+
+                pendingParentalityList.add(pendingParentalityMap);
+            }
+            map = CEPUtils.createMapAndPut("pending", "sons");
+            map.put("sons", pendingParentalityList);
+            return CEPUtils.createMapAndPut("pending", pendingParentalityList);
         }
-        map.put("miss","nothing");
-        return map;
+        return CEPUtils.createMapAndPut("pending","nothing");
     }
 
 

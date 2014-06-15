@@ -11,7 +11,7 @@ import pt.babyHelp.bd.HealhTec;
 import pt.babyHelp.bd.Son;
 import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.bd.embededs.Role;
-import pt.babyHelp.core.endpoints.EndPointError;
+import pt.babyHelp.core.cloudEndpoints.EndPointError;
 import pt.babyHelp.endPoints.Constants;
 import pt.babyHelp.services.UserBHService;
 import pt.babyHelp.services.impl.UserBHServiceImpl;
@@ -30,7 +30,7 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
                 Constants.IOS_CLIENT_ID, Constants.API_EXPLORER_CLIENT_ID},
         audiences = {Constants.ANDROID_AUDIENCE}
 )
-public class UserBHEndpoint {
+public class UserBHCEP {
 
     private UserBHService userBHService = new UserBHServiceImpl();
 
@@ -67,10 +67,10 @@ public class UserBHEndpoint {
         }
     }
 
-    @ApiMethod(name = "actionsPending", httpMethod = HttpMethod.PUT)
+    @ApiMethod(name = "pendingActions", httpMethod = HttpMethod.PUT)
     public Map<String, Object> actionsPending(User user, HealthTecParams healthTecParams) throws UnauthorizedException {
         this.userBHService.setUser(user);
-        return this.userBHService.actionsPending();
+        return this.userBHService.pendingActions();
     }
 
 
@@ -100,6 +100,12 @@ public class UserBHEndpoint {
         userBHService.setUser(user);
         userBHService.getAuthorization().check("declaração de filhos", Role.PARENT);
         return userBHService.setSons((Son[]) sons.getSons().toArray());
+    }
+
+    @ApiMethod(name = "pendingActions", httpMethod = ApiMethod.HttpMethod.GET, path = "pendingactions")
+    public Map<String,Object> pendingActions(User user){
+        userBHService.setUser(user);
+        return userBHService.pendingActions();
     }
 
 

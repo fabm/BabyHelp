@@ -11,55 +11,6 @@ interface Resolve {
         =>void
 }
 
-var auth = {
-    _getConfig(immediate:boolean) {
-        var config = {
-            client_id: '942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com',
-            scope: ['https://www.googleapis.com/auth/userinfo.email'],
-            immediate: immediate
-        };
-
-        if (!immediate) {
-            config['authuser'] = "";
-        }
-        return config;
-    },
-    login: (callbacks:AuthResponse, immediate?:boolean)=> {
-        if (isNull(immediate))immediate = false;
-
-        var config = isNull(config) ? auth._getConfig(immediate) : config;
-
-        gapi.auth.authorize(config,
-            (response)=> {
-                if (!isNull(response) && isNull(response.error)) {
-                    auth.islogged = true;
-                    callbacks.logged();
-                } else {
-                    auth.islogged = false;
-                    callbacks.notlogged();
-                }
-            });
-    },
-    checkauth: (callbacks:AuthResponse)=> {
-        if (auth.islogged) {
-            callbacks.logged();
-        } else {
-            auth._getConfig(true);
-            auth.login(callbacks, true);
-        }
-    },
-    islogged: false,
-    load: (callbacks:AuthResponse)=> {
-        var authLoad = ()=> {
-            auth.checkauth(callbacks);
-        }
-        gapi.load('auth', authLoad);
-    }, logout() {
-        gapi.auth.setToken(null);
-        this.islogged = false;
-    }
-}
-
 enum StateLoading{
     loadingGAPI , authenticating, clientLoading, callService, authFail
 }
@@ -247,6 +198,7 @@ class UserService extends ClientBabyHelp {
         var all:Array<Role> = [];
         all.push(create('técnico de saúde', 'HEALTHTEC'));
         all.push(create('administrador', 'ADMINISTRATOR'));
+        all.push(create('educador','PARENT'));
         return all;
     }
 
@@ -292,12 +244,12 @@ class UserService extends ClientBabyHelp {
     }
 }
 
-
 interface ArticleCreation {
     body:string;
     summary:string;
-    tittle:string;
+    title:string;
     photoUrl:string;
+    isPublic:boolean;
 }
 
 interface ArticleUpdate extends ArticleCreation {
@@ -325,6 +277,12 @@ class ArticlesService extends ClientBabyHelp {
     listMy():Resolve {
         return super.load((client)=> {
             return client.list.my();
+        });
+    }
+
+    listPublic():Resolve{
+        return super.load((client)=>{
+            return client.list.public();
         });
     }
 

@@ -3,9 +3,9 @@ package pt.babyHelp.services.impl;
 
 import com.google.appengine.api.users.User;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.cmd.Query;
 import pt.babyHelp.bd.*;
-import pt.babyHelp.core.endpoints.EndPointError;
+import pt.babyHelp.core.cloudEndpoints.CEPUtils;
+import pt.babyHelp.core.cloudEndpoints.EndPointError;
 import pt.babyHelp.endPoints.Authorization;
 import pt.babyHelp.endPoints.UserAcessible;
 import pt.babyHelp.endPoints.testes.SonParameter;
@@ -56,7 +56,6 @@ public class TestesImpl implements UserAcessible {
             String userParentEmail = getAuthorization().savedUserFromApp().getEmail();
 
             Parentality parentality = new Parentality();
-            parentality.setConfirmed(true);
             parentality.setUserFromAppEmail(userParentEmail);
             parentality.setSonName(sonName);
 
@@ -68,46 +67,8 @@ public class TestesImpl implements UserAcessible {
         return map;
     }
 
-
-    private Collection<Son> queriedSons() {
-        String email = getAuthorization().getUserFromApp().getEmail();
-
-        Query<Parentality> loaded = BD.ofy().load().type(Parentality.class).filter("userFromAppEmail = ", email);
-
-
-        List<String> sonIds = new ArrayList<String>(loaded.count());
-
-        for (Parentality par : loaded) {
-            sonIds.add(par.getSonName());
-        }
-        sonIds.add("aa");
-        return BD.ofy().load().type(Son.class).ids(sonIds).values();
-    }
-
-    public Map<String, Object> getSonsList() throws EndPointError {
-        Map<String, Object> sonMap = new HashMap<String, Object>();
-        List<Map<String, Object>> sonList = new ArrayList<Map<String, Object>>();
-
-        for (Son son : queriedSons()) {
-            sonMap.put("name", son.getName());
-            sonMap.put("birthDate", son.getBirthDate());
-            sonMap.put("photoKey", son.getPhotoKey());
-            sonList.add(sonMap);
-        }
-
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("lista", sonList);
-
-        return map;
-    }
-
-    public Map<String, Object> getSonsFilters() {
-        return null;
-    }
-
     public Map<String, Object> getParentsList(String name) {
-
-        return null;
+        return CEPUtils.createMapAndPut("falta", "completar");
     }
 
     @Override
@@ -120,19 +81,5 @@ public class TestesImpl implements UserAcessible {
         return authorization;
     }
 
-    public Map<String, Object> getParentsListQ(String q) {
-        List<Map<String, Object>> sons = new ArrayList<Map<String, Object>>();
-        for (Son son : queriedSons()) {
-            if (son.getName().contains(q)) {
-                Map<String, Object> map = new HashMap<String, Object>();
-                map.put("name", son.getName());
-                map.put("birthday", son.getBirthDate());
-                map.put("photokey", son.getPhotoKey());
-                sons.add(map);
-            }
-        }
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("sons", sons);
-        return map;
-    }
+
 }

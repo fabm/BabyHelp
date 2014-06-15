@@ -1,37 +1,36 @@
 package pt.babyHelp.services;
 
-import com.google.api.server.spi.response.UnauthorizedException;
-import pt.babyHelp.core.endpoints.EndPointError;
-import pt.babyHelp.core.endpoints.ErrorReturn;
+import pt.babyHelp.core.cloudEndpoints.EndPointError;
+import pt.babyHelp.core.cloudEndpoints.ErrorReturn;
 import pt.babyHelp.endPoints.UserAcessible;
-import pt.babyHelp.endPoints.article.ArticleParams;
 import pt.babyHelp.endPoints.article.ListIDs;
 
 import java.util.Map;
 
-public interface ArticleService extends UserAcessible {
-    Map<String, Object> create(ArticleParams articleParams) throws EndPointError, UnauthorizedException;
+public interface ArticleService extends UserAcessible{
+    Map<String, Object> create(Map<String,Object> entryMap) throws EndPointError;
 
-    Map<String, Object> update(ArticleParams articleParams)
-            throws EndPointError, UnauthorizedException;
+    Map<String, Object> update(Map<String,Object> entryMap)
+            throws EndPointError;
 
     Map<String, Object> updatePhoto(Long id, String key)
-            throws UnauthorizedException, EndPointError;
+            throws EndPointError;
 
-    Map<String, Object> delete(ListIDs ids)
-            throws EndPointError, UnauthorizedException;
+    Map<String, Object> delete(ListIDs listIds)
+            throws EndPointError;
 
-    Map<String, Object> getMyArticles() throws UnauthorizedException;
+    Map<String, Object> getMyArticles() ;
 
     Map<String, Object> get(long id);
 
+    Map<String, Object> listPublic();
+
     enum Error implements ErrorReturn {
         WRONG_ROLE(1, "Não tem previlégios suficientes para executar esta ação"),
-        FIELD_TITLE_REQUIRED(2, "O campo titulo é obrigatório"),
-        FIELD_BODY_REUIRED(3, "O campo conteúdo do artigo é obrigatório"),
-        ID_REQUIRED(4, "O id é obrigatório para atualizar o artigo"),
-        ID_NOT_FOUND(5, "Não foi encontrado nenhum artigo com o id %s"),
-        NOT_OWNER(6, "Não é o proprietário do artigo '%s', por isso não pode %s");
+        ID_REQUIRED(2, "O id é obrigatório para atualizar o artigo"),
+        ID_NOT_FOUND(3, "Não foi encontrado nenhum artigo com o id %s"),
+        NOT_OWNER(4, "Não é o proprietário do artigo '%s', por isso não pode %s"),
+        FIELD_REQUIRED(5, "O campo %s é obrigatório");
 
         private String msg;
         private int code;

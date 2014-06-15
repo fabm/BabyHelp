@@ -1,5 +1,11 @@
 /// <reference path="def/testes.d.ts" />
 /// <reference path="app.ts" />
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 var cbh = new ClientBabyHelp();
 cbh.client = ("userBH");
 var resToken;
@@ -168,4 +174,115 @@ function logThen(resolve, trace) {
     };
     resolve.then(cbSuccess, cbError, cbUnauthorized);
 }
+
+var ArticleParamTest = (function () {
+    function ArticleParamTest() {
+        this.isPublic = true;
+        this.body = 'bla bla body';
+        this.summary = 'bla bla summary';
+        this.title = 'bla, title';
+        this.photoUrl = 'xxx';
+    }
+    return ArticleParamTest;
+})();
+
+var ApisHelper = (function (_super) {
+    __extends(ApisHelper, _super);
+    function ApisHelper() {
+        _super.apply(this, arguments);
+        this.afterLoad = function (name) {
+            console.log('loaded ' + name);
+        };
+    }
+    ApisHelper.attribClient = function (client, context) {
+        for (var m in client) {
+            if (typeof (client[m]) === 'function')
+                context[m] = {
+                    args: undefined,
+                    mName: m,
+                    execute: function () {
+                        client[this.mName](this.args).execute(function (response) {
+                            console.log(response);
+                        });
+                    }
+                };
+            else {
+                context[m] = {};
+                ApisHelper.attribClient(client[m], context[m]);
+            }
+        }
+    };
+
+    ApisHelper.getRoles = function () {
+        var allRoles = UserService.loadAllRoles();
+        var myRoles = {};
+        for (var i in allRoles) {
+            myRoles[allRoles[i].name] = allRoles[i].name;
+        }
+        return myRoles;
+    };
+
+    ApisHelper.prototype.helpLoader = function (name) {
+        var self = this;
+        this.client = name;
+        _super.prototype.loadApi.call(this, (function (client) {
+            self.c = {};
+            ApisHelper.attribClient(client, self.c);
+            self.afterLoad(name);
+        }));
+    };
+
+    ApisHelper.prototype.loadTestes = function () {
+        this.helpLoader('testes');
+    };
+
+    ApisHelper.prototype.loadArticle = function () {
+        this.helpLoader('article');
+    };
+    return ApisHelper;
+})(ClientBabyHelp);
+
+var UserEntry = (function () {
+    function UserEntry() {
+        this.email = 'a@a.pt';
+        this.roles = ['PARENT'];
+        this.registered = false;
+        this.logged = true;
+    }
+    return UserEntry;
+})();
+
+var apiTestes = {
+    article: new ApisHelper(),
+    user: new ApisHelper(),
+    testes: new ApisHelper()
+};
+
+apiTestes.article.helpLoader('article');
+apiTestes.user.helpLoader('userBH');
+apiTestes.testes.helpLoader('testes');
+
+apiTestes.article.afterLoad = function (name) {
+    apiTestes.article.c['create'].args = new ArticleParamTest();
+    console.log('loaded ' + name);
+};
+apiTestes.testes.afterLoad = function (name) {
+    apiTestes.testes.c['userEntry'].args = new UserEntry();
+    var roles = ApisHelper.getRoles();
+
+    var appRoles = {};
+    for (var r in roles) {
+        appRoles[r] = {
+            name: r,
+            add: function () {
+                apiTestes.testes.c['userEntry'].args.roles.push(this.name);
+            }
+        };
+        apiTestes.testes.c['userEntry'].appRoles = appRoles;
+    }
+    apiTestes.testes.c['userEntry'].appRoles.HEALTHTEC.add();
+    apiTestes.testes.c['userEntry'].execute();
+
+    console.log('loaded ' + name);
+};
 //# sourceMappingURL=testes.js.map
