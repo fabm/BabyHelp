@@ -24,7 +24,7 @@ public class UserFromApp {
     private Set<Son> sons;
 
     public static UserFromApp findByEmail(String email) {
-        return BD.ofy().load().type(UserFromApp.class).filter("email = ", email).first().now();
+        return BD.ofy().load().type(UserFromApp.class).id(email).now();
     }
 
     public static Iterator<UserFromApp> iterateAll() {
