@@ -7,8 +7,7 @@ import com.google.appengine.api.utils.SystemProperty;
 import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.bd.embededs.Role;
-import pt.babyHelp.core.cloudEndpoints.EndPointError;
-import pt.babyHelp.endPoints.testes.TestesEP;
+import pt.babyHelp.endPoints.testes.TestesCE;
 import pt.babyHelp.endPoints.testes.UserEntry;
 import pt.babyHelp.services.BabyHelpConstants;
 
@@ -28,16 +27,16 @@ public class Authorization {
 
     public Authorization(User user) {
         if (user != null)
-            this.init(user.getEmail());
+            this.init(user);
         else this.init(null);
     }
 
     public static UnauthorizedException createNotAuthenticatedError(String area) {
-        return new UnauthorizedException(String.format(BabyHelpConstants.Error.NOT_AUTHENTICATED.getMsg(), area));
+        return new UnauthorizedException(String.format(BabyHelpConstants.CEError.NOT_AUTHENTICATED.getMsg(), area));
     }
 
     public static UnauthorizedException createNotAuthorizedError(String area) {
-        return new UnauthorizedException(String.format(BabyHelpConstants.Error.NOT_AUTHORIZED.getMsg(), area));
+        return new UnauthorizedException(String.format(BabyHelpConstants.CEError.NOT_AUTHORIZED.getMsg(), area));
     }
 
     public static void checkDevMode() {
@@ -45,17 +44,18 @@ public class Authorization {
             createNotAuthenticatedError("Área apenas premitida em devmode");
     }
 
-    private void init(String email) {
+    private void init(User user) {
         if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Development) {
             this.userFromApp = devMode();
             return;
         }
-        if (email == null) return;
+        if (user == null) return;
 
-        this.userFromApp = UserFromApp.findByEmail(email);
+        this.userFromApp = UserFromApp.findByEmail(user.getEmail());
         if (this.userFromApp == null) {
             this.userFromApp = new UserFromApp();
-            this.userFromApp.setEmail(email);
+            this.userFromApp.setEmail(user.getEmail());
+            this.userFromApp.setName(user.getNickname());
         } else
             this.userRegistered = true;
     }
@@ -88,7 +88,7 @@ public class Authorization {
     }
 
 
-    public UserFromApp savedUserFromApp() throws EndPointError {
+    public UserFromApp savedUserFromApp() throws pt.babyHelp.core.cloudEndpoints.CEError {
         if (this.userRegistered) return userFromApp;
         BD.checkKey(BD.ofy().save().entity(getUserFromApp()).now(), UserFromApp.class);
         userRegistered = true;
@@ -96,22 +96,24 @@ public class Authorization {
     }
 
     private UserFromApp devMode() {
-        if (TestesEP.userCurrent != null && !TestesEP.userCurrent.isLogged()) return null;
+        if (TestesCE.userCurrent != null && !TestesCE.userCurrent.isLogged()) return null;
         UserFromApp userFromApp = new UserFromApp();
 
-        if (TestesEP.userCurrent == null) {
+        if (TestesCE.userCurrent == null) {
             ResourceBundle bundle = ResourceBundle.getBundle("user");
             String loggedParam = bundle.getString("logged");
             if (loggedParam == null || !loggedParam.equals("true")) return null;
-            TestesEP.userCurrent = new UserEntry();
-            TestesEP.userCurrent.setLogged(true);
-            TestesEP.userCurrent.setEmail(bundle.getString("email"));
-            TestesEP.userCurrent.setRegistered(bundle.getString("registered").equals("true"));
-            TestesEP.userCurrent.setRoles(Arrays.asList(bundle.getString("roles").split(",")));
+            TestesCE.userCurrent = new UserEntry();
+            TestesCE.userCurrent.setLogged(true);
+            TestesCE.userCurrent.setName(bundle.getString("name"));
+            TestesCE.userCurrent.setEmail(bundle.getString("email"));
+            TestesCE.userCurrent.setRegistered(bundle.getString("registered").equals("true"));
+            TestesCE.userCurrent.setRoles(Arrays.asList(bundle.getString("roles").split(",")));
         }
-        userFromApp.setEmail(TestesEP.userCurrent.getEmail());
-        this.userRegistered = TestesEP.userCurrent.isRegistered();
-        userFromApp.setRoles(Role.toRolesArray(TestesEP.userCurrent.getRoles()));
+        userFromApp.setName(TestesCE.userCurrent.getName());
+        userFromApp.setEmail(TestesCE.userCurrent.getEmail());
+        this.userRegistered = TestesCE.userCurrent.isRegistered();
+        userFromApp.setRoles(Role.toRolesArray(TestesCE.userCurrent.getRoles()));
 
         return userFromApp;
     }

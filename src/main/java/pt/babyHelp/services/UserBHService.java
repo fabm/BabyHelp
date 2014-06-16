@@ -2,8 +2,7 @@ package pt.babyHelp.services;
 
 import com.google.api.server.spi.response.UnauthorizedException;
 import pt.babyHelp.bd.Son;
-import pt.babyHelp.core.cloudEndpoints.EndPointError;
-import pt.babyHelp.core.cloudEndpoints.ErrorReturn;
+import pt.babyHelp.core.cloudEndpoints.CEErrorReturn;
 import pt.babyHelp.endPoints.UserAcessible;
 import pt.babyHelp.endPoints.userEndPoint.RolesParameters;
 
@@ -12,19 +11,21 @@ import java.util.Map;
 public interface UserBHService extends UserAcessible {
 
     Map<String, Object> updateRoles(String email, RolesParameters rolesParameters)
-            throws EndPointError, UnauthorizedException;
+            throws pt.babyHelp.core.cloudEndpoints.CEError, UnauthorizedException;
 
     Map<String, Object> list()
-            throws EndPointError;
+            throws pt.babyHelp.core.cloudEndpoints.CEError;
 
     Map<String, Object> getRoles(String email)
-            throws EndPointError, UnauthorizedException;
+            throws pt.babyHelp.core.cloudEndpoints.CEError, UnauthorizedException;
 
     Map<String,Object> pendingActions();
 
     Map<String,Object> setSons(Son[] sons);
 
-    enum Error implements ErrorReturn {
+    Map<String,Object> updateHealthTec(Map<String, Object> entryMap) throws pt.babyHelp.core.cloudEndpoints.CEError;
+
+    enum CEError implements CEErrorReturn {
         ROLE_NOT_MATCH(0, "Não é possível corresponder o role %s a nenhum role existente"),
         EMAIL_REQUIRED(1, "O campo email é obrigatório"),
         EMAIL_MALFORMED(2, "O campo email está mal formatado");
@@ -32,7 +33,7 @@ public interface UserBHService extends UserAcessible {
         private String msg;
         private int code;
 
-        Error(int code, String msg) {
+        CEError(int code, String msg) {
             this.msg = msg;
             this.code = code;
         }
@@ -47,7 +48,7 @@ public interface UserBHService extends UserAcessible {
             return this.msg;
         }
 
-        public Error addArgs(String... vars) {
+        public CEError addArgs(String... vars) {
             this.msg = String.format(msg, vars);
             return this;
         }

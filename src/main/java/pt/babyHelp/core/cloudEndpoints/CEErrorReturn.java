@@ -1,6 +1,6 @@
 package pt.babyHelp.core.cloudEndpoints;
 
-public interface ErrorReturn {
+public interface CEErrorReturn {
     String getContext();
     int getCode();
     String getMsg();

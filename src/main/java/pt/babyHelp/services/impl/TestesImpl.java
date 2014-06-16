@@ -4,8 +4,8 @@ package pt.babyHelp.services.impl;
 import com.google.appengine.api.users.User;
 import com.googlecode.objectify.Key;
 import pt.babyHelp.bd.*;
-import pt.babyHelp.core.cloudEndpoints.CEPUtils;
-import pt.babyHelp.core.cloudEndpoints.EndPointError;
+import pt.babyHelp.core.cloudEndpoints.CEError;
+import pt.babyHelp.core.cloudEndpoints.CEUtils;
 import pt.babyHelp.endPoints.Authorization;
 import pt.babyHelp.endPoints.UserAcessible;
 import pt.babyHelp.endPoints.testes.SonParameter;
@@ -40,7 +40,7 @@ public class TestesImpl implements UserAcessible {
         return list;
     }
 
-    public Map<String, Object> insertSuns() throws EndPointError {
+    public Map<String, Object> insertSuns() throws CEError {
         Map<String, Object> map = new HashMap<String, Object>();
 
         for (SonParameter sonParameter : putSomeValuesForMe()) {
@@ -68,7 +68,7 @@ public class TestesImpl implements UserAcessible {
     }
 
     public Map<String, Object> getParentsList(String name) {
-        return CEPUtils.createMapAndPut("falta", "completar");
+        return CEUtils.createMapAndPut("falta", "completar");
     }
 
     @Override

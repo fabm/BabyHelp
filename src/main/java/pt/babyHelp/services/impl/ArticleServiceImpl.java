@@ -6,8 +6,7 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import pt.babyHelp.bd.Article;
 import pt.babyHelp.bd.BD;
-import pt.babyHelp.core.cloudEndpoints.EndPointError;
-import pt.babyHelp.core.cloudEndpoints.CEPUtils;
+import pt.babyHelp.core.cloudEndpoints.CEUtils;
 import pt.babyHelp.endPoints.Authorization;
 import pt.babyHelp.endPoints.article.ArticleParams;
 import pt.babyHelp.endPoints.article.ListIDs;
@@ -30,7 +29,7 @@ public class ArticleServiceImpl implements ArticleService {
     private Authorization authorization;
 
     @Override
-    public Map<String, Object> create(Map<String,Object> entryMap) throws EndPointError {
+    public Map<String, Object> create(Map<String,Object> entryMap) throws pt.babyHelp.core.cloudEndpoints.CEError {
 
         ArticleParams articleParams = new ArticleParams(entryMap, ArticleParams.Type.CREATE);
 
@@ -45,15 +44,15 @@ public class ArticleServiceImpl implements ArticleService {
 
         Key<Article> id = BD.ofy().save().entity(article).now();
         if (id == null)
-            throw new EndPointError(BabyHelpConstants.Error.PERSIST, Article.class.getSimpleName());
+            throw new pt.babyHelp.core.cloudEndpoints.CEError(BabyHelpConstants.CEError.PERSIST, Article.class.getSimpleName());
 
-        Map<String, Object> map = CEPUtils.createMapAndPut("id", id.getId());
+        Map<String, Object> map = CEUtils.createMapAndPut("id", id.getId());
         map.put("message", "Artigo atualizado com sucesso");
         return map;
     }
 
     @Override
-    public Map<String, Object> update(Map<String,Object> entryMap) throws EndPointError {
+    public Map<String, Object> update(Map<String,Object> entryMap) throws pt.babyHelp.core.cloudEndpoints.CEError {
 
         ArticleParams articleParams = new ArticleParams(entryMap, ArticleParams.Type.UPDATE);
 
@@ -65,7 +64,7 @@ public class ArticleServiceImpl implements ArticleService {
         article.setSummary(articleParams.getSummary());
 
         if (article.getAuthorEmail().equals(getAuthorization().getUserFromApp().getEmail()))
-            throw new EndPointError(Error.NOT_OWNER.addArgs(article.getTitle(), "atualizá-lo"));
+            throw new pt.babyHelp.core.cloudEndpoints.CEError(CEError.NOT_OWNER.addArgs(article.getTitle(), "atualizá-lo"));
 
         BD.ofy().save().entity(article).now();
         Map<String, Object> map = new HashMap<String, Object>();
@@ -73,31 +72,31 @@ public class ArticleServiceImpl implements ArticleService {
         return map;
     }
 
-    private Article getArticle(Long id) throws EndPointError {
+    private Article getArticle(Long id) throws pt.babyHelp.core.cloudEndpoints.CEError {
         Article article;
-        if (id == null) throw new EndPointError(Error.ID_REQUIRED);
+        if (id == null) throw new pt.babyHelp.core.cloudEndpoints.CEError(CEError.ID_REQUIRED);
         article = BD.ofy().load().type(Article.class).id(id).now();
         if (article == null)
-            throw new EndPointError(Error.ID_NOT_FOUND.addArgs(id.toString()));
+            throw new pt.babyHelp.core.cloudEndpoints.CEError(CEError.ID_NOT_FOUND.addArgs(id.toString()));
         return article;
     }
 
 
     @Override
     @PhotoUploadMethod(key = "article-edit")
-    public Map<String, Object> updatePhoto(@Named("id") Long id, @PhotoUploadedKey String key) throws EndPointError {
+    public Map<String, Object> updatePhoto(@Named("id") Long id, @PhotoUploadedKey String key) throws pt.babyHelp.core.cloudEndpoints.CEError {
         //getAuthorization().check("atualização do url da foto do artigo", Role.HEALTHTEC);
 
         Article article = getArticle(id);
         article.setPhotoKey(key);
         BD.ofy().save().entity(article).now();
 
-        return CEPUtils.createMapAndPut("message", "delete");
+        return CEUtils.createMapAndPut("message", "delete");
     }
 
 
     @Override
-    public Map<String, Object> delete(ListIDs listIds) throws EndPointError {
+    public Map<String, Object> delete(ListIDs listIds) throws pt.babyHelp.core.cloudEndpoints.CEError {
         long[] ids = listIds.getIds();
 
         Long[] tIds = new Long[ids.length];
@@ -109,12 +108,12 @@ public class ArticleServiceImpl implements ArticleService {
 
         for (Map.Entry<Long, Article> entry : articlesMap.entrySet()) {
             if (!entry.getValue().getAuthorEmail().equals(getAuthorization().getUserFromApp().getEmail())) {
-                throw new EndPointError(Error.NOT_OWNER);
+                throw new pt.babyHelp.core.cloudEndpoints.CEError(CEError.NOT_OWNER);
             }
         }
 
         BD.ofy().delete().entities(articlesMap.values()).now();
-        return CEPUtils.createMapAndPut("state", "deleted");
+        return CEUtils.createMapAndPut("state", "deleted");
     }
 
 
@@ -125,19 +124,19 @@ public class ArticleServiceImpl implements ArticleService {
         Query<Article> query = BD.ofy().load().type(Article.class)
                 .filter("authorEmail", getAuthorization().getUserFromApp().getEmail());
 
-        return CEPUtils.createMapAndPut("articles", CEPUtils.listMapPojo(query));
+        return CEUtils.createMapAndPut("articles", CEUtils.listMapPojo(query));
     }
 
     @Override
     public Map<String, Object> get(long id) {
         Article article = BD.ofy().load().type(Article.class).id(id).now();
-        return CEPUtils.getMap(article);
+        return CEUtils.getMap(article);
     }
 
     @Override
     public Map<String, Object> listPublic() {
         Query<Article> query = BD.ofy().load().type(Article.class).filter("isPublic", true);
-        return CEPUtils.createMapAndPut("articles", CEPUtils.listMapPojo(query));
+        return CEUtils.createMapAndPut("articles", CEUtils.listMapPojo(query));
     }
 
 

@@ -1,8 +1,7 @@
 package pt.babyHelp.endPoints.article;
 
-import pt.babyHelp.core.cloudEndpoints.CEPUtils;
-import pt.babyHelp.core.cloudEndpoints.EndPointError;
-import pt.babyHelp.services.ArticleService;
+import pt.babyHelp.core.cloudEndpoints.MapFieldValidator;
+import pt.babyHelp.services.BabyHelpConstants;
 
 import java.util.Map;
 
@@ -14,20 +13,16 @@ public class ArticleParams {
     private boolean isPublic;
     private Long id;
 
-    public ArticleParams(Map<String, Object> entryMap, Type type) throws EndPointError {
-        try {
-            this.title = CEPUtils.requiredField(entryMap, "title", "Titulo");
-            this.photoUrl = CEPUtils.notRequiredField(entryMap, "photoUrl");
-            this.body = CEPUtils.requiredField(entryMap, "body", "Conteúdo");
-            this.summary = CEPUtils.requiredField(entryMap, "summary", "Resumo");
-            this.isPublic = CEPUtils.requiredField(entryMap, "isPublic", "Público");
-            if (type == Type.UPDATE)
-                CEPUtils.requiredField(entryMap, "id", "Id");
-        } catch (EndPointError endPointError) {
-            if (endPointError.getErrorReturn() == EndPointError.GlobalErrorReturn.FIELD_REQUIRED) {
-                throw new EndPointError(ArticleService.Error.FIELD_REQUIRED, endPointError.getParameters());
-            }
-        }
+    public ArticleParams(Map<String, Object> entryMap, Type type) throws pt.babyHelp.core.cloudEndpoints.CEError {
+        MapFieldValidator mapFV = new MapFieldValidator(entryMap);
+        mapFV.setErrorReturnRequired(BabyHelpConstants.CEError.REQUIRED_FIELD);
+        this.title = mapFV.require("title", "Titulo");
+        this.photoUrl = mapFV.get("photoUrl");
+        this.body = mapFV.require("body", "Conteúdo");
+        this.summary = mapFV.require("summary", "Resumo");
+        this.isPublic = mapFV.require("isPublic", "Público");
+        if (type == Type.UPDATE)
+            mapFV.require("id", "Id");
     }
 
 

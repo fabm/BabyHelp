@@ -1,14 +1,21 @@
 package pt.babyHelp.endPoints.testes;
 
-import pt.babyHelp.bd.embededs.Role;
-
 import java.util.List;
 
 public class UserEntry {
     private String email;
     private List<String> roles;
     private boolean registered;
+    private String name;
     private boolean logged;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getEmail() {
         return email;

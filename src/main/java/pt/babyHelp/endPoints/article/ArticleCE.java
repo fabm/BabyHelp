@@ -7,8 +7,8 @@ import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
 import pt.babyHelp.bd.embededs.Role;
-import pt.babyHelp.core.cloudEndpoints.EndPointError;
-import pt.babyHelp.core.cloudEndpoints.EndPointReturn;
+import pt.babyHelp.core.cloudEndpoints.CEError;
+import pt.babyHelp.core.cloudEndpoints.CEReturn;
 import pt.babyHelp.endPoints.Constants;
 import pt.babyHelp.services.ArticleService;
 import pt.babyHelp.services.impl.ArticleServiceImpl;
@@ -25,32 +25,33 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
                 Constants.IOS_CLIENT_ID, Constants.API_EXPLORER_CLIENT_ID},
         audiences = {Constants.ANDROID_AUDIENCE}
 )
-public class ArticleEndPoint {
+public class ArticleCE {
 
     private ArticleService articleService = new ArticleServiceImpl();
 
 
     @ApiMethod(name = "create", httpMethod = HttpMethod.PUT, path = "create")
-    public EndPointReturn createArticle(User user, final Map<String,Object> map) throws UnauthorizedException {
+    public CEReturn createArticle(User user, final Map<String,Object> map) throws UnauthorizedException {
         this.articleService.setUser(user);
         articleService.getAuthorization().check("criação de um artigo", Role.HEALTHTEC);
 
-        return new EndPointReturn() {
+        return new CEReturn() {
             @Override
-            public Object getEndPointResponse() throws EndPointError {
+            public Object getCEResponse() throws CEError {
                 return articleService.create(map);
             }
         };
 
     }
 
+
     @ApiMethod(name = "update", httpMethod = HttpMethod.POST, path = "update")
-    public EndPointReturn currentEmail(User user, final Map<String,Object> entryMap) throws UnauthorizedException {
+    public CEReturn currentEmail(User user, final Map<String,Object> entryMap) throws UnauthorizedException {
         this.articleService.setUser(user);
         this.articleService.getAuthorization().check("atualização de um artigo", Role.HEALTHTEC);
-        return new EndPointReturn() {
+        return new CEReturn() {
             @Override
-            public Object getEndPointResponse() throws EndPointError {
+            public Object getCEResponse() throws CEError {
                 return articleService.update(entryMap);
             }
         };
@@ -70,12 +71,12 @@ public class ArticleEndPoint {
     }
 
     @ApiMethod(name = "delete", httpMethod = HttpMethod.PUT, path = "delete")
-    public EndPointReturn delete(User user, final ListIDs listIDs) throws UnauthorizedException {
+    public CEReturn delete(User user, final ListIDs listIDs) throws UnauthorizedException {
         this.articleService.setUser(user);
         this.articleService.getAuthorization().check("remoção de artigos");
-        return new EndPointReturn() {
+        return new CEReturn() {
             @Override
-            public Object getEndPointResponse() throws EndPointError {
+            public Object getCEResponse() throws CEError {
                 return articleService.delete(listIDs);
             }
         };

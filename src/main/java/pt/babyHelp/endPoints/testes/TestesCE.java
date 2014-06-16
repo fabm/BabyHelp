@@ -10,9 +10,9 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import pt.babyHelp.bd.embededs.Role;
-import pt.babyHelp.core.cloudEndpoints.CEPUtils;
-import pt.babyHelp.core.cloudEndpoints.EndPointError;
-import pt.babyHelp.core.cloudEndpoints.EndPointReturn;
+import pt.babyHelp.core.cloudEndpoints.CEError;
+import pt.babyHelp.core.cloudEndpoints.CEReturn;
+import pt.babyHelp.core.cloudEndpoints.CEUtils;
 import pt.babyHelp.endPoints.Authorization;
 import pt.babyHelp.endPoints.Constants;
 import pt.babyHelp.services.impl.TestesImpl;
@@ -36,7 +36,7 @@ import java.util.Properties;
                 Constants.IOS_CLIENT_ID, Constants.API_EXPLORER_CLIENT_ID},
         audiences = {Constants.ANDROID_AUDIENCE}
 )
-public class TestesEP {
+public class TestesCE {
 
     public static UserEntry userCurrent = null;
     private TestesImpl testesService = new TestesImpl();
@@ -83,27 +83,27 @@ public class TestesEP {
     @ApiMethod(name = "userEntry", httpMethod = ApiMethod.HttpMethod.POST, path = "entry")
     public Map<String, Object> dadosDaConsola(UserEntry userCurrent) {
         Authorization.checkDevMode();
-        TestesEP.userCurrent = userCurrent;
-        return CEPUtils.createMapAndPut("success", "user for development changed");
+        TestesCE.userCurrent = userCurrent;
+        return CEUtils.createMapAndPut("success", "user for development changed");
     }
 
     @ApiMethod(name = "logout", httpMethod = ApiMethod.HttpMethod.POST, path = "logout")
     public Map<String, Object> logout() {
         if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Development) {
-            TestesEP.userCurrent = null;
+            TestesCE.userCurrent = null;
         }
-        return CEPUtils.createMapAndPut("success", "user for development loggedOut");
+        return CEUtils.createMapAndPut("success", "user for development loggedOut");
     }
 
     @ApiMethod(name = "insert.son", httpMethod = ApiMethod.HttpMethod.POST, path = "insert/son")
-    public EndPointReturn insertson(User user, SonParameter sonParameter) throws UnauthorizedException {
+    public CEReturn insertson(User user, SonParameter sonParameter) throws UnauthorizedException {
         Authorization.checkDevMode();
         testesService.setUser(user);
         testesService.getAuthorization().check("teste de inserção do filho", Role.PARENT);
         testesService.getAuthorization().checkDevMode();
-        return new EndPointReturn() {
+        return new CEReturn() {
             @Override
-            public Object getEndPointResponse() throws EndPointError {
+            public Object getCEResponse() throws CEError {
                 return testesService.insertSuns();
             }
         };

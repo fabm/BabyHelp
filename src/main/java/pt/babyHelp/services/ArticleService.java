@@ -1,23 +1,22 @@
 package pt.babyHelp.services;
 
-import pt.babyHelp.core.cloudEndpoints.EndPointError;
-import pt.babyHelp.core.cloudEndpoints.ErrorReturn;
+import pt.babyHelp.core.cloudEndpoints.CEErrorReturn;
 import pt.babyHelp.endPoints.UserAcessible;
 import pt.babyHelp.endPoints.article.ListIDs;
 
 import java.util.Map;
 
 public interface ArticleService extends UserAcessible{
-    Map<String, Object> create(Map<String,Object> entryMap) throws EndPointError;
+    Map<String, Object> create(Map<String,Object> entryMap) throws pt.babyHelp.core.cloudEndpoints.CEError;
 
     Map<String, Object> update(Map<String,Object> entryMap)
-            throws EndPointError;
+            throws pt.babyHelp.core.cloudEndpoints.CEError;
 
     Map<String, Object> updatePhoto(Long id, String key)
-            throws EndPointError;
+            throws pt.babyHelp.core.cloudEndpoints.CEError;
 
     Map<String, Object> delete(ListIDs listIds)
-            throws EndPointError;
+            throws pt.babyHelp.core.cloudEndpoints.CEError;
 
     Map<String, Object> getMyArticles() ;
 
@@ -25,7 +24,9 @@ public interface ArticleService extends UserAcessible{
 
     Map<String, Object> listPublic();
 
-    enum Error implements ErrorReturn {
+
+
+    enum CEError implements CEErrorReturn {
         WRONG_ROLE(1, "Não tem previlégios suficientes para executar esta ação"),
         ID_REQUIRED(2, "O id é obrigatório para atualizar o artigo"),
         ID_NOT_FOUND(3, "Não foi encontrado nenhum artigo com o id %s"),
@@ -35,7 +36,7 @@ public interface ArticleService extends UserAcessible{
         private String msg;
         private int code;
 
-        Error(int code, String msg) {
+        CEError(int code, String msg) {
             this.msg = msg;
             this.code = code;
         }
@@ -50,7 +51,7 @@ public interface ArticleService extends UserAcessible{
             return this.msg;
         }
 
-        public Error addArgs(String... vars) {
+        public CEError addArgs(String... vars) {
             this.msg = String.format(msg, vars);
             return this;
         }

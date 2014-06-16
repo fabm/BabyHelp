@@ -4,9 +4,9 @@ package pt.babyHelp.core.cloudEndpoints;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EndPointError extends Exception {
+public class CEError extends Exception {
 
-    private ErrorReturn errorReturn;
+    private CEErrorReturn CEErrorReturn;
 
     public String[] getParameters() {
         return parameters;
@@ -14,35 +14,35 @@ public class EndPointError extends Exception {
 
     private String[] parameters;
 
-    public EndPointError(ErrorReturn errorReturn, String... parameters) {
-        super(String.format(errorReturn.getMsg(), parameters));
+    public CEError(CEErrorReturn ceErrorReturn, String... parameters) {
+        super(String.format(ceErrorReturn.getMsg(), parameters));
         this.parameters = parameters;
-        this.errorReturn = errorReturn;
+        this.CEErrorReturn = ceErrorReturn;
     }
 
-    public ErrorReturn getErrorReturn() {
-        return errorReturn;
+    public CEErrorReturn getCEErrorReturn() {
+        return CEErrorReturn;
     }
 
     public Map<String, Object> getMap() {
         HashMap<String, Object> map = new HashMap<String, Object>();
         HashMap<String, Object> errorMap = new HashMap<String, Object>();
         map.put("message", this.getMessage());
-        map.put("code", errorReturn.getCode());
-        map.put("context", errorReturn.getContext());
+        map.put("code", CEErrorReturn.getCode());
+        map.put("context", CEErrorReturn.getContext());
         errorMap = new HashMap<String, Object>();
         errorMap.put("error", map);
         return errorMap;
     }
 
 
-    public static enum GlobalErrorReturn implements ErrorReturn {
+    public static enum GlobalCEErrorReturn implements CEErrorReturn {
         FIELD_REQUIRED(0, "The field %s is required");
 
         int code;
         String msg;
 
-        GlobalErrorReturn(int code, String msg) {
+        GlobalCEErrorReturn(int code, String msg) {
             this.code = code;
             this.msg = msg;
         }

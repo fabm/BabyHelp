@@ -6,17 +6,14 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
-import pt.babyHelp.bd.BD;
-import pt.babyHelp.bd.HealhTec;
 import pt.babyHelp.bd.Son;
-import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.bd.embededs.Role;
-import pt.babyHelp.core.cloudEndpoints.EndPointError;
+import pt.babyHelp.core.cloudEndpoints.CEError;
+import pt.babyHelp.core.cloudEndpoints.CEReturn;
 import pt.babyHelp.endPoints.Constants;
 import pt.babyHelp.services.UserBHService;
 import pt.babyHelp.services.impl.UserBHServiceImpl;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
@@ -30,7 +27,7 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
                 Constants.IOS_CLIENT_ID, Constants.API_EXPLORER_CLIENT_ID},
         audiences = {Constants.ANDROID_AUDIENCE}
 )
-public class UserBHCEP {
+public class UserBHCE {
 
     private UserBHService userBHService = new UserBHServiceImpl();
 
@@ -42,8 +39,8 @@ public class UserBHCEP {
         try {
             this.userBHService.setUser(user);
             return this.userBHService.updateRoles(email, rolesParameters);
-        } catch (EndPointError endPointError) {
-            return endPointError.getMap();
+        } catch (CEError CEError) {
+            return CEError.getMap();
         }
     }
 
@@ -52,8 +49,8 @@ public class UserBHCEP {
         try {
             this.userBHService.setUser(user);
             return this.userBHService.list();
-        } catch (EndPointError endPointError) {
-            return endPointError.getMap();
+        } catch (CEError CEError) {
+            return CEError.getMap();
         }
     }
 
@@ -62,38 +59,10 @@ public class UserBHCEP {
         try {
             this.userBHService.setUser(user);
             return this.userBHService.getRoles(email);
-        } catch (EndPointError endPointError) {
-            return endPointError.getMap();
+        } catch (CEError CEError) {
+            return CEError.getMap();
         }
     }
-
-    @ApiMethod(name = "pendingActions", httpMethod = HttpMethod.PUT)
-    public Map<String, Object> actionsPending(User user, HealthTecParams healthTecParams) throws UnauthorizedException {
-        this.userBHService.setUser(user);
-        return this.userBHService.pendingActions();
-    }
-
-
-    @ApiMethod(name = "update.healthtec", httpMethod = HttpMethod.PUT, path = "update/healthtec")
-    public Map<String, Object> healthTecUpdate(User user, HealthTecParams healthTecParams) throws UnauthorizedException {
-
-        UserFromApp userFromApp = new UserFromApp();
-        userFromApp.setEmail(healthTecParams.getEmail());
-
-        HealhTec healhTec = new HealhTec();
-        healhTec.setName(healthTecParams.getName());
-        healhTec.setProfession(healthTecParams.getProfession());
-        userFromApp.setHealhTec(healhTec);
-
-
-        BD.ofy().save().entity(userFromApp).now();
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("message", "saved");
-
-
-        return map;
-    }
-
 
     @ApiMethod(name = "update.sons", httpMethod = HttpMethod.PUT, path = "update/sons")
     public Map<String, Object> updateSons(User user, SonsParameters sons) throws UnauthorizedException {
@@ -102,8 +71,20 @@ public class UserBHCEP {
         return userBHService.setSons((Son[]) sons.getSons().toArray());
     }
 
+    @ApiMethod(name = "update.healthtec", httpMethod = HttpMethod.PUT, path = "update/healthtec")
+    public CEReturn updateHealthTec(User user, final Map<String, Object> entryMap) {
+        this.userBHService.setUser(user);
+        return new CEReturn() {
+            @Override
+            public Object getCEResponse() throws CEError {
+                return userBHService.updateHealthTec(entryMap);
+            }
+        };
+    }
+
+
     @ApiMethod(name = "pendingActions", httpMethod = ApiMethod.HttpMethod.GET, path = "pendingactions")
-    public Map<String,Object> pendingActions(User user){
+    public Map<String, Object> pendingActions(User user) {
         userBHService.setUser(user);
         return userBHService.pendingActions();
     }

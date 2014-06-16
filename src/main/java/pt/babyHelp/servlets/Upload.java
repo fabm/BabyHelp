@@ -13,8 +13,7 @@ import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.repackaged.org.codehaus.jackson.JsonNode;
 import com.google.appengine.repackaged.org.codehaus.jackson.map.ObjectMapper;
-import pt.babyHelp.core.cloudEndpoints.EndPointError;
-import pt.babyHelp.core.cloudEndpoints.ErrorReturn;
+import pt.babyHelp.core.cloudEndpoints.CEErrorReturn;
 import pt.babyHelp.endPoints.Authorization;
 import pt.babyHelp.endPoints.UserAcessible;
 import pt.babyHelp.services.annotations.InstanceType;
@@ -110,7 +109,7 @@ public class Upload extends HttpServlet {
      * @throws org.apache.http.client.HttpResponseException
      */
     public static String getCurrentUserEmail(String accessToken)
-            throws IOException, EndPointError, UnauthorizedException {
+            throws IOException, pt.babyHelp.core.cloudEndpoints.CEError, UnauthorizedException {
         if (accessToken == null) return null;
         GenericUrl userInfo = new GenericUrl("https://www.googleapis.com/userinfo/v2/me");
         Credential credential =
@@ -149,8 +148,8 @@ public class Upload extends HttpServlet {
             } catch (UnauthorizedException e) {
                 throw new ServletException(e);
             }
-        } catch (EndPointError endPointError) {
-            map.put("error", endPointError.getMap());
+        } catch (pt.babyHelp.core.cloudEndpoints.CEError CEError) {
+            map.put("error", CEError.getMap());
         } catch (UnauthorizedException e) {
             throw new ServletException(e);
         }
@@ -177,10 +176,10 @@ public class Upload extends HttpServlet {
         String errorMessageReturnMap = "The method '%s' must return a Map<String,Object>";
         try {
             String action = req.getParameter("action");
-            if (action == null || action.isEmpty()) throw new EndPointError(Error.NO_ACTION_PARAMETER);
+            if (action == null || action.isEmpty()) throw new pt.babyHelp.core.cloudEndpoints.CEError(CEError.NO_ACTION_PARAMETER);
 
             UploadClassMethod<? extends UserAcessible> uploadClassMethod = uploadMethodMap.get(action);
-            if (uploadClassMethod == null) throw new EndPointError(Error.NO_UPLOAD_ACTION_REGISTERED, action);
+            if (uploadClassMethod == null) throw new pt.babyHelp.core.cloudEndpoints.CEError(CEError.NO_UPLOAD_ACTION_REGISTERED, action);
             Method method = uploadClassMethod.methodsMap.get(action);
 
             errorMessageReturnMap = String.format(errorMessageReturnMap, method.getName());
@@ -241,8 +240,8 @@ public class Upload extends HttpServlet {
                 map = (Map<String, Object>) method.invoke(instance, parameterValues);
             } catch (InvocationTargetException e) {
                 Throwable target = e.getTargetException();
-                if (target instanceof EndPointError) {
-                    map = ((EndPointError) target).getMap();
+                if (target instanceof pt.babyHelp.core.cloudEndpoints.CEError) {
+                    map = ((pt.babyHelp.core.cloudEndpoints.CEError) target).getMap();
                 } else if (target instanceof UnauthorizedException)
                     throw (UnauthorizedException) target;
                 else
@@ -256,21 +255,21 @@ public class Upload extends HttpServlet {
             throw new RuntimeException(e);
         } catch (UnauthorizedException e) {
             throw new ServletException(e);
-        } catch (EndPointError endPointError) {
-            map = endPointError.getMap();
+        } catch (pt.babyHelp.core.cloudEndpoints.CEError CEError) {
+            map = CEError.getMap();
         }
 
         objectMaper.writeValue(res.getWriter(), map);
     }
 
-    static enum Error implements ErrorReturn {
+    static enum CEError implements CEErrorReturn {
         NO_ACTION_PARAMETER("Não foi enviado um parâmetro action", 0),
         NO_UPLOAD_ACTION_REGISTERED("Não foi registada nenhuma acção de upload para a action:'%s'", 1);
 
         private String message;
         private int code;
 
-        Error(String message, int code) {
+        CEError(String message, int code) {
             this.message = message;
             this.code = code;
         }

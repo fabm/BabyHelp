@@ -5,7 +5,7 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.users.User;
-import pt.babyHelp.core.cloudEndpoints.ErrorReturn;
+import pt.babyHelp.core.cloudEndpoints.CEErrorReturn;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,14 +42,14 @@ public class UpPhotoEndpoint {
     }
 
 
-    private static enum Error implements ErrorReturn {
+    private static enum CEError implements CEErrorReturn {
         AUTHORIZATION_MISSING(0, "Falta o parametro de autenticação do header"),
         NOT_AUTHENTICATED(1, "Não é possível executar esta ação sem estar autenticado");
 
         private int code;
         private String msg;
 
-        Error(int code, String msg) {
+        CEError(int code, String msg) {
             this.code = code;
             this.msg = msg;
         }
