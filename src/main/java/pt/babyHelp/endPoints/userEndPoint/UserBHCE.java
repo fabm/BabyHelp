@@ -10,6 +10,7 @@ import pt.babyHelp.bd.Son;
 import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.core.cloudEndpoints.CEError;
 import pt.babyHelp.core.cloudEndpoints.CEReturn;
+import pt.babyHelp.core.cloudEndpoints.CEUtils;
 import pt.babyHelp.endPoints.Constants;
 import pt.babyHelp.services.UserBHService;
 import pt.babyHelp.services.impl.UserBHServiceImpl;
@@ -89,6 +90,16 @@ public class UserBHCE {
         return userBHService.pendingActions();
     }
 
+    @ApiMethod(name = "current", httpMethod = ApiMethod.HttpMethod.GET, path = "current")
+    public Map<String, Object> current(User user) {
+        userBHService.setUser(user);
+        Map<String, Object> map = CEUtils.createMapAndPut("email",
+                userBHService.getAuthorization().getUserFromApp().getEmail());
+        if(userBHService.getAuthorization().getUserFromApp().getProfession()!=null){
+            map.put("profissao",userBHService.getAuthorization().getUserFromApp().getProfession());
+        }
+        return map;
+    }
 
 }
 

@@ -100,7 +100,7 @@ public class UserBHServiceImpl implements UserBHService {
     @Override
     public Map<String, Object> pendingActions() {
         UserFromApp userFromApp = getAuthorization().getUserFromApp();
-        if (getAuthorization().hasRole(Role.HEALTHTEC) && userFromApp.getHealhTec() == null) {
+        if (getAuthorization().hasRole(Role.HEALTHTEC) && userFromApp.getProfession() == null) {
             return CEUtils.createMapAndPut("pending", "healthtec");
         }
         Map<String, Object> map;
@@ -165,11 +165,12 @@ public class UserBHServiceImpl implements UserBHService {
     public Map<String, Object> updateHealthTec(Map<String, Object> entryMap) throws pt.babyHelp.core.cloudEndpoints.CEError {
         MapFieldValidator mapFV = new MapFieldValidator(entryMap);
         mapFV.setErrorReturnRequired(BabyHelpConstants.CEError.REQUIRED_FIELD);
-        HealhTec healhTec = new HealhTec();
-        healhTec.setProfession(mapFV.<String>require("profession", "profissão"));
-        getAuthorization().getUserFromApp().setHealhTec(healhTec);
+        getAuthorization().getUserFromApp().setProfession(mapFV.<String>require("profession", "profissão"));
         getAuthorization().savedUserFromApp();
-        return CEUtils.createMapAndPut("message","A sua profissão como técnico de saude foi atualizada");
+
+        Map<String, Object> map = CEUtils.createMapAndPut("message", "A sua profissão como técnico de saude foi atualizada");
+        map.put("current",getAuthorization().getUserFromApp().getProfession());
+        return map;
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.Set;
 @Entity
 public class UserFromApp {
 
-    HealhTec healhTec;
+    private String profession;
     @Id
     @Index
     private String email;
@@ -29,6 +29,14 @@ public class UserFromApp {
 
     public static Iterator<UserFromApp> iterateAll() {
         return BD.loadALL(UserFromApp.class);
+    }
+
+    public String getProfession() {
+        return profession;
+    }
+
+    public void setProfession(String profession) {
+        this.profession = profession;
     }
 
     public String getName() {
@@ -48,13 +56,6 @@ public class UserFromApp {
         this.sons = sons;
     }
 
-    public HealhTec getHealhTec() {
-        return healhTec;
-    }
-
-    public void setHealhTec(HealhTec healhTec) {
-        this.healhTec = healhTec;
-    }
 
     public String getEmail() {
         return email;
@@ -69,15 +70,15 @@ public class UserFromApp {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
-
     public void setRoles(Role... roles) {
         this.roles = new HashSet<Role>(roles.length);
         for (Role role : roles) {
             this.roles.add(role);
         }
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
 
