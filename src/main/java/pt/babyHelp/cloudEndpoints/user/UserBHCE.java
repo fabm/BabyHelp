@@ -1,4 +1,4 @@
-package pt.babyHelp.cloudEndpoints.userEndPoint;
+package pt.babyHelp.cloudEndpoints.user;
 
 
 import com.google.api.server.spi.config.Api;

@@ -2,10 +2,9 @@ package pt.babyHelp.services;
 
 import com.google.api.server.spi.response.UnauthorizedException;
 import pt.babyHelp.bd.Son;
-import pt.core.cloudEndpoints.CEError;
 import pt.core.cloudEndpoints.CEErrorReturn;
 import pt.babyHelp.cloudEndpoints.UserAcessible;
-import pt.babyHelp.cloudEndpoints.userEndPoint.RolesParameters;
+import pt.babyHelp.cloudEndpoints.user.RolesParameters;
 
 import java.util.Map;
 

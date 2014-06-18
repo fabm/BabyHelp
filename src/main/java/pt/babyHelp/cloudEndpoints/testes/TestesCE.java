@@ -80,6 +80,7 @@ public class TestesCE {
         return map;
     }
 
+    //TODO ler do JS o cliente com o loadFromDS = true
     @ApiMethod(name = "userEntry", httpMethod = ApiMethod.HttpMethod.POST, path = "entry")
     public Map<String, Object> dadosDaConsola(UserEntry userCurrent) {
         Authorization.checkDevMode();

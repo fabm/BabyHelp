@@ -7,12 +7,11 @@ import pt.babyHelp.bd.*;
 import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.cloudEndpoints.BHAuthorization;
 import pt.babyHelp.services.BabyHelp;
-import pt.core.cloudEndpoints.CEError;
 import pt.core.cloudEndpoints.CEUtils;
 import pt.core.cloudEndpoints.MapFieldValidator;
 import pt.core.validators.EmailChecker;
 import pt.core.cloudEndpoints.Authorization;
-import pt.babyHelp.cloudEndpoints.userEndPoint.RolesParameters;
+import pt.babyHelp.cloudEndpoints.user.RolesParameters;
 import pt.babyHelp.services.UserBHService;
 
 import java.util.*;
@@ -181,7 +180,8 @@ public class UserBHServiceImpl implements UserBHService {
     @Override
     public Map<String, Object> updateUserName(Map<String, Object> entryMap) throws pt.core.cloudEndpoints.CEError {
         MapFieldValidator mapFV = new MapFieldValidator(entryMap);
-        getAuthorization().savedUserFromApp().setName(mapFV.<String>get("name"));
+        getAuthorization().getUserFromApp().setName(mapFV.<String>get("name"));
+        getAuthorization().savedUserFromApp();
         return CEUtils.createMapAndPut("message","Utilizador atualizado com sucesso");
     }
 
