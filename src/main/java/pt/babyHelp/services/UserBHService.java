@@ -2,28 +2,31 @@ package pt.babyHelp.services;
 
 import com.google.api.server.spi.response.UnauthorizedException;
 import pt.babyHelp.bd.Son;
-import pt.babyHelp.core.cloudEndpoints.CEErrorReturn;
-import pt.babyHelp.endPoints.UserAcessible;
-import pt.babyHelp.endPoints.userEndPoint.RolesParameters;
+import pt.core.cloudEndpoints.CEError;
+import pt.core.cloudEndpoints.CEErrorReturn;
+import pt.babyHelp.cloudEndpoints.UserAcessible;
+import pt.babyHelp.cloudEndpoints.userEndPoint.RolesParameters;
 
 import java.util.Map;
 
 public interface UserBHService extends UserAcessible {
 
     Map<String, Object> updateRoles(String email, RolesParameters rolesParameters)
-            throws pt.babyHelp.core.cloudEndpoints.CEError, UnauthorizedException;
+            throws pt.core.cloudEndpoints.CEError, UnauthorizedException;
 
     Map<String, Object> list()
-            throws pt.babyHelp.core.cloudEndpoints.CEError;
+            throws pt.core.cloudEndpoints.CEError;
 
     Map<String, Object> getRoles(String email)
-            throws pt.babyHelp.core.cloudEndpoints.CEError, UnauthorizedException;
+            throws pt.core.cloudEndpoints.CEError, UnauthorizedException;
 
     Map<String,Object> pendingActions();
 
     Map<String,Object> setSons(Son[] sons);
 
-    Map<String,Object> updateHealthTec(Map<String, Object> entryMap) throws pt.babyHelp.core.cloudEndpoints.CEError;
+    Map<String,Object> updateHealthTec(Map<String, Object> entryMap) throws pt.core.cloudEndpoints.CEError;
+
+    Map<String,Object> updateUserName(Map<String, Object> entryMap) throws pt.core.cloudEndpoints.CEError;
 
     enum CEError implements CEErrorReturn {
         ROLE_NOT_MATCH(0, "Não é possível corresponder o role %s a nenhum role existente"),

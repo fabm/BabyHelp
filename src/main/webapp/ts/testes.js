@@ -248,6 +248,7 @@ var UserEntry = (function () {
         this.roles = ['PARENT'];
         this.registered = false;
         this.logged = true;
+        this.profession = null;
     }
     return UserEntry;
 })();

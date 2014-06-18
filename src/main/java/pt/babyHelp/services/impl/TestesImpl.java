@@ -4,11 +4,12 @@ package pt.babyHelp.services.impl;
 import com.google.appengine.api.users.User;
 import com.googlecode.objectify.Key;
 import pt.babyHelp.bd.*;
-import pt.babyHelp.core.cloudEndpoints.CEError;
-import pt.babyHelp.core.cloudEndpoints.CEUtils;
-import pt.babyHelp.endPoints.Authorization;
-import pt.babyHelp.endPoints.UserAcessible;
-import pt.babyHelp.endPoints.testes.SonParameter;
+import pt.babyHelp.cloudEndpoints.BHAuthorization;
+import pt.core.cloudEndpoints.CEError;
+import pt.core.cloudEndpoints.CEUtils;
+import pt.core.cloudEndpoints.Authorization;
+import pt.babyHelp.cloudEndpoints.UserAcessible;
+import pt.babyHelp.cloudEndpoints.testes.SonParameter;
 
 import java.util.*;
 
@@ -73,7 +74,7 @@ public class TestesImpl implements UserAcessible {
 
     @Override
     public void setUser(User user) {
-        authorization = new Authorization(user);
+        authorization = new BHAuthorization(user);
     }
 
     @Override

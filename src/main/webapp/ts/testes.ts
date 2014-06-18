@@ -246,6 +246,7 @@ class UserEntry {
     roles:Array<string> = ['PARENT'];
     registered:boolean = false;
     logged:boolean = true;
+    profession:string = null;
 }
 
 var apiTestes = {

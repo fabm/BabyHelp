@@ -3,7 +3,7 @@ package pt.babyHelp.bd;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
-import pt.babyHelp.services.BabyHelpConstants;
+import pt.babyHelp.services.BabyHelp;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,8 +24,8 @@ public class BD {
         return ObjectifyService.ofy();
     }
 
-    public static <T>Key<T> checkKey(Key<T> key,Class<T> clazz) throws pt.babyHelp.core.cloudEndpoints.CEError {
-        if(key == null)throw new pt.babyHelp.core.cloudEndpoints.CEError(BabyHelpConstants.CEError.PERSIST,clazz.getSimpleName());
+    public static <T>Key<T> checkKey(Key<T> key,Class<T> clazz) throws pt.core.cloudEndpoints.CEError {
+        if(key == null)throw new pt.core.cloudEndpoints.CEError(BabyHelp.CEError.PERSIST,clazz.getSimpleName());
         return key;
     }
 

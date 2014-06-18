@@ -6,7 +6,8 @@ import com.googlecode.objectify.cmd.Query;
 import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.Parentality;
 import pt.babyHelp.bd.Son;
-import pt.babyHelp.endPoints.Authorization;
+import pt.babyHelp.cloudEndpoints.BHAuthorization;
+import pt.core.cloudEndpoints.Authorization;
 import pt.babyHelp.services.SonService;
 
 import java.util.*;
@@ -46,7 +47,7 @@ public class SonServiceImpl implements SonService {
 
     @Override
     public void setUser(User user) {
-        this.authorization = new Authorization(user);
+        this.authorization = new BHAuthorization(user);
     }
 
     @Override

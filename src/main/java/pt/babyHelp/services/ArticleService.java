@@ -1,22 +1,22 @@
 package pt.babyHelp.services;
 
-import pt.babyHelp.core.cloudEndpoints.CEErrorReturn;
-import pt.babyHelp.endPoints.UserAcessible;
-import pt.babyHelp.endPoints.article.ListIDs;
+import pt.core.cloudEndpoints.CEErrorReturn;
+import pt.babyHelp.cloudEndpoints.UserAcessible;
+import pt.babyHelp.cloudEndpoints.article.ListIDs;
 
 import java.util.Map;
 
 public interface ArticleService extends UserAcessible{
-    Map<String, Object> create(Map<String,Object> entryMap) throws pt.babyHelp.core.cloudEndpoints.CEError;
+    Map<String, Object> create(Map<String,Object> entryMap) throws pt.core.cloudEndpoints.CEError;
 
     Map<String, Object> update(Map<String,Object> entryMap)
-            throws pt.babyHelp.core.cloudEndpoints.CEError;
+            throws pt.core.cloudEndpoints.CEError;
 
     Map<String, Object> updatePhoto(Long id, String key)
-            throws pt.babyHelp.core.cloudEndpoints.CEError;
+            throws pt.core.cloudEndpoints.CEError;
 
     Map<String, Object> delete(ListIDs listIds)
-            throws pt.babyHelp.core.cloudEndpoints.CEError;
+            throws pt.core.cloudEndpoints.CEError;
 
     Map<String, Object> getMyArticles() ;
 

@@ -5,12 +5,14 @@ import com.google.appengine.api.users.User;
 import com.googlecode.objectify.cmd.Query;
 import pt.babyHelp.bd.*;
 import pt.babyHelp.bd.embededs.Role;
-import pt.babyHelp.core.cloudEndpoints.CEUtils;
-import pt.babyHelp.core.cloudEndpoints.MapFieldValidator;
-import pt.babyHelp.core.validators.EmailChecker;
-import pt.babyHelp.endPoints.Authorization;
-import pt.babyHelp.endPoints.userEndPoint.RolesParameters;
-import pt.babyHelp.services.BabyHelpConstants;
+import pt.babyHelp.cloudEndpoints.BHAuthorization;
+import pt.babyHelp.services.BabyHelp;
+import pt.core.cloudEndpoints.CEError;
+import pt.core.cloudEndpoints.CEUtils;
+import pt.core.cloudEndpoints.MapFieldValidator;
+import pt.core.validators.EmailChecker;
+import pt.core.cloudEndpoints.Authorization;
+import pt.babyHelp.cloudEndpoints.userEndPoint.RolesParameters;
 import pt.babyHelp.services.UserBHService;
 
 import java.util.*;
@@ -18,7 +20,7 @@ import java.util.*;
 public class UserBHServiceImpl implements UserBHService {
     private Authorization authorization;
 
-    private static Map<String, Object> getList() throws pt.babyHelp.core.cloudEndpoints.CEError {
+    private static Map<String, Object> getList() throws pt.core.cloudEndpoints.CEError {
         Iterator<UserFromApp> it = UserFromApp.iterateAll();
         Map<String, Object> map = new HashMap<String, Object>();
         List<Object> users = new ArrayList<Object>();
@@ -43,16 +45,16 @@ public class UserBHServiceImpl implements UserBHService {
 
 
     @Override
-    public Map<String, Object> updateRoles(String email, RolesParameters rolesParameters) throws pt.babyHelp.core.cloudEndpoints.CEError, UnauthorizedException {
+    public Map<String, Object> updateRoles(String email, RolesParameters rolesParameters) throws pt.core.cloudEndpoints.CEError, UnauthorizedException {
         getAuthorization().check("atualização de utilizadores", Role.ADMINISTRATOR);
 
         Map<String, Object> map = new HashMap<String, Object>();
         if (email == null) {
-            throw new pt.babyHelp.core.cloudEndpoints.CEError(CEError.EMAIL_REQUIRED);
+            throw new pt.core.cloudEndpoints.CEError(CEError.EMAIL_REQUIRED);
         }
 
         if (!EmailChecker.check(email)) {
-            throw new pt.babyHelp.core.cloudEndpoints.CEError(CEError.EMAIL_MALFORMED);
+            throw new pt.core.cloudEndpoints.CEError(CEError.EMAIL_MALFORMED);
         }
 
         UserFromApp userFromApp = UserFromApp.findByEmail(email);
@@ -64,27 +66,27 @@ public class UserBHServiceImpl implements UserBHService {
         try {
             userFromApp.setRoles(rolesParameters.toEnum());
             if (BD.ofy().save().entity(userFromApp).now() == null)
-                throw new pt.babyHelp.core.cloudEndpoints.CEError(BabyHelpConstants.CEError.PERSIST, UserFromApp.class.getSimpleName());
+                throw new pt.core.cloudEndpoints.CEError(BabyHelp.CEError.PERSIST, UserFromApp.class.getSimpleName());
             map.put("state", "user atualizado");
         } catch (Role.ConvertException e) {
-            throw new pt.babyHelp.core.cloudEndpoints.CEError(CEError.ROLE_NOT_MATCH.addArgs(e.getRoleStr()));
+            throw new pt.core.cloudEndpoints.CEError(CEError.ROLE_NOT_MATCH.addArgs(e.getRoleStr()));
         }
         return map;
     }
 
     @Override
-    public Map<String, Object> list() throws pt.babyHelp.core.cloudEndpoints.CEError {
+    public Map<String, Object> list() throws pt.core.cloudEndpoints.CEError {
         return getList();
     }
 
 
     @Override
-    public Map<String, Object> getRoles(String email) throws pt.babyHelp.core.cloudEndpoints.CEError, UnauthorizedException {
+    public Map<String, Object> getRoles(String email) throws pt.core.cloudEndpoints.CEError, UnauthorizedException {
         getAuthorization().check("verificação de roles", Role.ADMINISTRATOR);
         Map<String, Object> map = new HashMap<String, Object>();
 
         if (email == null || email.isEmpty()) {
-            throw new pt.babyHelp.core.cloudEndpoints.CEError(CEError.EMAIL_REQUIRED);
+            throw new pt.core.cloudEndpoints.CEError(CEError.EMAIL_REQUIRED);
         }
 
         UserFromApp userFromApp = UserFromApp.findByEmail(email);
@@ -100,8 +102,11 @@ public class UserBHServiceImpl implements UserBHService {
     @Override
     public Map<String, Object> pendingActions() {
         UserFromApp userFromApp = getAuthorization().getUserFromApp();
+        if(getAuthorization().getUserFromApp().getName()==null)
+            return CEUtils.createMapAndPut("pending","userName");
+
         if (getAuthorization().hasRole(Role.HEALTHTEC) && userFromApp.getProfession() == null) {
-            return CEUtils.createMapAndPut("pending", "healthtec");
+            return CEUtils.createMapAndPut("pending", "profession");
         }
         Map<String, Object> map;
 
@@ -162,9 +167,9 @@ public class UserBHServiceImpl implements UserBHService {
     }
 
     @Override
-    public Map<String, Object> updateHealthTec(Map<String, Object> entryMap) throws pt.babyHelp.core.cloudEndpoints.CEError {
+    public Map<String, Object> updateHealthTec(Map<String, Object> entryMap) throws pt.core.cloudEndpoints.CEError {
         MapFieldValidator mapFV = new MapFieldValidator(entryMap);
-        mapFV.setErrorReturnRequired(BabyHelpConstants.CEError.REQUIRED_FIELD);
+        mapFV.setErrorReturnRequired(BabyHelp.CEError.REQUIRED_FIELD);
         getAuthorization().getUserFromApp().setProfession(mapFV.<String>require("profession", "profissão"));
         getAuthorization().savedUserFromApp();
 
@@ -174,8 +179,15 @@ public class UserBHServiceImpl implements UserBHService {
     }
 
     @Override
+    public Map<String, Object> updateUserName(Map<String, Object> entryMap) throws pt.core.cloudEndpoints.CEError {
+        MapFieldValidator mapFV = new MapFieldValidator(entryMap);
+        getAuthorization().savedUserFromApp().setName(mapFV.<String>get("name"));
+        return CEUtils.createMapAndPut("message","Utilizador atualizado com sucesso");
+    }
+
+    @Override
     public void setUser(User user) {
-        authorization = new Authorization(user);
+        authorization = new BHAuthorization(user);
     }
 
     @Override

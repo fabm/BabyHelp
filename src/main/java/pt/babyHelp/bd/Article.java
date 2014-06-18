@@ -3,7 +3,7 @@ package pt.babyHelp.bd;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
-import pt.babyHelp.core.pojoMap.ToMap;
+import pt.core.pojoMap.ToMap;
 
 @Entity
 public class Article {

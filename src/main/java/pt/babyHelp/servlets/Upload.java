@@ -13,9 +13,9 @@ import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.repackaged.org.codehaus.jackson.JsonNode;
 import com.google.appengine.repackaged.org.codehaus.jackson.map.ObjectMapper;
-import pt.babyHelp.core.cloudEndpoints.CEErrorReturn;
-import pt.babyHelp.endPoints.Authorization;
-import pt.babyHelp.endPoints.UserAcessible;
+import pt.core.cloudEndpoints.CEErrorReturn;
+import pt.core.cloudEndpoints.Authorization;
+import pt.babyHelp.cloudEndpoints.UserAcessible;
 import pt.babyHelp.services.annotations.InstanceType;
 import pt.babyHelp.services.annotations.PhotoUploadClass;
 import pt.babyHelp.services.annotations.PhotoUploadMethod;
@@ -109,7 +109,7 @@ public class Upload extends HttpServlet {
      * @throws org.apache.http.client.HttpResponseException
      */
     public static String getCurrentUserEmail(String accessToken)
-            throws IOException, pt.babyHelp.core.cloudEndpoints.CEError, UnauthorizedException {
+            throws IOException, pt.core.cloudEndpoints.CEError, UnauthorizedException {
         if (accessToken == null) return null;
         GenericUrl userInfo = new GenericUrl("https://www.googleapis.com/userinfo/v2/me");
         Credential credential =
@@ -148,7 +148,7 @@ public class Upload extends HttpServlet {
             } catch (UnauthorizedException e) {
                 throw new ServletException(e);
             }
-        } catch (pt.babyHelp.core.cloudEndpoints.CEError CEError) {
+        } catch (pt.core.cloudEndpoints.CEError CEError) {
             map.put("error", CEError.getMap());
         } catch (UnauthorizedException e) {
             throw new ServletException(e);
@@ -176,10 +176,10 @@ public class Upload extends HttpServlet {
         String errorMessageReturnMap = "The method '%s' must return a Map<String,Object>";
         try {
             String action = req.getParameter("action");
-            if (action == null || action.isEmpty()) throw new pt.babyHelp.core.cloudEndpoints.CEError(CEError.NO_ACTION_PARAMETER);
+            if (action == null || action.isEmpty()) throw new pt.core.cloudEndpoints.CEError(CEError.NO_ACTION_PARAMETER);
 
             UploadClassMethod<? extends UserAcessible> uploadClassMethod = uploadMethodMap.get(action);
-            if (uploadClassMethod == null) throw new pt.babyHelp.core.cloudEndpoints.CEError(CEError.NO_UPLOAD_ACTION_REGISTERED, action);
+            if (uploadClassMethod == null) throw new pt.core.cloudEndpoints.CEError(CEError.NO_UPLOAD_ACTION_REGISTERED, action);
             Method method = uploadClassMethod.methodsMap.get(action);
 
             errorMessageReturnMap = String.format(errorMessageReturnMap, method.getName());
@@ -240,8 +240,8 @@ public class Upload extends HttpServlet {
                 map = (Map<String, Object>) method.invoke(instance, parameterValues);
             } catch (InvocationTargetException e) {
                 Throwable target = e.getTargetException();
-                if (target instanceof pt.babyHelp.core.cloudEndpoints.CEError) {
-                    map = ((pt.babyHelp.core.cloudEndpoints.CEError) target).getMap();
+                if (target instanceof pt.core.cloudEndpoints.CEError) {
+                    map = ((pt.core.cloudEndpoints.CEError) target).getMap();
                 } else if (target instanceof UnauthorizedException)
                     throw (UnauthorizedException) target;
                 else
@@ -255,7 +255,7 @@ public class Upload extends HttpServlet {
             throw new RuntimeException(e);
         } catch (UnauthorizedException e) {
             throw new ServletException(e);
-        } catch (pt.babyHelp.core.cloudEndpoints.CEError CEError) {
+        } catch (pt.core.cloudEndpoints.CEError CEError) {
             map = CEError.getMap();
         }
 
