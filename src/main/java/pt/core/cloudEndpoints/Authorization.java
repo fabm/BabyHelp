@@ -56,7 +56,7 @@ public class Authorization {
 
     private void init(User user) {
         if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Development) {
-            this.userFromApp = devMode();
+            devMode();
             return;
         }
         if (user == null) return;
@@ -103,14 +103,13 @@ public class Authorization {
         return userFromApp;
     }
 
-    private UserFromApp devMode() {
-        if (TestesCE.userCurrent != null && !TestesCE.userCurrent.isLogged()) return null;
-        UserFromApp userFromApp = new UserFromApp();
+    private void devMode() {
+        if (TestesCE.userCurrent != null && !TestesCE.userCurrent.isLogged()) return;
 
         if (TestesCE.userCurrent == null) {
             ResourceBundle bundle = ResourceBundle.getBundle("user");
             String loggedParam = bundle.getString("logged");
-            if (loggedParam == null || !loggedParam.equals("true")) return null;
+            if (loggedParam == null || !loggedParam.equals("true")) return;
             TestesCE.userCurrent = new UserEntry();
             TestesCE.userCurrent.setLogged(true);
             TestesCE.userCurrent.setName(bundle.getString("name"));
@@ -122,14 +121,15 @@ public class Authorization {
         }
         if (TestesCE.userCurrent.isLoadFromDS()) {
             loadDataStore(TestesCE.userCurrent.getEmail());
-        } else {
+        }
+
+        if(userFromApp == null){
             userFromApp.setName(TestesCE.userCurrent.getName());
             userFromApp.setEmail(TestesCE.userCurrent.getEmail());
             this.userRegistered = TestesCE.userCurrent.isRegistered();
             userFromApp.setProfession(TestesCE.userCurrent.getProfession());
             userFromApp.setRoles(Role.toRolesArray(TestesCE.userCurrent.getRoles()));
         }
-        return userFromApp;
     }
 
     private boolean hasRoles(Role[] rolesRequired) {

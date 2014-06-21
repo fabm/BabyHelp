@@ -2,6 +2,7 @@ package pt.babyHelp.cloudEndpoints.testes;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.ApiResourceProperty;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.oauth.OAuthRequestException;
@@ -10,12 +11,12 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import pt.babyHelp.bd.embededs.Role;
+import pt.babyHelp.cloudEndpoints.Constants;
+import pt.babyHelp.services.impl.TestesImpl;
+import pt.core.cloudEndpoints.Authorization;
 import pt.core.cloudEndpoints.CEError;
 import pt.core.cloudEndpoints.CEReturn;
 import pt.core.cloudEndpoints.CEUtils;
-import pt.core.cloudEndpoints.Authorization;
-import pt.babyHelp.cloudEndpoints.Constants;
-import pt.babyHelp.services.impl.TestesImpl;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -40,6 +41,18 @@ public class TestesCE {
 
     public static UserEntry userCurrent = null;
     private TestesImpl testesService = new TestesImpl();
+    private int count = 0;
+
+
+    @ApiResourceProperty()
+    public Map<String,Object>testProp = CEUtils.createMapAndPut("teste", "isto é um teste");
+
+    @ApiMethod(name = "countTest", httpMethod = ApiMethod.HttpMethod.GET, path = "countTest")
+    public Map<String,Object> countTest() {
+        count++;
+        return CEUtils.createMapAndPut("count",count);
+    }
+
 
     @ApiMethod(name = "sendMail", httpMethod = ApiMethod.HttpMethod.POST, path = "send/mail")
     public void sendEmailTest(SendMailParams sendParams) {
@@ -80,7 +93,6 @@ public class TestesCE {
         return map;
     }
 
-    //TODO ler do JS o cliente com o loadFromDS = true
     @ApiMethod(name = "userEntry", httpMethod = ApiMethod.HttpMethod.POST, path = "entry")
     public Map<String, Object> dadosDaConsola(UserEntry userCurrent) {
         Authorization.checkDevMode();
@@ -109,7 +121,6 @@ public class TestesCE {
             }
         };
     }
-
 
 
     //TODO list parents testar

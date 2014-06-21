@@ -249,6 +249,7 @@ var UserEntry = (function () {
         this.registered = false;
         this.logged = true;
         this.profession = null;
+        this.loadFromDS = true;
     }
     return UserEntry;
 })();

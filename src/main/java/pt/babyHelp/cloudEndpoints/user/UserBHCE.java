@@ -3,6 +3,7 @@ package pt.babyHelp.cloudEndpoints.user;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.ApiResourceProperty;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
@@ -83,8 +84,8 @@ public class UserBHCE {
         return userBHService.setSons((Son[]) sons.getSons().toArray());
     }
 
-    @ApiMethod(name = "update.healthtec", httpMethod = HttpMethod.PUT, path = "update/healthtec")
-    public CEReturn updateHealthTec(User user, final Map<String, Object> entryMap) {
+    @ApiMethod(name = "update.profession", httpMethod = HttpMethod.PUT, path = "update/profession")
+    public CEReturn updateProfession(User user, final Map<String, Object> entryMap) {
         this.userBHService.setUser(user);
         return new CEReturn() {
             @Override
@@ -103,8 +104,12 @@ public class UserBHCE {
     @ApiMethod(name = "current", httpMethod = ApiMethod.HttpMethod.GET, path = "current")
     public Map<String, Object> current(User user) {
         userBHService.setUser(user);
+
         Map<String, Object> map = CEUtils.createMapAndPut("email",
                 userBHService.getAuthorization().getUserFromApp().getEmail());
+        if(userBHService.getAuthorization().getUserFromApp().getName()!=null){
+            map.put("name",userBHService.getAuthorization().getUserFromApp().getName());
+        }
         if (userBHService.getAuthorization().getUserFromApp().getProfession() != null) {
             map.put("profissao", userBHService.getAuthorization().getUserFromApp().getProfession());
         }

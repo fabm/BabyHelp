@@ -247,6 +247,8 @@ class UserEntry {
     registered:boolean = false;
     logged:boolean = true;
     profession:string = null;
+    loadFromDS:boolean = true;
+
 }
 
 var apiTestes = {
