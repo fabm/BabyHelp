@@ -31,16 +31,14 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 )
 public class UserBHCE {
 
-    private UserBHService userBHService = new UserBHServiceImpl();
-
-
     @ApiMethod(name = "updateRoles", httpMethod = HttpMethod.POST)
     public Map<String, Object> updateRoles
             (User user, @Named("email") String email, RolesParameters rolesParameters)
             throws UnauthorizedException {
+        UserBHService userBHService = new UserBHServiceImpl();
         try {
-            this.userBHService.setUser(user);
-            return this.userBHService.updateRoles(email, rolesParameters);
+            userBHService.setUser(user);
+            return userBHService.updateRoles(email, rolesParameters);
         } catch (CEError CEError) {
             return CEError.getMap();
         }
@@ -48,7 +46,8 @@ public class UserBHCE {
 
     @ApiMethod(name = "updateUserName", httpMethod = HttpMethod.PUT)
     public CEReturn updateUserName(User user, final Map<String, Object> entryMap) throws UnauthorizedException {
-        this.userBHService.setUser(user);
+        final UserBHService userBHService = new UserBHServiceImpl();
+        userBHService.setUser(user);
         return new CEReturn() {
             @Override
             public Object getCEResponse() throws CEError {
@@ -59,9 +58,10 @@ public class UserBHCE {
 
     @ApiMethod(name = "list")
     public Map<String, Object> list(User user) throws UnauthorizedException {
+        UserBHService userBHService = new UserBHServiceImpl();
         try {
-            this.userBHService.setUser(user);
-            return this.userBHService.list();
+            userBHService.setUser(user);
+            return userBHService.list();
         } catch (CEError CEError) {
             return CEError.getMap();
         }
@@ -69,9 +69,10 @@ public class UserBHCE {
 
     @ApiMethod(name = "getRoles")
     public Map<String, Object> getRoles(User user, @Named("email") String email) throws UnauthorizedException {
+        UserBHService userBHService = new UserBHServiceImpl();
         try {
-            this.userBHService.setUser(user);
-            return this.userBHService.getRoles(email);
+            userBHService.setUser(user);
+            return userBHService.getRoles(email);
         } catch (CEError CEError) {
             return CEError.getMap();
         }
@@ -79,6 +80,7 @@ public class UserBHCE {
 
     @ApiMethod(name = "update.sons", httpMethod = HttpMethod.PUT, path = "update/sons")
     public Map<String, Object> updateSons(User user, SonsParameters sons) throws UnauthorizedException {
+        UserBHService userBHService = new UserBHServiceImpl();
         userBHService.setUser(user);
         userBHService.getAuthorization().check("declaração de filhos", Role.PARENT);
         return userBHService.setSons((Son[]) sons.getSons().toArray());
@@ -86,7 +88,9 @@ public class UserBHCE {
 
     @ApiMethod(name = "update.profession", httpMethod = HttpMethod.PUT, path = "update/profession")
     public CEReturn updateProfession(User user, final Map<String, Object> entryMap) {
-        this.userBHService.setUser(user);
+        final UserBHService userBHService = new UserBHServiceImpl();
+
+        userBHService.setUser(user);
         return new CEReturn() {
             @Override
             public Object getCEResponse() throws CEError {
@@ -97,12 +101,14 @@ public class UserBHCE {
 
     @ApiMethod(name = "pendingActions", httpMethod = ApiMethod.HttpMethod.GET, path = "pendingactions")
     public Map<String, Object> pendingActions(User user) {
+        UserBHService userBHService = new UserBHServiceImpl();
         userBHService.setUser(user);
         return userBHService.pendingActions();
     }
 
     @ApiMethod(name = "current", httpMethod = ApiMethod.HttpMethod.GET, path = "current")
     public Map<String, Object> current(User user) {
+        UserBHService userBHService = new UserBHServiceImpl();
         userBHService.setUser(user);
 
         Map<String, Object> map = CEUtils.createMapAndPut("email",
@@ -113,7 +119,7 @@ public class UserBHCE {
         if (userBHService.getAuthorization().getUserFromApp().getProfession() != null) {
             map.put("profissao", userBHService.getAuthorization().getUserFromApp().getProfession());
         }
-        return map;
+        return CEUtils.createMapAndPut("result",map);
     }
 
 }

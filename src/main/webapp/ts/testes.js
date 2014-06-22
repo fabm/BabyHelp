@@ -233,34 +233,12 @@ apiTestes.user.helpLoader('userBH');
 apiTestes.testes.helpLoader('testes');
 
 apiTestes.article.afterLoad = function (name) {
-    apiTestes.article.c['create'].args = new ArticleParamTest();
+    apiTestes.article.api['create'].args = new ArticleParamTest();
     console.log('loaded ' + name);
-};
-apiTestes['validations'] = {
-    EMAIL: {
-        check: function (value) {
-            return /^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/.test(value);
-        },
-        alert: function (alias) {
-            return "O campo " + alias + " não é reconhecido como email";
-        }
-    },
-    REQUIRED: {
-        check: function (value) {
-            if (isNull(value))
-                return false;
-            if (value.length == 0)
-                return false;
-            return true;
-        },
-        alert: function (alias) {
-            return "O campo " + alias + " não pode ser vazio";
-        }
-    }
 };
 
 apiTestes.testes.afterLoad = function (name) {
-    apiTestes.testes.c['userEntry'].args = new UserEntry();
+    apiTestes.testes.api['userEntry'].args = new UserEntry();
     var roles = ApisHelper.getRoles();
 
     var appRoles = {};
@@ -268,13 +246,13 @@ apiTestes.testes.afterLoad = function (name) {
         appRoles[r] = {
             name: r,
             add: function () {
-                apiTestes.testes.c['userEntry'].args.roles.push(this.name);
+                apiTestes.testes.api['userEntry'].args.roles.push(this.name);
             }
         };
-        apiTestes.testes.c['userEntry'].appRoles = appRoles;
+        apiTestes.testes.api['userEntry'].appRoles = appRoles;
     }
-    apiTestes.testes.c['userEntry'].appRoles.HEALTHTEC.add();
-    apiTestes.testes.c['userEntry'].execute();
+    apiTestes.testes.api['userEntry'].appRoles.HEALTHTEC.add();
+    apiTestes.testes.api['userEntry'].execute();
 
     console.log('loaded ' + name);
 };

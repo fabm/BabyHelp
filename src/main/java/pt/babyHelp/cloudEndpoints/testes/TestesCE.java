@@ -99,7 +99,7 @@ public class TestesCE {
             @Override
             public Object getCEResponse() throws CEError {
                 TestesCE.userCurrent = userCurrent;
-                return CEUtils.createMapAndPut("success", "user for development changed");
+                return CEUtils.createMapAndPut("result", "user for development changed");
             }
         };
 

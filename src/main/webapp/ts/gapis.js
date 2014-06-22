@@ -163,7 +163,8 @@ var ClientLoader = (function () {
         };
     };
 
-    ClientLoader.attribClient = function (client, context) {
+    ClientLoader.prototype.attribClient = function (client, context) {
+        var obSelf = this;
         for (var m in client) {
             if (typeof (client[m]) === 'function')
                 context[m] = {
@@ -203,25 +204,25 @@ var ClientLoader = (function () {
                             var valArr = self['validations'][name];
                             if (!isNull(valArr))
                                 for (var val in valArr) {
-                                    if (!self['validations'][valArr[val]].check(value)) {
+                                    if (!obSelf['validations'][valArr[val]].check(value)) {
                                         var al = self['alias'][name];
                                         al = (al == undefined) ? name : al;
                                         return {
                                             error: true,
-                                            message: self['validations'][valArr[val]].alert(al)
+                                            message: obSelf['validations'][valArr[val]].alert(al)
                                         };
                                     }
                                 }
                             return { error: false };
                         }
 
-                        if (!isNull(this.args) && !isNull(this['validations']))
+                        if (!isNull(self.args) && !isNull(self['validations']))
                             for (var p in self.validations) {
                                 var ret = getValidation(p, self.args[p]);
                                 if (ret.error)
                                     return ret;
                             }
-                        client[this.mName](this.args).execute(function (response) {
+                        client[this.mName](self.args).execute(function (response) {
                             _this.response = response;
                             console.log(response);
                         });
@@ -229,7 +230,7 @@ var ClientLoader = (function () {
                 };
             else {
                 context[m] = {};
-                ClientLoader.attribClient(client[m], context[m]);
+                obSelf.attribClient(client[m], context[m]);
             }
         }
     };
@@ -238,8 +239,8 @@ var ClientLoader = (function () {
         var self = this;
         this.client = name;
         this.loadApi((function (client) {
-            self.c = {};
-            ClientLoader.attribClient(client, self.c);
+            self.api = {};
+            self.attribClient(client, self.api);
             self.afterLoad(name);
         }));
     };
@@ -251,6 +252,28 @@ var ClientBabyHelp = (function (_super) {
     __extends(ClientBabyHelp, _super);
     function ClientBabyHelp() {
         _super.call(this);
+        this.validations = {
+            EMAIL: {
+                check: function (value) {
+                    return /^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/.test(value);
+                },
+                alert: function (alias) {
+                    return "O campo " + alias + " não é reconhecido como email";
+                }
+            },
+            REQUIRED: {
+                check: function (value) {
+                    if (isNull(value))
+                        return false;
+                    if (value.length == 0)
+                        return false;
+                    return true;
+                },
+                alert: function (alias) {
+                    return "O campo " + alias + " não pode ser vazio";
+                }
+            }
+        };
         this.apiUrl = 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api";
         _super.prototype.setClientID.call(this, '942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com');
         _super.prototype.setScope.call(this, ['https://www.googleapis.com/auth/userinfo.email']);

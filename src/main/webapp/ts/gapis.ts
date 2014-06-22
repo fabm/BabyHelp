@@ -22,9 +22,9 @@ class ClientLoader {
     public version:string = 'v1';
     public requireAuth:boolean;
     public cbState:(state:StateLoading)=>void;
+    public api:{[index:string]:any};
     private config = {};
 
-    c:{[index:string]:any};
 
     public static logout() {
         gapi.auth.setToken(null);
@@ -147,8 +147,8 @@ class ClientLoader {
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, ()=> {
                 var loadedClient = gapi.client[self.client];
-                if(isNull(loadedClient)){
-                    Log.prtError("Houve um problema a carregar o serviço "+self.client+ " por favor contacte o administrador");
+                if (isNull(loadedClient)) {
+                    Log.prtError("Houve um problema a carregar o serviço " + self.client + " por favor contacte o administrador");
                 }
                 self.callCBState(StateLoading.callService);
                 execute(callback(gapi.client[self.client]));
@@ -172,7 +172,8 @@ class ClientLoader {
         console.log('loaded ' + name);
     }
 
-    static attribClient(client, context) {
+    private attribClient(client, context) {
+        var obSelf = this;
         for (var m in client) {
             if (typeof (client[m]) === 'function')
                 context[m] = {
@@ -211,24 +212,24 @@ class ClientLoader {
                             var valArr = self['validations'][name];
                             if (!isNull(valArr))
                                 for (var val in valArr) {
-                                    if(!self['validations'][valArr[val]].check(value)){
+                                    if (!obSelf['validations'][valArr[val]].check(value)) {
                                         var al = self['alias'][name];
-                                        al=(al==undefined)?name:al;
+                                        al = (al == undefined) ? name : al;
                                         return {
-                                            error:true,
-                                            message:self['validations'][valArr[val]].alert(al)
+                                            error: true,
+                                            message: obSelf['validations'][valArr[val]].alert(al)
                                         }
                                     }
                                 }
-                            return {error:false};
+                            return {error: false};
                         }
 
-                        if (!isNull(this.args) && !isNull(this['validations']))
+                        if (!isNull(self.args) && !isNull(self['validations']))
                             for (var p in self.validations) {
-                                var ret = getValidation(p,self.args[p]);
-                                if(ret.error)return ret;
+                                var ret = getValidation(p, self.args[p]);
+                                if (ret.error)return ret;
                             }
-                        client[this.mName](this.args).execute((response)=> {
+                        client[this.mName](self.args).execute((response)=> {
                             this.response = response;
                             console.log(response);
                         });
@@ -236,7 +237,7 @@ class ClientLoader {
                 }
             else {
                 context[m] = {};
-                ClientLoader.attribClient(client[m], context[m]);
+                obSelf.attribClient(client[m], context[m]);
             }
         }
     }
@@ -246,8 +247,8 @@ class ClientLoader {
         var self = this;
         this.client = name;
         this.loadApi((client=> {
-            self.c = {};
-            ClientLoader.attribClient(client, self.c);
+            self.api = {};
+            self.attribClient(client, self.api);
             self.afterLoad(name);
         }));
     }
@@ -260,6 +261,28 @@ class ClientBabyHelp extends ClientLoader {
         super.setClientID('942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com');
         super.setScope(['https://www.googleapis.com/auth/userinfo.email']);
     }
+
+    validations = {
+        EMAIL: {
+            check(value) {
+                return /^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/.test(value);
+            },
+            alert(alias) {
+                return "O campo " + alias + " não é reconhecido como email";
+            }
+        },
+        REQUIRED: {
+            check(value) {
+                if (isNull(value))return false;
+                if (value.length == 0) return false;
+                return true;
+            },
+            alert(alias) {
+                return "O campo " + alias + " não pode ser vazio";
+            }
+        }
+    }
+
 }
 
 interface Role {
@@ -284,7 +307,7 @@ class UserService extends ClientBabyHelp {
         var all:Array<Role> = [];
         all.push(create('técnico de saúde', 'HEALTHTEC'));
         all.push(create('administrador', 'ADMINISTRATOR'));
-        all.push(create('educador','PARENT'));
+        all.push(create('educador', 'PARENT'));
         return all;
     }
 
@@ -350,7 +373,7 @@ class ArticlesService extends ClientBabyHelp {
 
     get(id):Resolve {
         return super.load((client)=> {
-            return client.get({id:id});
+            return client.get({id: id});
         });
     }
 
@@ -366,8 +389,8 @@ class ArticlesService extends ClientBabyHelp {
         });
     }
 
-    listPublic():Resolve{
-        return super.load((client)=>{
+    listPublic():Resolve {
+        return super.load((client)=> {
             return client.list.public();
         });
     }
@@ -390,8 +413,9 @@ class PhotoTokenService extends ClientBabyHelp {
         super();
         this.client = 'photoToken';
     }
-    getPhotoToken(){
-        return this.load((client)=>{
+
+    getPhotoToken() {
+        return this.load((client)=> {
             return client.getuploadurl();
         });
     }
