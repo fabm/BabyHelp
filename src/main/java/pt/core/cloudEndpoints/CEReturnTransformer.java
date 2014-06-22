@@ -6,9 +6,9 @@ import com.google.api.server.spi.config.Transformer;
 public class CEReturnTransformer implements Transformer<CEReturn, Object> {
 
     @Override
-    public Object transformTo(CEReturn CEReturn) {
+    public Object transformTo(CEReturn ceReturn) {
         try {
-            return CEReturn.getCEResponse();
+            return ceReturn.getCEResponse();
         } catch (CEError CEError) {
             return CEError.getMap();
         }

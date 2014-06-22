@@ -3,6 +3,8 @@ package pt.babyHelp.services;
 import pt.core.cloudEndpoints.CEErrorReturn;
 
 public class BabyHelp {
+
+
     public static enum CEError implements CEErrorReturn {
         NOT_AUTHORIZED(0,"O utilizador não está autorizado a aceder á área de '%s'"),
         NOT_AUTHENTICATED(1,"O utilizador não está autenticado"),

@@ -1,15 +1,31 @@
 package pt.babyHelp.cloudEndpoints.testes;
 
+import pt.babyHelp.validation.BHValidation;
+import pt.core.cloudEndpoints.parameter.evaluation.Evaluation;
+import pt.core.cloudEndpoints.parameter.evaluation.ParameterEvaluated;
+
 import java.util.List;
 
-public class UserEntry {
+public class UserEntry implements ParameterEvaluated {
+    @Evaluation(validations = {BHValidation.EMAIL})
     private String email;
+    @Evaluation
     private List<String> roles;
+    @Evaluation
     private boolean registered;
+    @Evaluation
     private String name;
+    @Evaluation(validations = BHValidation.REQUIRED)
     private boolean logged;
+    @Evaluation
     private String profession;
+    @Evaluation
     private boolean loadFromDS = false;
+    private boolean eval;
+
+    public void setEval(boolean eval) {
+        this.eval = eval;
+    }
 
     public boolean isLoadFromDS() {
         return loadFromDS;
@@ -65,5 +81,10 @@ public class UserEntry {
 
     public void setProfession(String profession) {
         this.profession = profession;
+    }
+
+    @Override
+    public boolean isDefinitionRequest() {
+        return eval;
     }
 }

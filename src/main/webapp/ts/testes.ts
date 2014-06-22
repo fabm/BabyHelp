@@ -199,8 +199,58 @@ class ApisHelper extends ClientBabyHelp {
                 context[m] = {
                     args: undefined,
                     mName: m,
+                    argsEval: function () {
+                        var self = this;
+                        client[this.mName]({'eval': true}).execute((response)=> {
+                            var result = response.result;
+                            self.args = {};
+                            self['validations'] = {};
+                            self['alias'] = {};
+                            for (var r in result) {
+                                var type = result[r]['type'];
+                                var validations = result[r]['validations'];
+                                var al = result[r]['alias'];
+                                if (!isNull(validations))
+                                    self['validations'][r] = validations;
+                                if (!isNull(al))
+                                    self['alias'][r] = al;
+                                if (type === 'String') {
+                                    self.args[r] = '';
+                                } else if (type === 'List') {
+                                    self.args[r] = [];
+                                } else if (type === 'boolean') {
+                                    self.args[r] = true;
+                                }
+                            }
+                            self.response = response.result;
+                        });
+                    },
                     execute: function () {
+                        var self = this;
+
+                        function getValidation(name, value):{error:boolean;message?:string} {
+                            var valArr = self['validations'][name];
+                            if (!isNull(valArr))
+                                for (var val in valArr) {
+                                    if(!apiTestes['validations'][valArr[val]].check(value)){
+                                        var al = self['alias'][name];
+                                        al=(al==undefined)?name:al;
+                                        return {
+                                            error:true,
+                                            message:apiTestes['validations'][valArr[val]].alert(al)
+                                        }
+                                    }
+                                }
+                            return {error:false};
+                        }
+
+                        if (!isNull(this.args) && !isNull(this['validations']))
+                            for (var p in self.validations) {
+                                var ret = getValidation(p,self.args[p]);
+                                if(ret.error)return ret;
+                            }
                         client[this.mName](this.args).execute((response)=> {
+                            this.response = response;
                             console.log(response);
                         });
                     }
@@ -265,6 +315,27 @@ apiTestes.article.afterLoad = function (name) {
     apiTestes.article.c['create'].args = new ArticleParamTest();
     console.log('loaded ' + name);
 }
+apiTestes['validations'] = {
+    EMAIL: {
+        check(value) {
+            return /^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/.test(value);
+        },
+        alert(alias) {
+            return "O campo " + alias + " não é reconhecido como email";
+        }
+    },
+    REQUIRED: {
+        check(value) {
+            if (isNull(value))return false;
+            if (value.length == 0) return false;
+            return true;
+        },
+        alert(alias) {
+            return "O campo " + alias + " não pode ser vazio";
+        }
+    }
+}
+
 apiTestes.testes.afterLoad = function (name) {
     apiTestes.testes.c['userEntry'].args = new UserEntry();
     var roles = ApisHelper.getRoles();

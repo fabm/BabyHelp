@@ -13,6 +13,7 @@ import com.google.appengine.api.utils.SystemProperty;
 import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.cloudEndpoints.Constants;
 import pt.babyHelp.services.impl.TestesImpl;
+import pt.babyHelp.validation.BHParameterEvaluater;
 import pt.core.cloudEndpoints.Authorization;
 import pt.core.cloudEndpoints.CEError;
 import pt.core.cloudEndpoints.CEReturn;
@@ -40,17 +41,15 @@ import java.util.Properties;
 public class TestesCE {
 
     public static UserEntry userCurrent = null;
+    @ApiResourceProperty()
+    public Map<String, Object> testProp = CEUtils.createMapAndPut("teste", "isto é um teste");
     private TestesImpl testesService = new TestesImpl();
     private int count = 0;
 
-
-    @ApiResourceProperty()
-    public Map<String,Object>testProp = CEUtils.createMapAndPut("teste", "isto é um teste");
-
     @ApiMethod(name = "countTest", httpMethod = ApiMethod.HttpMethod.GET, path = "countTest")
-    public Map<String,Object> countTest() {
+    public Map<String, Object> countTest() {
         count++;
-        return CEUtils.createMapAndPut("count",count);
+        return CEUtils.createMapAndPut("count", count);
     }
 
 
@@ -94,10 +93,17 @@ public class TestesCE {
     }
 
     @ApiMethod(name = "userEntry", httpMethod = ApiMethod.HttpMethod.POST, path = "entry")
-    public Map<String, Object> dadosDaConsola(UserEntry userCurrent) {
+    public CEReturn dadosDaConsola(final UserEntry userCurrent) {
         Authorization.checkDevMode();
-        TestesCE.userCurrent = userCurrent;
-        return CEUtils.createMapAndPut("success", "user for development changed");
+        CEReturn ceReturn = new CEReturn() {
+            @Override
+            public Object getCEResponse() throws CEError {
+                TestesCE.userCurrent = userCurrent;
+                return CEUtils.createMapAndPut("success", "user for development changed");
+            }
+        };
+
+        return BHParameterEvaluater.create(userCurrent, ceReturn);
     }
 
     @ApiMethod(name = "logout", httpMethod = ApiMethod.HttpMethod.POST, path = "logout")
