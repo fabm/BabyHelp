@@ -24,6 +24,8 @@ class ClientLoader {
     public cbState:(state:StateLoading)=>void;
     private config = {};
 
+    c:{[index:string]:any};
+
     public static logout() {
         gapi.auth.setToken(null);
         this.logged = false;
@@ -164,6 +166,90 @@ class ClientLoader {
                 resolve();
             }
         }
+    }
+
+    afterLoad = function (name) {
+        console.log('loaded ' + name);
+    }
+
+    static attribClient(client, context) {
+        for (var m in client) {
+            if (typeof (client[m]) === 'function')
+                context[m] = {
+                    args: undefined,
+                    mName: m,
+                    argsEval: function () {
+                        var self = this;
+                        client[this.mName]({'eval': true}).execute((response)=> {
+                            var result = response.result;
+                            self.args = {};
+                            self['validations'] = {};
+                            self['alias'] = {};
+                            for (var r in result) {
+                                var type = result[r]['type'];
+                                var validations = result[r]['validations'];
+                                var al = result[r]['alias'];
+                                if (!isNull(validations))
+                                    self['validations'][r] = validations;
+                                if (!isNull(al))
+                                    self['alias'][r] = al;
+                                if (type === 'String') {
+                                    self.args[r] = '';
+                                } else if (type === 'List') {
+                                    self.args[r] = [];
+                                } else if (type === 'boolean') {
+                                    self.args[r] = true;
+                                }
+                            }
+                            self.response = response.result;
+                        });
+                    },
+                    execute: function () {
+                        var self = this;
+
+                        function getValidation(name, value):{error:boolean;message?:string} {
+                            var valArr = self['validations'][name];
+                            if (!isNull(valArr))
+                                for (var val in valArr) {
+                                    if(!self['validations'][valArr[val]].check(value)){
+                                        var al = self['alias'][name];
+                                        al=(al==undefined)?name:al;
+                                        return {
+                                            error:true,
+                                            message:self['validations'][valArr[val]].alert(al)
+                                        }
+                                    }
+                                }
+                            return {error:false};
+                        }
+
+                        if (!isNull(this.args) && !isNull(this['validations']))
+                            for (var p in self.validations) {
+                                var ret = getValidation(p,self.args[p]);
+                                if(ret.error)return ret;
+                            }
+                        client[this.mName](this.args).execute((response)=> {
+                            this.response = response;
+                            console.log(response);
+                        });
+                    }
+                }
+            else {
+                context[m] = {};
+                ClientLoader.attribClient(client[m], context[m]);
+            }
+        }
+    }
+
+
+    helpLoader(name) {
+        var self = this;
+        this.client = name;
+        this.loadApi((client=> {
+            self.c = {};
+            ClientLoader.attribClient(client, self.c);
+            self.afterLoad(name);
+        }));
     }
 }
 

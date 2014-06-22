@@ -29,6 +29,9 @@ var ClientLoader = (function () {
             }
             return _this.config;
         };
+        this.afterLoad = function (name) {
+            console.log('loaded ' + name);
+        };
     }
     ClientLoader.logout = function () {
         gapi.auth.setToken(null);
@@ -158,6 +161,87 @@ var ClientLoader = (function () {
                 resolve();
             }
         };
+    };
+
+    ClientLoader.attribClient = function (client, context) {
+        for (var m in client) {
+            if (typeof (client[m]) === 'function')
+                context[m] = {
+                    args: undefined,
+                    mName: m,
+                    argsEval: function () {
+                        var self = this;
+                        client[this.mName]({ 'eval': true }).execute(function (response) {
+                            var result = response.result;
+                            self.args = {};
+                            self['validations'] = {};
+                            self['alias'] = {};
+                            for (var r in result) {
+                                var type = result[r]['type'];
+                                var validations = result[r]['validations'];
+                                var al = result[r]['alias'];
+                                if (!isNull(validations))
+                                    self['validations'][r] = validations;
+                                if (!isNull(al))
+                                    self['alias'][r] = al;
+                                if (type === 'String') {
+                                    self.args[r] = '';
+                                } else if (type === 'List') {
+                                    self.args[r] = [];
+                                } else if (type === 'boolean') {
+                                    self.args[r] = true;
+                                }
+                            }
+                            self.response = response.result;
+                        });
+                    },
+                    execute: function () {
+                        var _this = this;
+                        var self = this;
+
+                        function getValidation(name, value) {
+                            var valArr = self['validations'][name];
+                            if (!isNull(valArr))
+                                for (var val in valArr) {
+                                    if (!self['validations'][valArr[val]].check(value)) {
+                                        var al = self['alias'][name];
+                                        al = (al == undefined) ? name : al;
+                                        return {
+                                            error: true,
+                                            message: self['validations'][valArr[val]].alert(al)
+                                        };
+                                    }
+                                }
+                            return { error: false };
+                        }
+
+                        if (!isNull(this.args) && !isNull(this['validations']))
+                            for (var p in self.validations) {
+                                var ret = getValidation(p, self.args[p]);
+                                if (ret.error)
+                                    return ret;
+                            }
+                        client[this.mName](this.args).execute(function (response) {
+                            _this.response = response;
+                            console.log(response);
+                        });
+                    }
+                };
+            else {
+                context[m] = {};
+                ClientLoader.attribClient(client[m], context[m]);
+            }
+        }
+    };
+
+    ClientLoader.prototype.helpLoader = function (name) {
+        var self = this;
+        this.client = name;
+        this.loadApi((function (client) {
+            self.c = {};
+            ClientLoader.attribClient(client, self.c);
+            self.afterLoad(name);
+        }));
     };
     ClientLoader.logged = false;
     return ClientLoader;
