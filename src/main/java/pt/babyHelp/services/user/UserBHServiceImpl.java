@@ -1,4 +1,4 @@
-package pt.babyHelp.services.impl;
+package pt.babyHelp.services.user;
 
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
@@ -7,16 +7,15 @@ import pt.babyHelp.bd.*;
 import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.cloudEndpoints.BHAuthorization;
 import pt.babyHelp.services.BabyHelp;
-import pt.core.cloudEndpoints.CEUtils;
-import pt.core.cloudEndpoints.MapFieldValidator;
+import pt.core.cloudEndpoints.*;
+import pt.core.cloudEndpoints.services.CEService;
 import pt.core.validators.EmailChecker;
-import pt.core.cloudEndpoints.Authorization;
 import pt.babyHelp.cloudEndpoints.user.RolesParameters;
 import pt.babyHelp.services.UserBHService;
 
 import java.util.*;
 
-public class UserBHServiceImpl implements UserBHService {
+public class UserBHServiceImpl implements UserBHService, CEService<UserAM>{
     private Authorization authorization;
 
     private static Map<String, Object> getList() throws pt.core.cloudEndpoints.CEError {
@@ -195,4 +194,22 @@ public class UserBHServiceImpl implements UserBHService {
         return authorization;
     }
 
+    @Override
+    public CEReturn execute(UserAM action, final Object... args) {
+        switch (action.getAction()){
+            case LIST:return new CEReturn() {
+                @Override
+                public Object getCEResponse() throws pt.core.cloudEndpoints.CEError {
+                    return getList();
+                }
+            };
+            case GET_ROLES:return new CEReturn() {
+                @Override
+                public Object getCEResponse() throws pt.core.cloudEndpoints.CEError {
+                        return getRoles(args[0].toString());
+                }
+            }
+        }
+        return null;
+    }
 }

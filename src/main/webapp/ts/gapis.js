@@ -21,6 +21,17 @@ var ClientLoader = (function () {
         var _this = this;
         this.version = 'v1';
         this.config = {};
+        this.defaultResolver = {
+            success: function (success) {
+                console.log(success);
+            },
+            error: function (error) {
+                console.log(error);
+            },
+            unauthorized: function (unauthorized) {
+                console.log(unauthorized);
+            }
+        };
         this.getAuthConfig = function (immediate) {
             _this.config['immediate'] = immediate;
 
@@ -29,8 +40,8 @@ var ClientLoader = (function () {
             }
             return _this.config;
         };
-        this.afterLoad = function (name) {
-            console.log('loaded ' + name);
+        this.afterLoad = function () {
+            console.log('loaded ' + this.client);
         };
     }
     ClientLoader.logout = function () {
@@ -69,6 +80,7 @@ var ClientLoader = (function () {
 
     ClientLoader.prototype.loadApi = function (callback) {
         var self = this;
+
         if (isNull(gapi.auth)) {
             self.callCBState(0 /* loadingGAPI */);
             gapi.load('auth', function () {
@@ -86,81 +98,13 @@ var ClientLoader = (function () {
             });
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, function () {
+                self.api = {};
+                self.attribClient(gapi.client[self.client], self.api);
                 self.callCBState(3 /* callService */);
-                callback(gapi.client[self.client]);
+                if (!isNull(callback))
+                    callback();
             }, self.apiUrl);
         }
-    };
-
-    ClientLoader.prototype.load = function (callback) {
-        var self = this;
-        var onSuccess;
-        var onError;
-        var onNotAuthorized;
-        var apiResponse = null;
-
-        function resolve() {
-            if (isNull(onSuccess))
-                return;
-            if (isNull(onError))
-                return;
-            if (apiResponse == null)
-                return;
-            if (isNull(apiResponse.error))
-                onSuccess(apiResponse);
-            else {
-                if (!isNull(onNotAuthorized) && apiResponse.error.code == 401)
-                    onNotAuthorized(apiResponse);
-                else
-                    onError(apiResponse);
-            }
-            apiResponse = null;
-        }
-
-        function execute(apiClient) {
-            apiClient.execute(function (response) {
-                apiResponse = response;
-                resolve();
-            });
-        }
-
-        if (isNull(gapi.auth)) {
-            self.callCBState(0 /* loadingGAPI */);
-            gapi.load('auth', function () {
-                self.callCBState(1 /* authenticating */);
-                self.load(callback);
-            });
-        } else if (self.requireAuth && !ClientLoader.logged)
-            self.checkAuth(true, function () {
-                if (ClientLoader.logged) {
-                    self.callCBState(2 /* clientLoading */);
-                    self.load(callback);
-                } else {
-                    self.callCBState(4 /* authFail */);
-                }
-            });
-        else if (isNull(gapi.client[self.client])) {
-            gapi.client.load(self.client, self.version, function () {
-                var loadedClient = gapi.client[self.client];
-                if (isNull(loadedClient)) {
-                    Log.prtError("Houve um problema a carregar o serviço " + self.client + " por favor contacte o administrador");
-                }
-                self.callCBState(3 /* callService */);
-                execute(callback(gapi.client[self.client]));
-            }, self.apiUrl);
-        } else {
-            self.callCBState(3 /* callService */);
-            execute(callback(gapi.client[self.client]));
-        }
-
-        return {
-            then: function (cbOnSuccess, cbOnError, cbOnNotAuthorized) {
-                onSuccess = cbOnSuccess;
-                onError = cbOnError;
-                onNotAuthorized = cbOnNotAuthorized;
-                resolve();
-            }
-        };
     };
 
     ClientLoader.prototype.attribClient = function (client, context) {
@@ -196,9 +140,10 @@ var ClientLoader = (function () {
                             self.response = response.result;
                         });
                     },
-                    execute: function () {
-                        var _this = this;
+                    execute: function (resolver) {
                         var self = this;
+                        if (isNull(resolver))
+                            resolver = self.defaultResolver;
 
                         function getValidation(name, value) {
                             var valArr = self['validations'][name];
@@ -207,24 +152,27 @@ var ClientLoader = (function () {
                                     if (!obSelf['validations'][valArr[val]].check(value)) {
                                         var al = self['alias'][name];
                                         al = (al == undefined) ? name : al;
-                                        return {
-                                            error: true,
-                                            message: obSelf['validations'][valArr[val]].alert(al)
-                                        };
+                                        resolver.error({ error: {
+                                                message: obSelf['validations'][valArr[val]].alert(al)
+                                            } });
+                                        return;
                                     }
                                 }
-                            return { error: false };
                         }
 
                         if (!isNull(self.args) && !isNull(self['validations']))
                             for (var p in self.validations) {
                                 var ret = getValidation(p, self.args[p]);
-                                if (ret.error)
-                                    return ret;
                             }
+
                         client[this.mName](self.args).execute(function (response) {
-                            _this.response = response;
-                            console.log(response);
+                            if (isNull(response.code)) {
+                                resolver.success(response.result);
+                            } else if (response.code == 401) {
+                                resolver.unauthorized(response.error.message);
+                            } else {
+                                resolver.error(response.error);
+                            }
                         });
                     }
                 };
@@ -236,13 +184,8 @@ var ClientLoader = (function () {
     };
 
     ClientLoader.prototype.helpLoader = function (name) {
-        var self = this;
         this.client = name;
-        this.loadApi((function (client) {
-            self.api = {};
-            self.attribClient(client, self.api);
-            self.afterLoad(name);
-        }));
+        this.loadApi();
     };
     ClientLoader.logged = false;
     return ClientLoader;
@@ -303,46 +246,51 @@ var UserService = (function (_super) {
         return all;
     };
 
-    UserService.prototype.list = function () {
-        var self = this;
-        return _super.prototype.load.call(this, function (client) {
-            return client.list();
-        });
-    };
-
     UserService.prototype.getRoles = function (user) {
-        var loader = _super.prototype.load.call(this, function (client) {
-            return client.getRoles({ email: user.email });
-        });
+        var _this = this;
+        var self = this;
 
-        function then(onSuccess, onError, onUnauthorized) {
-            return loader.then(function (response) {
+        var onSuccess;
+
+        var iResolver = {
+            success: function (response) {
                 var allRoles = UserService.loadAllRoles();
                 allRoles.forEach(function (value, index, arr) {
                     value.role = response.body.indexOf(value.name) != -1;
                 });
                 user.roles = allRoles;
                 onSuccess(null);
-            }, onError, onUnauthorized);
-        }
+            },
+            error: null,
+            unauthorized: null
+        };
 
         return {
-            then: then
+            execute: function (resolver) {
+                iResolver.error = resolver.error;
+                iResolver.unauthorized = resolver.unauthorized;
+                onSuccess = resolver.success;
+                _super.prototype.loadApi.call(_this, function () {
+                    self.api['getRoles']({ email: user.email }).execute(iResolver);
+                });
+            }
         };
     };
 
     UserService.prototype.updateRoles = function (user) {
-        return _super.prototype.load.call(this, function (client) {
-             {
+        var self = this;
+
+        return {
+            execute: function (resolver) {
                 var rolesSelected = [];
                 user.roles.forEach(function (value, index, arr) {
                     if (value.role)
                         rolesSelected.push(value.name);
                 });
 
-                return client.updateRoles({ 'email': user.email, 'roles': rolesSelected });
+                self.api['updateRoles']({ 'email': user.email, 'roles': rolesSelected }).execute(resolver);
             }
-        });
+        };
     };
     return UserService;
 })(ClientBabyHelp);

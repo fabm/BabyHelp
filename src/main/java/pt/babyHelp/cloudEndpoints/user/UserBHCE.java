@@ -3,7 +3,6 @@ package pt.babyHelp.cloudEndpoints.user;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
-import com.google.api.server.spi.config.ApiResourceProperty;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
@@ -11,7 +10,7 @@ import pt.babyHelp.bd.Son;
 import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.cloudEndpoints.Constants;
 import pt.babyHelp.services.UserBHService;
-import pt.babyHelp.services.impl.UserBHServiceImpl;
+import pt.babyHelp.services.user.UserBHServiceImpl;
 import pt.core.cloudEndpoints.CEError;
 import pt.core.cloudEndpoints.CEReturn;
 import pt.core.cloudEndpoints.CEUtils;

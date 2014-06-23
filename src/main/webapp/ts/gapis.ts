@@ -7,8 +7,13 @@ interface AuthResponse {
 }
 
 interface Resolve {
-    then:(success:(response)=>void, error:(response)=>void, unauthorized?:(response)=>void)
-        =>void
+    success:(response)=>void;
+    error:(response)=>void;
+    unauthorized?:(response)=>void;
+}
+
+interface Executor {
+    execute:(resolver:Resolve)=>void;
 }
 
 enum StateLoading{
@@ -24,6 +29,17 @@ class ClientLoader {
     public cbState:(state:StateLoading)=>void;
     public api:{[index:string]:any};
     private config = {};
+    public defaultResolver:Resolve = {
+        success: function (success) {
+            console.log(success);
+        },
+        error: function (error) {
+            console.log(error);
+        },
+        unauthorized: function (unauthorized) {
+            console.log(unauthorized);
+        }
+    }
 
 
     public static logout() {
@@ -69,8 +85,9 @@ class ClientLoader {
             this.cbState(state);
     }
 
-    loadApi(callback:(client)=>void) {
+    loadApi(callback?:()=>void) {
         var self = this;
+
         if (isNull(gapi.auth)) {
             self.callCBState(StateLoading.loadingGAPI);
             gapi.load('auth', ()=> {
@@ -89,87 +106,16 @@ class ClientLoader {
             });
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, ()=> {
+                self.api = {};
+                self.attribClient(gapi.client[self.client], self.api);
                 self.callCBState(StateLoading.callService);
-                callback(gapi.client[self.client]);
+                if (!isNull(callback))callback();
             }, self.apiUrl);
         }
     }
 
-    load(callback:(client)=>void):Resolve {
-        var self = this;
-        var onSuccess:(response)=>void;
-        var onError:(response)=>void;
-        var onNotAuthorized:(response)=>void;
-        var apiResponse = null;
-
-
-        function resolve() {
-            if (isNull(onSuccess))
-                return;
-            if (isNull(onError))
-                return;
-            if (apiResponse == null)
-                return;
-            if (isNull(apiResponse.error))
-                onSuccess(apiResponse);
-            else {
-                if (!isNull(onNotAuthorized) && apiResponse.error.code == 401)
-                    onNotAuthorized(apiResponse);
-                else
-                    onError(apiResponse);
-            }
-            apiResponse = null;
-        }
-
-        function execute(apiClient) {
-            apiClient.execute((response)=> {
-                apiResponse = response;
-                resolve();
-            });
-        }
-
-        if (isNull(gapi.auth)) {
-            self.callCBState(StateLoading.loadingGAPI);
-            gapi.load('auth', ()=> {
-                self.callCBState(StateLoading.authenticating);
-                self.load(callback);
-            });
-        } else if (self.requireAuth && !ClientLoader.logged)
-            self.checkAuth(true, ()=> {
-                if (ClientLoader.logged) {
-                    self.callCBState(StateLoading.clientLoading);
-                    self.load(callback);
-                }
-                else {
-                    self.callCBState(StateLoading.authFail);
-                }
-            });
-        else if (isNull(gapi.client[self.client])) {
-            gapi.client.load(self.client, self.version, ()=> {
-                var loadedClient = gapi.client[self.client];
-                if (isNull(loadedClient)) {
-                    Log.prtError("Houve um problema a carregar o serviço " + self.client + " por favor contacte o administrador");
-                }
-                self.callCBState(StateLoading.callService);
-                execute(callback(gapi.client[self.client]));
-            }, self.apiUrl);
-        } else {
-            self.callCBState(StateLoading.callService);
-            execute(callback(gapi.client[self.client]));
-        }
-
-        return {
-            then: (cbOnSuccess:(success)=>void, cbOnError:(error)=>void, cbOnNotAuthorized?:(notAuthorized)=>void)=> {
-                onSuccess = cbOnSuccess;
-                onError = cbOnError;
-                onNotAuthorized = cbOnNotAuthorized;
-                resolve();
-            }
-        }
-    }
-
-    afterLoad = function (name) {
-        console.log('loaded ' + name);
+    afterLoad = function () {
+        console.log('loaded ' + this.client);
     }
 
     private attribClient(client, context) {
@@ -205,33 +151,43 @@ class ClientLoader {
                             self.response = response.result;
                         });
                     },
-                    execute: function () {
+                    execute: function (resolver?:Resolve) {
                         var self = this;
+                        if (isNull(resolver))
+                            resolver = self.defaultResolver;
 
-                        function getValidation(name, value):{error:boolean;message?:string} {
+                        function getValidation(name, value) {
                             var valArr = self['validations'][name];
                             if (!isNull(valArr))
                                 for (var val in valArr) {
                                     if (!obSelf['validations'][valArr[val]].check(value)) {
                                         var al = self['alias'][name];
                                         al = (al == undefined) ? name : al;
-                                        return {
-                                            error: true,
-                                            message: obSelf['validations'][valArr[val]].alert(al)
-                                        }
+                                        resolver.error(
+                                            {error: {
+                                                message: obSelf['validations'][valArr[val]].alert(al)
+                                            }}
+                                        );
+                                        return;
                                     }
                                 }
-                            return {error: false};
                         }
+
 
                         if (!isNull(self.args) && !isNull(self['validations']))
                             for (var p in self.validations) {
                                 var ret = getValidation(p, self.args[p]);
-                                if (ret.error)return ret;
                             }
+
+
                         client[this.mName](self.args).execute((response)=> {
-                            this.response = response;
-                            console.log(response);
+                            if (isNull(response.code)) {
+                                resolver.success(response.result);
+                            } else if (response.code == 401) {
+                                resolver.unauthorized(response.error.message);
+                            } else {
+                                resolver.error(response.error);
+                            }
                         });
                     }
                 }
@@ -244,13 +200,8 @@ class ClientLoader {
 
 
     helpLoader(name) {
-        var self = this;
         this.client = name;
-        this.loadApi((client=> {
-            self.api = {};
-            self.attribClient(client, self.api);
-            self.afterLoad(name);
-        }));
+        this.loadApi();
     }
 }
 
@@ -311,45 +262,51 @@ class UserService extends ClientBabyHelp {
         return all;
     }
 
-    list():Resolve {
+
+    getRoles(user):Executor {
         var self = this;
-        return super.load((client)=> {
-            return client.list();
-        });
-    }
 
-    getRoles(user):Resolve {
-        var loader = super.load((client)=> {
-            return client.getRoles({email: user.email});
-        });
+        var onSuccess;
 
-        function then(onSuccess:(response)=>void, onError, onUnauthorized) {
-            return loader.then((response)=> {
+        var iResolver = {
+            success: (response)=> {
                 var allRoles:Array<Role> = UserService.loadAllRoles();
                 allRoles.forEach((value, index, arr)=> {
                     value.role = response.body.indexOf(value.name) != -1;
                 });
                 user.roles = allRoles;
                 onSuccess(null);
-            }, onError, onUnauthorized);
-        }
+            },
+            error: null,
+            unauthorized: null
+        };
+
 
         return {
-            then: then
+            execute: (resolver:Resolve)=> {
+                iResolver.error = resolver.error;
+                iResolver.unauthorized = resolver.unauthorized;
+                onSuccess = resolver.success;
+                super.loadApi(()=> {
+                    self.api['getRoles']({email: user.email}).execute(iResolver);
+                });
+            }
         };
     }
 
-    updateRoles(user:{email:string;roles:Array<Role>}):Resolve {
-        return super.load((client)=> {
-            {
+    updateRoles(user:{email:string;roles:Array<Role>}):Executor {
+        var self = this;
+
+        return {
+            execute: (resolver:Resolve)=> {
                 var rolesSelected:Array<string> = [];
                 user.roles.forEach((value, index, arr)=> {
                     if (value.role)rolesSelected.push(value.name);
                 });
 
-                return client.updateRoles({'email': user.email, 'roles': rolesSelected});
+                self.api['updateRoles']({'email': user.email, 'roles': rolesSelected}).execute(resolver);
             }
-        });
+        }
     }
 }
 
