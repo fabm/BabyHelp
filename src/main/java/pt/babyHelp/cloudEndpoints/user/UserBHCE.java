@@ -31,58 +31,50 @@ public class UserBHCE {
     public CEReturn updateRoles
             (User user, @Named("email") String email, RolesParameters rolesParameters)
             throws UnauthorizedException {
-        CEService<UserAM> userBHService = new UserBHService();
-        userBHService.execute(user, UserAM.UPDATE_ROLES, email, rolesParameters);
-        return userBHService;
+        return UserBHService.create()
+                .execute(user,UserAM.UPDATE_ROLES,rolesParameters);
     }
 
     @ApiMethod(name = "updateUserName", httpMethod = HttpMethod.PUT)
     public CEReturn updateUserName(User user, final Map<String, Object> entryMap) throws UnauthorizedException {
-        CEService<UserAM> userBHService = new UserBHService();
-        userBHService.execute(user, UserAM.UPDATE_USERNAME, entryMap);
-        return userBHService;
+        return UserBHService.create()
+                .execute(user, UserAM.UPDATE_USERNAME, entryMap);
     }
 
     @ApiMethod(name = "list")
     public CEReturn list(User user) throws UnauthorizedException {
-        CEService<UserAM> userBHService = new UserBHService();
-        userBHService.execute(user, UserAM.LIST);
-        return userBHService;
+        return UserBHService.create()
+                .execute(user, UserAM.LIST);
     }
 
     @ApiMethod(name = "getRoles")
     public CEReturn getRoles(User user, @Named("email") String email) throws UnauthorizedException {
-        CEService<UserAM> userBHService = new UserBHService();
-        userBHService.execute(user,UserAM.GET_ROLES,email);
-        return userBHService;
+        return UserBHService.create()
+                .execute(user,UserAM.GET_ROLES,email);
     }
 
     @ApiMethod(name = "update.sons", httpMethod = HttpMethod.PUT, path = "update/sons")
     public CEReturn updateSons(User user, SonsParameters sons) throws UnauthorizedException {
-        CEService<UserAM> userBHService = new UserBHService();
-        userBHService.execute(user, UserAM.UPDATE_SONS, sons);
-        return userBHService;
+        return UserBHService.create()
+                .execute(user, UserAM.UPDATE_SONS, sons);
     }
 
     @ApiMethod(name = "update.profession", httpMethod = HttpMethod.PUT, path = "update/profession")
     public CEReturn updateProfession(User user, final Map<String, Object> entryMap) throws UnauthorizedException {
-        CEService<UserAM> userBHService = new UserBHService();
-        userBHService.execute(user, UserAM.UPDATE_PROFESSION, entryMap);
-        return userBHService;
+        return UserBHService.create()
+                .execute(user, UserAM.UPDATE_PROFESSION, entryMap);
     }
 
     @ApiMethod(name = "pendingActions", httpMethod = ApiMethod.HttpMethod.GET, path = "pendingactions")
     public CEService<UserAM> pendingActions(User user) throws UnauthorizedException {
-        CEService<UserAM> userBHService = new UserBHService();
-        userBHService.execute(user,UserAM.PENDING_ACTIONS);
-        return userBHService;
+        return UserBHService.create()
+                .execute(user,UserAM.PENDING_ACTIONS);
     }
 
     @ApiMethod(name = "current", httpMethod = ApiMethod.HttpMethod.GET, path = "current")
     public CEService<UserAM> current(User user) throws UnauthorizedException {
-        CEService<UserAM> userBHService = new UserBHService();
-        userBHService.execute(user,UserAM.CURRENT);
-        return userBHService;
+        return UserBHService.create()
+                .execute(user,UserAM.CURRENT);
     }
 
 }

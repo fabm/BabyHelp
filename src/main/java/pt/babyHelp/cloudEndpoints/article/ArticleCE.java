@@ -6,12 +6,10 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
-import pt.babyHelp.bd.embededs.Role;
-import pt.core.cloudEndpoints.CEError;
-import pt.core.cloudEndpoints.CEReturn;
 import pt.babyHelp.cloudEndpoints.Constants;
-import pt.babyHelp.services.ArticleService;
-import pt.babyHelp.services.impl.ArticleServiceImpl;
+import pt.babyHelp.services.article.ArticleAM;
+import pt.babyHelp.services.article.ArticleService;
+import pt.core.cloudEndpoints.CEReturn;
 
 import java.util.Map;
 
@@ -27,64 +25,41 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 )
 public class ArticleCE {
 
-    private ArticleService articleService = new ArticleServiceImpl();
-
 
     @ApiMethod(name = "create", httpMethod = HttpMethod.PUT, path = "create")
-    public CEReturn createArticle(User user, final Map<String,Object> map) throws UnauthorizedException {
-        this.articleService.setUser(user);
-        articleService.getAuthorization().check("criação de um artigo", Role.HEALTHTEC);
-
-        return new CEReturn() {
-            @Override
-            public Object getCEResponse() throws CEError {
-                return articleService.create(map);
-            }
-        };
-
+    public CEReturn createArticle(User user, Map<String,Object> map) throws UnauthorizedException {
+        return ArticleService.create()
+                .execute(user, ArticleAM.CREATE, map);
     }
 
 
     @ApiMethod(name = "update", httpMethod = HttpMethod.POST, path = "update")
-    public CEReturn currentEmail(User user, final Map<String,Object> entryMap) throws UnauthorizedException {
-        this.articleService.setUser(user);
-        this.articleService.getAuthorization().check("atualização de um artigo", Role.HEALTHTEC);
-        return new CEReturn() {
-            @Override
-            public Object getCEResponse() throws CEError {
-                return articleService.update(entryMap);
-            }
-        };
+    public CEReturn currentEmail(User user, Map<String,Object> entryMap) throws UnauthorizedException {
+        return ArticleService.create()
+                .execute(user, ArticleAM.UPDATE, entryMap);
     }
 
     @ApiMethod(name = "list.my", httpMethod = HttpMethod.GET, path = "list-my")
-    public Map<String, Object> myArticles(User user) throws UnauthorizedException {
-        this.articleService.setUser(user);
-        this.articleService.getAuthorization().check("artigos do utilizador atual", Role.HEALTHTEC);
-        return this.articleService.getMyArticles();
+    public CEReturn myArticles(User user) throws UnauthorizedException {
+        return ArticleService.create()
+                .execute(user, ArticleAM.LIST_MY);
     }
 
     @ApiMethod(name = "list.public", httpMethod = HttpMethod.GET, path = "list-public")
-    public Map<String, Object> listPublicArticles(User user) {
-        this.articleService.setUser(user);
-        return this.articleService.listPublic();
+    public CEReturn listPublicArticles(User user) throws UnauthorizedException {
+        return ArticleService.create()
+                .execute(user, ArticleAM.LIST_PUBLIC);
     }
 
     @ApiMethod(name = "delete", httpMethod = HttpMethod.PUT, path = "delete")
-    public CEReturn delete(User user, final ListIDs listIDs) throws UnauthorizedException {
-        this.articleService.setUser(user);
-        this.articleService.getAuthorization().check("remoção de artigos");
-        return new CEReturn() {
-            @Override
-            public Object getCEResponse() throws CEError {
-                return articleService.delete(listIDs);
-            }
-        };
+    public CEReturn delete(User user, ListIDs listIDs) throws UnauthorizedException {
+        return ArticleService.create()
+                .execute(user, ArticleAM.DELETE);
     }
 
     @ApiMethod(name = "get", httpMethod = HttpMethod.GET, path = "get")
-    public Map<String, Object> get(User user, @Named(value = "id") long id) throws UnauthorizedException {
-        this.articleService.setUser(user);
-        return this.articleService.get(id);
+    public CEReturn get(User user, @Named(value = "id") long id) throws UnauthorizedException {
+        return ArticleService.create()
+                .execute(user, ArticleAM.GET);
     }
 }

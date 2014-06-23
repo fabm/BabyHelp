@@ -12,5 +12,4 @@ public interface CEReturn {
      * @throws CEError
      */
     Object getCEResponse() throws CEError;
-
 }

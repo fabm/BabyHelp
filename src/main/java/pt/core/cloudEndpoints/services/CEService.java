@@ -5,5 +5,5 @@ import com.google.appengine.api.users.User;
 import pt.core.cloudEndpoints.CEReturn;
 
 public interface CEService<A extends CEActionMap<?,?>> extends CEReturn{
-    void execute(User user,A action,Object...args) throws UnauthorizedException;
+    CEService<A> execute(User user,A action,Object...args) throws UnauthorizedException;
 }

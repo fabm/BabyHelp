@@ -26,7 +26,7 @@ public class UpPhotoEndpoint {
 
     @ApiMethod(name = "getuploadurl", httpMethod = ApiMethod.HttpMethod.GET, path = "getuploadurl")
     public Map<String, Object> getUrl(User user) throws UnauthorizedException {
-        authorization = new Authorization(user);
+        authorization = new BHAuthorization(user);
         return delegate();
     }
 

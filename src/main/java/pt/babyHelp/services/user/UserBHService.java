@@ -8,6 +8,7 @@ import pt.babyHelp.bd.PendingParentality;
 import pt.babyHelp.bd.Son;
 import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.bd.embededs.Role;
+import pt.babyHelp.cloudEndpoints.BHAuthorization;
 import pt.babyHelp.cloudEndpoints.user.RolesParameters;
 import pt.babyHelp.services.BabyHelp;
 import pt.core.cloudEndpoints.*;
@@ -20,6 +21,10 @@ public class UserBHService implements CEService<UserAM> {
     private Authorization authorization;
     private Object[] args;
     private UserAM action;
+
+    public static CEService<UserAM> create() {
+        return new UserBHService();
+    }
 
     private static Map<String, Object> getList() throws CEError {
         Iterator<UserFromApp> it = UserFromApp.iterateAll();
@@ -175,17 +180,14 @@ public class UserBHService implements CEService<UserAM> {
     }
 
 
-
     @Override
-    public void execute(User user, UserAM action, Object... args) throws UnauthorizedException {
-        if(action!= null){
-            authorization.check(action.getArea(),action.getRoles());
-        }
+    public UserBHService execute(User user, UserAM action, Object... args) throws UnauthorizedException {
+        this.authorization = new BHAuthorization(user);
+        this.authorization.check(action);
         this.args = args;
         this.action = action;
-        this.authorization = new Authorization(user);
+        return this;
     }
-
 
 
     @Override
@@ -204,7 +206,7 @@ public class UserBHService implements CEService<UserAM> {
             case UPDATE_USERNAME:
                 return updateUserName((Map<String, Object>) args[0]);
         }
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new UnsupportedOperationException(CEErrorReturn.NOT_IMPLEMENTED);
     }
 
     enum CEErrorR implements CEErrorReturn {
