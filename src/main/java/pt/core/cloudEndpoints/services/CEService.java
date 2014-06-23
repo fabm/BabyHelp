@@ -1,8 +1,9 @@
 package pt.core.cloudEndpoints.services;
 
-import pt.core.cloudEndpoints.CEError;
+import com.google.api.server.spi.response.UnauthorizedException;
+import com.google.appengine.api.users.User;
 import pt.core.cloudEndpoints.CEReturn;
 
-public interface CEService<A extends CEActionMap<?,?>> {
-    CEReturn execute(A action,Object...args) throws CEError;
+public interface CEService<A extends CEActionMap<?,?>> extends CEReturn{
+    void execute(User user,A action,Object...args) throws UnauthorizedException;
 }

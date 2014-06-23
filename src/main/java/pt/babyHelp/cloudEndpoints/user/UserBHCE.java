@@ -6,14 +6,11 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
-import pt.babyHelp.bd.Son;
-import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.cloudEndpoints.Constants;
-import pt.babyHelp.services.UserBHService;
-import pt.babyHelp.services.user.UserBHServiceImpl;
-import pt.core.cloudEndpoints.CEError;
+import pt.babyHelp.services.user.UserAM;
+import pt.babyHelp.services.user.UserBHService;
 import pt.core.cloudEndpoints.CEReturn;
-import pt.core.cloudEndpoints.CEUtils;
+import pt.core.cloudEndpoints.services.CEService;
 
 import java.util.Map;
 
@@ -31,94 +28,61 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 public class UserBHCE {
 
     @ApiMethod(name = "updateRoles", httpMethod = HttpMethod.POST)
-    public Map<String, Object> updateRoles
+    public CEReturn updateRoles
             (User user, @Named("email") String email, RolesParameters rolesParameters)
             throws UnauthorizedException {
-        UserBHService userBHService = new UserBHServiceImpl();
-        try {
-            userBHService.setUser(user);
-            return userBHService.updateRoles(email, rolesParameters);
-        } catch (CEError CEError) {
-            return CEError.getMap();
-        }
+        CEService<UserAM> userBHService = new UserBHService();
+        userBHService.execute(user, UserAM.UPDATE_ROLES, email, rolesParameters);
+        return userBHService;
     }
 
     @ApiMethod(name = "updateUserName", httpMethod = HttpMethod.PUT)
     public CEReturn updateUserName(User user, final Map<String, Object> entryMap) throws UnauthorizedException {
-        final UserBHService userBHService = new UserBHServiceImpl();
-        userBHService.setUser(user);
-        return new CEReturn() {
-            @Override
-            public Object getCEResponse() throws CEError {
-                return userBHService.updateUserName(entryMap);
-            }
-        };
+        CEService<UserAM> userBHService = new UserBHService();
+        userBHService.execute(user, UserAM.UPDATE_USERNAME, entryMap);
+        return userBHService;
     }
 
     @ApiMethod(name = "list")
-    public Map<String, Object> list(User user) throws UnauthorizedException {
-        UserBHService userBHService = new UserBHServiceImpl();
-        try {
-            userBHService.setUser(user);
-            return userBHService.list();
-        } catch (CEError CEError) {
-            return CEError.getMap();
-        }
+    public CEReturn list(User user) throws UnauthorizedException {
+        CEService<UserAM> userBHService = new UserBHService();
+        userBHService.execute(user, UserAM.LIST);
+        return userBHService;
     }
 
     @ApiMethod(name = "getRoles")
-    public Map<String, Object> getRoles(User user, @Named("email") String email) throws UnauthorizedException {
-        UserBHService userBHService = new UserBHServiceImpl();
-        try {
-            userBHService.setUser(user);
-            return userBHService.getRoles(email);
-        } catch (CEError CEError) {
-            return CEError.getMap();
-        }
+    public CEReturn getRoles(User user, @Named("email") String email) throws UnauthorizedException {
+        CEService<UserAM> userBHService = new UserBHService();
+        userBHService.execute(user,UserAM.GET_ROLES,email);
+        return userBHService;
     }
 
     @ApiMethod(name = "update.sons", httpMethod = HttpMethod.PUT, path = "update/sons")
-    public Map<String, Object> updateSons(User user, SonsParameters sons) throws UnauthorizedException {
-        UserBHService userBHService = new UserBHServiceImpl();
-        userBHService.setUser(user);
-        userBHService.getAuthorization().check("declaração de filhos", Role.PARENT);
-        return userBHService.setSons((Son[]) sons.getSons().toArray());
+    public CEReturn updateSons(User user, SonsParameters sons) throws UnauthorizedException {
+        CEService<UserAM> userBHService = new UserBHService();
+        userBHService.execute(user, UserAM.UPDATE_SONS, sons);
+        return userBHService;
     }
 
     @ApiMethod(name = "update.profession", httpMethod = HttpMethod.PUT, path = "update/profession")
-    public CEReturn updateProfession(User user, final Map<String, Object> entryMap) {
-        final UserBHService userBHService = new UserBHServiceImpl();
-
-        userBHService.setUser(user);
-        return new CEReturn() {
-            @Override
-            public Object getCEResponse() throws CEError {
-                return userBHService.updateHealthTec(entryMap);
-            }
-        };
+    public CEReturn updateProfession(User user, final Map<String, Object> entryMap) throws UnauthorizedException {
+        CEService<UserAM> userBHService = new UserBHService();
+        userBHService.execute(user, UserAM.UPDATE_PROFESSION, entryMap);
+        return userBHService;
     }
 
     @ApiMethod(name = "pendingActions", httpMethod = ApiMethod.HttpMethod.GET, path = "pendingactions")
-    public Map<String, Object> pendingActions(User user) {
-        UserBHService userBHService = new UserBHServiceImpl();
-        userBHService.setUser(user);
-        return userBHService.pendingActions();
+    public CEService<UserAM> pendingActions(User user) throws UnauthorizedException {
+        CEService<UserAM> userBHService = new UserBHService();
+        userBHService.execute(user,UserAM.PENDING_ACTIONS);
+        return userBHService;
     }
 
     @ApiMethod(name = "current", httpMethod = ApiMethod.HttpMethod.GET, path = "current")
-    public Map<String, Object> current(User user) {
-        UserBHService userBHService = new UserBHServiceImpl();
-        userBHService.setUser(user);
-
-        Map<String, Object> map = CEUtils.createMapAndPut("email",
-                userBHService.getAuthorization().getUserFromApp().getEmail());
-        if(userBHService.getAuthorization().getUserFromApp().getName()!=null){
-            map.put("name",userBHService.getAuthorization().getUserFromApp().getName());
-        }
-        if (userBHService.getAuthorization().getUserFromApp().getProfession() != null) {
-            map.put("profissao", userBHService.getAuthorization().getUserFromApp().getProfession());
-        }
-        return CEUtils.createMapAndPut("result",map);
+    public CEService<UserAM> current(User user) throws UnauthorizedException {
+        CEService<UserAM> userBHService = new UserBHService();
+        userBHService.execute(user,UserAM.CURRENT);
+        return userBHService;
     }
 
 }
