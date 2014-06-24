@@ -1,6 +1,7 @@
 package pt.babyHelp.cloudEndpoints;
 
 import com.google.appengine.api.users.User;
+import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.cloudEndpoints.testes.TestesCE;
 import pt.babyHelp.cloudEndpoints.testes.UserEntry;
@@ -39,6 +40,7 @@ public class BHAuthorization extends Authorization {
         }
 
         if (userFromApp == null) {
+            userFromApp = new UserFromApp();
             userFromApp.setName(TestesCE.userCurrent.getName());
             userFromApp.setEmail(TestesCE.userCurrent.getEmail());
             this.userRegistered = TestesCE.userCurrent.isRegistered();

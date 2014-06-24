@@ -1,4 +1,4 @@
-package pt.babyHelp.services.annotations;
+package pt.core.cloudEndpoints.services.annotations;
 
 import java.lang.annotation.*;
 

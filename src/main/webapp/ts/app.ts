@@ -112,14 +112,14 @@ module Articles {
         };
 
         function loadId(callback:(success)=>void) {
-            articleService.get(id).then(callback
-                , (error)=> {
-                    setErrorMessage(error.error.message);
+            articleService.get(id).execute({
+                success: callback, error: (response)=> {
+                    setErrorMessage(response.error.message);
                     gns.growl.showGrowl();
-                }, (unauthorized)=> {
-                    setErrorMessage(unauthorized.message);
+                }, unauthorized: (response)=> {
+                    setErrorMessage(response.message);
                     gns.state.goto(RouteState.home);
-                });
+                }});
         }
 
 
@@ -139,9 +139,9 @@ module Articles {
 
         function upPhoto() {
             if ($scope.upFile) {
-                photoTokenService.getPhotoToken().then(
-                    (success)=> {
-                        fUploadAppEngine.success = (success) => {
+                photoTokenService.getPhotoToken().execute({
+                    success: (response)=> {
+                        fUploadAppEngine.success = (response) => {
                             gns.growl.setMessage("Atualizou o artigo com sucesso", GrowlBH.typeMessage.success);
                             gns.state.goto(RouteState.home);
                         }
@@ -149,19 +149,19 @@ module Articles {
                             setErrorMessage("Não foi possível fazer upload do ficheiro");
                             gns.growl.showGrowl();
                         }
-                        fUploadAppEngine.url = success.url;
+                        fUploadAppEngine.url = response.url;
                         fUploadAppEngine.form.append('action', 'article-edit');
                         fUploadAppEngine.form.append('id', id);
                         fUploadAppEngine.up($scope.upFile);
-                    }, (error)=> {
+                    }, error: (error)=> {
                         gns.growl.setMessage(error.error.message, GrowlBH.typeMessage.error);
                         gns.growl.showGrowl();
-                    }, (unauthorized)=> {
+                    }, unauthorized: (unauthorized)=> {
                         gns.growl.setMessage(unauthorized.error.message, GrowlBH.typeMessage.error);
                         gns.state.goto(RouteState.home);
                     }
-                );
-            }else{
+                });
+            } else {
                 gns.growl.setMessage("Atualizou o artigo com sucesso", GrowlBH.typeMessage.success);
                 gns.state.goto(RouteState.home);
             }
@@ -170,16 +170,17 @@ module Articles {
 
         $scope.save = function () {
             if ($scope.create) {
-                articleService.create($scope.article).then((success)=> {
-                    gns.growl.setMessage(success.message, GrowlBH.typeMessage.success);
-                    id = success.id;
-                    upPhoto();
-                }, (error)=> {
-                    setErrorMessage(error.error.message);
-                    gns.growl.showGrowl();
-                }, (unauthorized)=> {
-                    setErrorMessage(unauthorized.message);
-                });
+                articleService.create($scope.article).execute({
+                    success: (success)=> {
+                        gns.growl.setMessage(success.message, GrowlBH.typeMessage.success);
+                        id = success.id;
+                        upPhoto();
+                    }, error: (response)=> {
+                        setErrorMessage(response.error.message);
+                        gns.growl.showGrowl();
+                    }, unauthorized: (response)=> {
+                        setErrorMessage(response.message);
+                    }});
             } else {
                 loadId((success)=> {
                     $scope.article = success;
@@ -223,26 +224,29 @@ module Users {
         }
 
         function setErrorMesg(response) {
-            gns.growl.setMessage(response.error.message, GrowlBH.typeMessage.error);
+            gns.growl.setMessage(response, GrowlBH.typeMessage.error);
         }
 
-        userService.list().then(
-            (response)=> {
-                $scope.state = 'list';
-                $scope.users = response.body;
-                resetLoading();
-                $scope.$digest();
-            },
-            (response)=> {
-                resetLoading();
-                setErrorMesg(response);
-            },
-            (response)=> {
-                resetLoading();
-                setErrorMesg(response);
-                gns.state.goto(RouteState.home);
-            }
-        );
+        userService.loadApi(()=> {
+            userService.list().execute({
+                success: (response)=> {
+                    $scope.state = 'list';
+                    $scope.users = response.body;
+                    resetLoading();
+                    $scope.$digest();
+                },
+                error: (response)=> {
+                    resetLoading();
+                    setErrorMesg(response);
+                },
+                unauthorized: (response)=> {
+                    resetLoading();
+                    setErrorMesg(response);
+                    gns.state.goto(RouteState.home);
+                }
+            });
+        });
+
 
         if (!gns.growl.isMsgShowed())
             gns.growl.showGrowl();
@@ -262,7 +266,7 @@ module Users {
         var user:any = {email: null};
 
         function setErrorMessage(response) {
-            gns.growl.setMessage(response.error.message, GrowlBH.typeMessage.error);
+            gns.growl.setMessage(response, GrowlBH.typeMessage.error);
         }
 
         $scope.create = $stateParams.email === '';
@@ -278,38 +282,43 @@ module Users {
         } else {
             user.email = $stateParams.email;
             $scope.user = user;
-            userService.getRoles(user).then(
-                (response)=> {
+            userService.getRoles(user).execute({
+                success: (response)
+                    => {
                     resetLoading();
                     $scope.$digest();
-                }, (response)=> {
+                },
+                error: (response)=> {
                     resetLoading();
                     setErrorMessage(response)
                     gns.growl.showGrowl();
-                }, (response)=> {
+                }, unauthorized: (response)=> {
                     resetLoading();
                     setErrorMessage(response);
                     gns.state.goto(RouteState.home);
                 }
-            );
+            });
         }
 
         $scope.user = user;
         $scope.save = () => {
-            userService.updateRoles($scope.user).then(
-                (success)=> {
-                    gns.growl.setMessage('Utilizador atualizado',
-                        GrowlBH.typeMessage.success);
-                    gns.state.goto(RouteState.userList);
-                }, (error)=> {
-                    setErrorMessage(error);
-                    gns.growl.showGrowl();
+            userService.loadApi(()=> {
+                userService.updateRoles($scope.user).execute({
+                    success: (response)=> {
+                        gns.growl.setMessage('Utilizador atualizado',
+                            GrowlBH.typeMessage.success);
+                        gns.state.goto(RouteState.userList);
+                    },
+                    error: (response)=> {
+                        setErrorMessage(response);
+                        gns.growl.showGrowl();
 
-                }, (unauthorized)=> {
-                    setErrorMessage(unauthorized);
-                    gns.state.goto(RouteState.userList);
-                }
-            );
+                    }, unauthorized: (response)=> {
+                        setErrorMessage(response);
+                        gns.state.goto(RouteState.userList);
+                    }
+                });
+            });
         }
         $scope.buttonLabel = () => {
             if ($scope.create) return 'criar';

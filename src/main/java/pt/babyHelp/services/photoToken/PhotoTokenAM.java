@@ -1,34 +1,27 @@
-package pt.babyHelp.services.user;
+package pt.babyHelp.services.photoToken;
 
 import pt.babyHelp.bd.embededs.Role;
 import pt.core.cloudEndpoints.services.CEActionMap;
 
-public enum UserAM implements CEActionMap<Role, UserAM> {
-    LIST("lista de utilizadores",Role.ADMINISTRATOR),
-    UPDATE_ROLES("atualização de roles",Role.ADMINISTRATOR),
-    GET_ROLES("visualização de roles",Role.ADMINISTRATOR),
-    PENDING_ACTIONS("ações pendentes"),
-    UPDATE_PROFESSION("atualização da profissão"),
-    UPDATE_USERNAME("atualização do username"),
-    UPDATE_SONS("atualização de filhos", Role.PARENT),
-    CURRENT(false);
+public enum PhotoTokenAM implements CEActionMap<Role, PhotoTokenAM> {
+    GET("obter um token do upload de uma imagem");
 
     private Role[] roles;
     private boolean ar;
     private String area;
 
-    UserAM(String area,Role...roles) {
+    PhotoTokenAM(String area, Role... roles) {
         this.roles = roles;
         this.ar = true;
         this.area = area;
     }
 
-    UserAM(String area) {
+    PhotoTokenAM(String area) {
         this.ar = true;
         this.area = area;
     }
 
-    UserAM(boolean ar) {
+    PhotoTokenAM(boolean ar) {
         this.ar = ar;
     }
 
@@ -38,7 +31,7 @@ public enum UserAM implements CEActionMap<Role, UserAM> {
     }
 
     @Override
-    public UserAM getAction() {
+    public PhotoTokenAM getAction() {
         return this;
     }
 

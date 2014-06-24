@@ -17,7 +17,7 @@ public class ArticleParams {
         MapFieldValidator mapFV = new MapFieldValidator(entryMap);
         mapFV.setErrorReturnRequired(BabyHelp.CEError.REQUIRED_FIELD);
         this.title = mapFV.require("title", "Titulo");
-        this.photoUrl = mapFV.get("photoUrl");
+        this.photoUrl = mapFV.get("photoToken");
         this.body = mapFV.require("body", "Conteúdo");
         this.summary = mapFV.require("summary", "Resumo");
         this.isPublic = mapFV.require("isPublic", "Público");

@@ -88,6 +88,13 @@ class ClientLoader {
     loadApi(callback?:()=>void) {
         var self = this;
 
+        function callAttributes() {
+            self.api = {};
+            self.attribClient(gapi.client[self.client], self.api);
+            self.callCBState(StateLoading.callService);
+            if (!isNull(callback))callback();
+        }
+
         if (isNull(gapi.auth)) {
             self.callCBState(StateLoading.loadingGAPI);
             gapi.load('auth', ()=> {
@@ -106,11 +113,12 @@ class ClientLoader {
             });
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, ()=> {
-                self.api = {};
-                self.attribClient(gapi.client[self.client], self.api);
-                self.callCBState(StateLoading.callService);
-                if (!isNull(callback))callback();
+                callAttributes();
             }, self.apiUrl);
+        } else if (isNull(self.api)) {
+            callAttributes()
+        } else {
+            if (!isNull(callback))callback();
         }
     }
 
@@ -154,7 +162,7 @@ class ClientLoader {
                     execute: function (resolver?:Resolve) {
                         var self = this;
                         if (isNull(resolver))
-                            resolver = self.defaultResolver;
+                            resolver = obSelf.defaultResolver;
 
                         function getValidation(name, value) {
                             var valArr = self['validations'][name];
@@ -182,7 +190,7 @@ class ClientLoader {
 
                         client[this.mName](self.args).execute((response)=> {
                             if (isNull(response.code)) {
-                                resolver.success(response.result);
+                                resolver.success(response);
                             } else if (response.code == 401) {
                                 resolver.unauthorized(response.error.message);
                             } else {
@@ -303,10 +311,15 @@ class UserService extends ClientBabyHelp {
                 user.roles.forEach((value, index, arr)=> {
                     if (value.role)rolesSelected.push(value.name);
                 });
-
-                self.api['updateRoles']({'email': user.email, 'roles': rolesSelected}).execute(resolver);
+                var updateRoles = self.api['updateRoles'];
+                updateRoles.args = {'email': user.email, 'roles': rolesSelected};
+                updateRoles.execute(resolver);
             }
         }
+    }
+
+    list():Executor {
+        return this.api['list'];
     }
 }
 
@@ -328,40 +341,28 @@ class ArticlesService extends ClientBabyHelp {
         this.client = 'article';
     }
 
-    get(id):Resolve {
-        return super.load((client)=> {
-            return client.get({id: id});
-        });
+    get(id):Executor {
+        return this.api['get']({id: id});
     }
 
-    create(article:ArticleCreation):Resolve {
-        return super.load((client)=> {
-            return client.create(article);
-        });
+    create(article:ArticleCreation):Executor {
+        return this.api['create']({article: article});
     }
 
-    listMy():Resolve {
-        return super.load((client)=> {
-            return client.list.my();
-        });
+    listMy():Executor {
+        return this.api['list']['my']();
     }
 
-    listPublic():Resolve {
-        return super.load((client)=> {
-            return client.list.public();
-        });
+    listPublic():Executor {
+        return this.api['list']['public']();
     }
 
-    update(article:ArticleUpdate):Resolve {
-        return super.load((client)=> {
-            return client.update(article);
-        });
+    update(article:ArticleUpdate):Executor {
+        return this.api['update'](article);
     }
 
-    delete(ids):Resolve {
-        return super.load((client)=> {
-            return client.delete({ids: ids});
-        });
+    delete(ids):Executor {
+        return this.api['delete']({ids: ids});
     }
 }
 
@@ -372,8 +373,6 @@ class PhotoTokenService extends ClientBabyHelp {
     }
 
     getPhotoToken() {
-        return this.load((client)=> {
-            return client.getuploadurl();
-        });
+        return this.api['getuploadurl']();
     }
 }

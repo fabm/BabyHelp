@@ -77,13 +77,14 @@ var Articles;
         };
 
         function loadId(callback) {
-            articleService.get(id).then(callback, function (error) {
-                setErrorMessage(error.error.message);
-                gns.growl.showGrowl();
-            }, function (unauthorized) {
-                setErrorMessage(unauthorized.message);
-                gns.state.goto(RouteState.home);
-            });
+            articleService.get(id).execute({
+                success: callback, error: function (response) {
+                    setErrorMessage(response.error.message);
+                    gns.growl.showGrowl();
+                }, unauthorized: function (response) {
+                    setErrorMessage(response.message);
+                    gns.state.goto(RouteState.home);
+                } });
         }
 
         if ($scope.create) {
@@ -101,25 +102,27 @@ var Articles;
 
         function upPhoto() {
             if ($scope.upFile) {
-                photoTokenService.getPhotoToken().then(function (success) {
-                    fUploadAppEngine.success = function (success) {
-                        gns.growl.setMessage("Atualizou o artigo com sucesso", GrowlBH.typeMessage.success);
-                        gns.state.goto(RouteState.home);
-                    };
-                    fUploadAppEngine.error = function (error) {
-                        setErrorMessage("Não foi possível fazer upload do ficheiro");
+                photoTokenService.getPhotoToken().execute({
+                    success: function (response) {
+                        fUploadAppEngine.success = function (response) {
+                            gns.growl.setMessage("Atualizou o artigo com sucesso", GrowlBH.typeMessage.success);
+                            gns.state.goto(RouteState.home);
+                        };
+                        fUploadAppEngine.error = function (error) {
+                            setErrorMessage("Não foi possível fazer upload do ficheiro");
+                            gns.growl.showGrowl();
+                        };
+                        fUploadAppEngine.url = response.url;
+                        fUploadAppEngine.form.append('action', 'article-edit');
+                        fUploadAppEngine.form.append('id', id);
+                        fUploadAppEngine.up($scope.upFile);
+                    }, error: function (error) {
+                        gns.growl.setMessage(error.error.message, GrowlBH.typeMessage.error);
                         gns.growl.showGrowl();
-                    };
-                    fUploadAppEngine.url = success.url;
-                    fUploadAppEngine.form.append('action', 'article-edit');
-                    fUploadAppEngine.form.append('id', id);
-                    fUploadAppEngine.up($scope.upFile);
-                }, function (error) {
-                    gns.growl.setMessage(error.error.message, GrowlBH.typeMessage.error);
-                    gns.growl.showGrowl();
-                }, function (unauthorized) {
-                    gns.growl.setMessage(unauthorized.error.message, GrowlBH.typeMessage.error);
-                    gns.state.goto(RouteState.home);
+                    }, unauthorized: function (unauthorized) {
+                        gns.growl.setMessage(unauthorized.error.message, GrowlBH.typeMessage.error);
+                        gns.state.goto(RouteState.home);
+                    }
                 });
             } else {
                 gns.growl.setMessage("Atualizou o artigo com sucesso", GrowlBH.typeMessage.success);
@@ -129,16 +132,17 @@ var Articles;
 
         $scope.save = function () {
             if ($scope.create) {
-                articleService.create($scope.article).then(function (success) {
-                    gns.growl.setMessage(success.message, GrowlBH.typeMessage.success);
-                    id = success.id;
-                    upPhoto();
-                }, function (error) {
-                    setErrorMessage(error.error.message);
-                    gns.growl.showGrowl();
-                }, function (unauthorized) {
-                    setErrorMessage(unauthorized.message);
-                });
+                articleService.create($scope.article).execute({
+                    success: function (success) {
+                        gns.growl.setMessage(success.message, GrowlBH.typeMessage.success);
+                        id = success.id;
+                        upPhoto();
+                    }, error: function (response) {
+                        setErrorMessage(response.error.message);
+                        gns.growl.showGrowl();
+                    }, unauthorized: function (response) {
+                        setErrorMessage(response.message);
+                    } });
             } else {
                 loadId(function (success) {
                     $scope.article = success;
@@ -184,21 +188,27 @@ var Users;
         }
 
         function setErrorMesg(response) {
-            gns.growl.setMessage(response.error.message, GrowlBH.typeMessage.error);
+            gns.growl.setMessage(response, GrowlBH.typeMessage.error);
         }
 
-        userService.list().then(function (response) {
-            $scope.state = 'list';
-            $scope.users = response.body;
-            resetLoading();
-            $scope.$digest();
-        }, function (response) {
-            resetLoading();
-            setErrorMesg(response);
-        }, function (response) {
-            resetLoading();
-            setErrorMesg(response);
-            gns.state.goto(RouteState.home);
+        userService.loadApi(function () {
+            userService.list().execute({
+                success: function (response) {
+                    $scope.state = 'list';
+                    $scope.users = response.body;
+                    resetLoading();
+                    $scope.$digest();
+                },
+                error: function (response) {
+                    resetLoading();
+                    setErrorMesg(response);
+                },
+                unauthorized: function (response) {
+                    resetLoading();
+                    setErrorMesg(response);
+                    gns.state.goto(RouteState.home);
+                }
+            });
         });
 
         if (!gns.growl.isMsgShowed())
@@ -220,7 +230,7 @@ var Users;
         var user = { email: null };
 
         function setErrorMessage(response) {
-            gns.growl.setMessage(response.error.message, GrowlBH.typeMessage.error);
+            gns.growl.setMessage(response, GrowlBH.typeMessage.error);
         }
 
         $scope.create = $stateParams.email === '';
@@ -236,31 +246,39 @@ var Users;
         } else {
             user.email = $stateParams.email;
             $scope.user = user;
-            userService.getRoles(user).then(function (response) {
-                resetLoading();
-                $scope.$digest();
-            }, function (response) {
-                resetLoading();
-                setErrorMessage(response);
-                gns.growl.showGrowl();
-            }, function (response) {
-                resetLoading();
-                setErrorMessage(response);
-                gns.state.goto(RouteState.home);
+            userService.getRoles(user).execute({
+                success: function (response) {
+                    resetLoading();
+                    $scope.$digest();
+                },
+                error: function (response) {
+                    resetLoading();
+                    setErrorMessage(response);
+                    gns.growl.showGrowl();
+                }, unauthorized: function (response) {
+                    resetLoading();
+                    setErrorMessage(response);
+                    gns.state.goto(RouteState.home);
+                }
             });
         }
 
         $scope.user = user;
         $scope.save = function () {
-            userService.updateRoles($scope.user).then(function (success) {
-                gns.growl.setMessage('Utilizador atualizado', GrowlBH.typeMessage.success);
-                gns.state.goto(RouteState.userList);
-            }, function (error) {
-                setErrorMessage(error);
-                gns.growl.showGrowl();
-            }, function (unauthorized) {
-                setErrorMessage(unauthorized);
-                gns.state.goto(RouteState.userList);
+            userService.loadApi(function () {
+                userService.updateRoles($scope.user).execute({
+                    success: function (response) {
+                        gns.growl.setMessage('Utilizador atualizado', GrowlBH.typeMessage.success);
+                        gns.state.goto(RouteState.userList);
+                    },
+                    error: function (response) {
+                        setErrorMessage(response);
+                        gns.growl.showGrowl();
+                    }, unauthorized: function (response) {
+                        setErrorMessage(response);
+                        gns.state.goto(RouteState.userList);
+                    }
+                });
             });
         };
         $scope.buttonLabel = function () {

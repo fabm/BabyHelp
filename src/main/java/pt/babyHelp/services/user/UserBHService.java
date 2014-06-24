@@ -49,9 +49,10 @@ public class UserBHService implements CEService<UserAM> {
         return map;
     }
 
-    private Map<String, Object> updateRoles(String email, RolesParameters rolesParameters) throws CEError {
+    private Map<String, Object> updateRoles() throws CEError {
 
         Map<String, Object> map = new HashMap<String, Object>();
+        String email = (String) args[0];
         if (email == null) {
             throw new CEError(CEErrorR.EMAIL_REQUIRED);
         }
@@ -67,6 +68,7 @@ public class UserBHService implements CEService<UserAM> {
         }
 
         try {
+            RolesParameters rolesParameters = (RolesParameters) args[1];
             userFromApp.setRoles(rolesParameters.toEnum());
             if (BD.ofy().save().entity(userFromApp).now() == null)
                 throw new CEError(BabyHelp.CEError.PERSIST, UserFromApp.class.getSimpleName());
@@ -161,7 +163,8 @@ public class UserBHService implements CEService<UserAM> {
         return null;
     }
 
-    private Map<String, Object> updateHealthTec(Map<String, Object> entryMap) throws CEError {
+    private Map<String, Object> updateHealthTec() throws CEError {
+        Map<String,Object> entryMap = (Map<String, Object>) args[0];
         MapFieldValidator mapFV = new MapFieldValidator(entryMap);
         mapFV.setErrorReturnRequired(BabyHelp.CEError.REQUIRED_FIELD);
         authorization.getUserFromApp().setProfession(mapFV.<String>require("profession", "profissão"));
@@ -188,6 +191,9 @@ public class UserBHService implements CEService<UserAM> {
         this.action = action;
         return this;
     }
+    private Map<String,Object> currentUser() {
+        return CEUtils.createMapAndPut("result",authorization.getUserFromApp().getEmail());
+    }
 
 
     @Override
@@ -198,16 +204,19 @@ public class UserBHService implements CEService<UserAM> {
             case PENDING_ACTIONS:
                 return pendingActions();
             case UPDATE_PROFESSION:
-                return updateHealthTec((Map<String, Object>) args[0]);
+                return updateHealthTec();
             case UPDATE_ROLES:
-                return updateRoles((String) args[0], (RolesParameters) args[1]);
+                return updateRoles();
             case GET_ROLES:
                 return getRoles((String) args[0]);
             case UPDATE_USERNAME:
                 return updateUserName((Map<String, Object>) args[0]);
+            case CURRENT:return currentUser();
+
         }
         throw new UnsupportedOperationException(CEErrorReturn.NOT_IMPLEMENTED);
     }
+
 
     enum CEErrorR implements CEErrorReturn {
         ROLE_NOT_MATCH(0, "Não é possível corresponder o role %s a nenhum role existente"),

@@ -81,6 +81,14 @@ var ClientLoader = (function () {
     ClientLoader.prototype.loadApi = function (callback) {
         var self = this;
 
+        function callAttributes() {
+            self.api = {};
+            self.attribClient(gapi.client[self.client], self.api);
+            self.callCBState(3 /* callService */);
+            if (!isNull(callback))
+                callback();
+        }
+
         if (isNull(gapi.auth)) {
             self.callCBState(0 /* loadingGAPI */);
             gapi.load('auth', function () {
@@ -98,12 +106,13 @@ var ClientLoader = (function () {
             });
         else if (isNull(gapi.client[self.client])) {
             gapi.client.load(self.client, self.version, function () {
-                self.api = {};
-                self.attribClient(gapi.client[self.client], self.api);
-                self.callCBState(3 /* callService */);
-                if (!isNull(callback))
-                    callback();
+                callAttributes();
             }, self.apiUrl);
+        } else if (isNull(self.api)) {
+            callAttributes();
+        } else {
+            if (!isNull(callback))
+                callback();
         }
     };
 
@@ -143,7 +152,7 @@ var ClientLoader = (function () {
                     execute: function (resolver) {
                         var self = this;
                         if (isNull(resolver))
-                            resolver = self.defaultResolver;
+                            resolver = obSelf.defaultResolver;
 
                         function getValidation(name, value) {
                             var valArr = self['validations'][name];
@@ -167,7 +176,7 @@ var ClientLoader = (function () {
 
                         client[this.mName](self.args).execute(function (response) {
                             if (isNull(response.code)) {
-                                resolver.success(response.result);
+                                resolver.success(response);
                             } else if (response.code == 401) {
                                 resolver.unauthorized(response.error.message);
                             } else {
@@ -287,10 +296,15 @@ var UserService = (function (_super) {
                     if (value.role)
                         rolesSelected.push(value.name);
                 });
-
-                self.api['updateRoles']({ 'email': user.email, 'roles': rolesSelected }).execute(resolver);
+                var updateRoles = self.api['updateRoles'];
+                updateRoles.args = { 'email': user.email, 'roles': rolesSelected };
+                updateRoles.execute(resolver);
             }
         };
+    };
+
+    UserService.prototype.list = function () {
+        return this.api['list'];
     };
     return UserService;
 })(ClientBabyHelp);
@@ -302,39 +316,27 @@ var ArticlesService = (function (_super) {
         this.client = 'article';
     }
     ArticlesService.prototype.get = function (id) {
-        return _super.prototype.load.call(this, function (client) {
-            return client.get({ id: id });
-        });
+        return this.api['get']({ id: id });
     };
 
     ArticlesService.prototype.create = function (article) {
-        return _super.prototype.load.call(this, function (client) {
-            return client.create(article);
-        });
+        return this.api['create']({ article: article });
     };
 
     ArticlesService.prototype.listMy = function () {
-        return _super.prototype.load.call(this, function (client) {
-            return client.list.my();
-        });
+        return this.api['list']['my']();
     };
 
     ArticlesService.prototype.listPublic = function () {
-        return _super.prototype.load.call(this, function (client) {
-            return client.list.public();
-        });
+        return this.api['list']['public']();
     };
 
     ArticlesService.prototype.update = function (article) {
-        return _super.prototype.load.call(this, function (client) {
-            return client.update(article);
-        });
+        return this.api['update'](article);
     };
 
     ArticlesService.prototype.delete = function (ids) {
-        return _super.prototype.load.call(this, function (client) {
-            return client.delete({ ids: ids });
-        });
+        return this.api['delete']({ ids: ids });
     };
     return ArticlesService;
 })(ClientBabyHelp);
@@ -346,9 +348,7 @@ var PhotoTokenService = (function (_super) {
         this.client = 'photoToken';
     }
     PhotoTokenService.prototype.getPhotoToken = function () {
-        return this.load(function (client) {
-            return client.getuploadurl();
-        });
+        return this.api['getuploadurl']();
     };
     return PhotoTokenService;
 })(ClientBabyHelp);

@@ -32,7 +32,7 @@ public class UserBHCE {
             (User user, @Named("email") String email, RolesParameters rolesParameters)
             throws UnauthorizedException {
         return UserBHService.create()
-                .execute(user,UserAM.UPDATE_ROLES,rolesParameters);
+                .execute(user,UserAM.UPDATE_ROLES,email,rolesParameters);
     }
 
     @ApiMethod(name = "updateUserName", httpMethod = HttpMethod.PUT)
@@ -66,13 +66,13 @@ public class UserBHCE {
     }
 
     @ApiMethod(name = "pendingActions", httpMethod = ApiMethod.HttpMethod.GET, path = "pendingactions")
-    public CEService<UserAM> pendingActions(User user) throws UnauthorizedException {
+    public CEReturn pendingActions(User user) throws UnauthorizedException {
         return UserBHService.create()
                 .execute(user,UserAM.PENDING_ACTIONS);
     }
 
     @ApiMethod(name = "current", httpMethod = ApiMethod.HttpMethod.GET, path = "current")
-    public CEService<UserAM> current(User user) throws UnauthorizedException {
+    public CEReturn current(User user) throws UnauthorizedException {
         return UserBHService.create()
                 .execute(user,UserAM.CURRENT);
     }

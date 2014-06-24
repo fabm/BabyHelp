@@ -16,10 +16,10 @@ import com.google.appengine.repackaged.org.codehaus.jackson.map.ObjectMapper;
 import pt.core.cloudEndpoints.CEErrorReturn;
 import pt.core.cloudEndpoints.Authorization;
 import pt.babyHelp.cloudEndpoints.UserAcessible;
-import pt.babyHelp.services.annotations.InstanceType;
-import pt.babyHelp.services.annotations.PhotoUploadClass;
-import pt.babyHelp.services.annotations.PhotoUploadMethod;
-import pt.babyHelp.services.annotations.PhotoUploadedKey;
+import pt.core.cloudEndpoints.services.annotations.InstanceType;
+import pt.core.cloudEndpoints.services.annotations.PhotoUploadClass;
+import pt.core.cloudEndpoints.services.annotations.PhotoUploadMethod;
+import pt.core.cloudEndpoints.services.annotations.PhotoUploadedKey;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

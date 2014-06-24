@@ -69,7 +69,7 @@ public abstract class Authorization<T extends Enum<T>> {
         if (userFromApp == null)
             throw createNotAuthenticatedError(area);
 
-        if (rolesRequired.length == 0)
+        if (rolesRequired == null || rolesRequired.length == 0)
             return;
 
         if (!this.hasRoles(rolesRequired))

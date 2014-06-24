@@ -121,9 +121,7 @@ testes.upload = function () {
 testes.loadClientPhotoToken = function (callback) {
     var clientBabyHelp = new ClientBabyHelp();
     clientBabyHelp.client = 'photoToken';
-    clientBabyHelp.loadApi(function (client) {
-        callback(client);
-    });
+    clientBabyHelp.loadApi(callback);
 };
 
 function InnerController($scope, $http, fUploadAppEngine) {
@@ -151,28 +149,6 @@ function InnerController($scope, $http, fUploadAppEngine) {
             clientUrlTokenService.getuploadurl().execute(loadResponse);
     };
     // fim do teste de upload
-}
-
-function logThen(resolve, trace) {
-    var cbSuccess = function (success) {
-        console.log('success:');
-        console.info(success);
-        if (trace)
-            console.trace();
-    };
-    var cbError = function (error) {
-        console.log('error:');
-        console.info(error);
-        if (trace)
-            console.trace();
-    };
-    var cbUnauthorized = function (unauthorized) {
-        console.log('unauthorized:');
-        console.info(unauthorized);
-        if (trace)
-            console.trace();
-    };
-    resolve.then(cbSuccess, cbError, cbUnauthorized);
 }
 
 var ArticleParamTest = (function () {
@@ -232,12 +208,12 @@ apiTestes.article.helpLoader('article');
 apiTestes.user.helpLoader('userBH');
 apiTestes.testes.helpLoader('testes');
 
-apiTestes.article.afterLoad = function (name) {
+apiTestes.article.afterLoad = function () {
     apiTestes.article.api['create'].args = new ArticleParamTest();
-    console.log('loaded ' + name);
+    console.log('loaded ' + this.client);
 };
 
-apiTestes.testes.afterLoad = function (name) {
+apiTestes.testes.afterLoad = function () {
     apiTestes.testes.api['userEntry'].args = new UserEntry();
     var roles = ApisHelper.getRoles();
 
@@ -254,6 +230,6 @@ apiTestes.testes.afterLoad = function (name) {
     apiTestes.testes.api['userEntry'].appRoles.HEALTHTEC.add();
     apiTestes.testes.api['userEntry'].execute();
 
-    console.log('loaded ' + name);
+    console.log('loaded ' + this.client);
 };
 //# sourceMappingURL=testes.js.map
