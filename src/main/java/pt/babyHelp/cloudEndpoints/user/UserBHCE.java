@@ -10,7 +10,7 @@ import pt.babyHelp.cloudEndpoints.Constants;
 import pt.babyHelp.services.user.UserAM;
 import pt.babyHelp.services.user.UserBHService;
 import pt.core.cloudEndpoints.CEReturn;
-import pt.core.cloudEndpoints.services.CEService;
+import pt.json.proccess.Validation;
 
 import java.util.Map;
 
@@ -32,7 +32,7 @@ public class UserBHCE {
             (User user, @Named("email") String email, RolesParameters rolesParameters)
             throws UnauthorizedException {
         return UserBHService.create()
-                .execute(user,UserAM.UPDATE_ROLES,email,rolesParameters);
+                .execute(user, UserAM.UPDATE_ROLES, email, rolesParameters);
     }
 
     @ApiMethod(name = "updateUserName", httpMethod = HttpMethod.PUT)
@@ -48,9 +48,11 @@ public class UserBHCE {
     }
 
     @ApiMethod(name = "getRoles")
-    public CEReturn getRoles(User user, @Named("email") String email) throws UnauthorizedException {
+    public CEReturn getRoles(User user,
+                             @Validation.Email
+                             @Named("email") String email) throws UnauthorizedException {
         return UserBHService.create()
-                .execute(user,UserAM.GET_ROLES,email);
+                .execute(user, UserAM.GET_ROLES, email);
     }
 
     @ApiMethod(name = "update.sons", httpMethod = HttpMethod.PUT, path = "update/sons")
@@ -68,13 +70,13 @@ public class UserBHCE {
     @ApiMethod(name = "pendingActions", httpMethod = ApiMethod.HttpMethod.GET, path = "pendingactions")
     public CEReturn pendingActions(User user) throws UnauthorizedException {
         return UserBHService.create()
-                .execute(user,UserAM.PENDING_ACTIONS);
+                .execute(user, UserAM.PENDING_ACTIONS);
     }
 
     @ApiMethod(name = "current", httpMethod = ApiMethod.HttpMethod.GET, path = "current")
     public CEReturn current(User user) throws UnauthorizedException {
         return UserBHService.create()
-                .execute(user,UserAM.CURRENT);
+                .execute(user, UserAM.CURRENT);
     }
 
 }

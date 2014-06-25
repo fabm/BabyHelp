@@ -1,8 +1,11 @@
 package pt.babyHelp.cloudEndpoints.user;
 
 import pt.babyHelp.bd.embededs.Role;
+import pt.json.proccess.Validation;
 
 public class RolesParameters {
+
+
     private String[] roles;
 
     public String[] getRoles() {
