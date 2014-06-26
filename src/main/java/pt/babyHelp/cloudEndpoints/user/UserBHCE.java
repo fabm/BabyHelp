@@ -29,14 +29,16 @@ public class UserBHCE {
 
     @ApiMethod(name = "updateRoles", httpMethod = HttpMethod.POST)
     public CEReturn updateRoles
-            (User user, @Named("email") String email, RolesParameters rolesParameters)
+            (User user, @Named("email") String email,
+
+             RolesParameters rolesParameters)
             throws UnauthorizedException {
         return UserBHService.create()
                 .execute(user, UserAM.UPDATE_ROLES, email, rolesParameters);
     }
 
     @ApiMethod(name = "updateUserName", httpMethod = HttpMethod.PUT)
-    public CEReturn updateUserName(User user, final Map<String, Object> entryMap) throws UnauthorizedException {
+    public CEReturn updateUserName(User user, Map<String, Object> entryMap) throws UnauthorizedException {
         return UserBHService.create()
                 .execute(user, UserAM.UPDATE_USERNAME, entryMap);
     }
@@ -62,7 +64,7 @@ public class UserBHCE {
     }
 
     @ApiMethod(name = "update.profession", httpMethod = HttpMethod.PUT, path = "update/profession")
-    public CEReturn updateProfession(User user, final Map<String, Object> entryMap) throws UnauthorizedException {
+    public CEReturn updateProfession(User user, Map<String, Object> entryMap) throws UnauthorizedException {
         return UserBHService.create()
                 .execute(user, UserAM.UPDATE_PROFESSION, entryMap);
     }

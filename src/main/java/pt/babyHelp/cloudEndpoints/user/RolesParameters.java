@@ -6,6 +6,7 @@ import pt.json.proccess.Validation;
 public class RolesParameters {
 
 
+    @Validation.Email
     private String[] roles;
 
     public String[] getRoles() {

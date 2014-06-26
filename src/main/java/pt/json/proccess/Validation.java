@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 public interface Validation {
     @Retention(RetentionPolicy.SOURCE)
-    @Target(ElementType.PARAMETER)
+    @Target({ElementType.PARAMETER,ElementType.FIELD})
     public static @interface Email{}
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.PARAMETER)
