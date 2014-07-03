@@ -1,5 +1,6 @@
 package pt.babyHelp.cloudEndpoints;
 
+import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
 import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.bd.embededs.Role;
@@ -15,7 +16,6 @@ public class BHAuthorization extends Authorization {
 
     public BHAuthorization(User user) {
         super(user);
-        noNameUser = BabyHelp.CEError.NO_NAME_USER;
     }
 
     @Override

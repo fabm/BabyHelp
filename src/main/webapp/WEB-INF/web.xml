@@ -16,7 +16,7 @@
 
     <servlet>
         <servlet-name>photoServe</servlet-name>
-        <servlet-class>pt.babyHelp.servlets.Serve</servlet-class>
+        <servlet-class>pt.babyHelp.servlets.BHServe</servlet-class>
     </servlet>
 
     <servlet-mapping>
@@ -26,7 +26,7 @@
 
     <servlet>
         <servlet-name>photoRequestUpload</servlet-name>
-        <servlet-class>pt.babyHelp.servlets.Upload</servlet-class>
+        <servlet-class>pt.babyHelp.servlets.BHUpload</servlet-class>
     </servlet>
 
     <servlet-mapping>

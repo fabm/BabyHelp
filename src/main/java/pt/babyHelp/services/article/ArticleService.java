@@ -8,48 +8,49 @@ import com.googlecode.objectify.cmd.Query;
 import pt.babyHelp.bd.Article;
 import pt.babyHelp.bd.BD;
 import pt.babyHelp.cloudEndpoints.BHAuthorization;
-import pt.babyHelp.cloudEndpoints.article.ArticleParams;
+import pt.babyHelp.cloudEndpoints.article.ArticleCreationE;
+import pt.babyHelp.cloudEndpoints.article.ArticleUpdateE;
+import pt.babyHelp.cloudEndpoints.article.IdArticleE;
 import pt.babyHelp.cloudEndpoints.article.ListIDs;
 import pt.babyHelp.services.BabyHelp;
-import pt.core.cloudEndpoints.services.annotations.InstanceType;
-import pt.core.cloudEndpoints.services.annotations.PhotoUploadClass;
-import pt.core.cloudEndpoints.services.annotations.PhotoUploadMethod;
-import pt.core.cloudEndpoints.services.annotations.PhotoUploadedKey;
 import pt.core.cloudEndpoints.Authorization;
 import pt.core.cloudEndpoints.CEError;
 import pt.core.cloudEndpoints.CEErrorReturn;
 import pt.core.cloudEndpoints.CEUtils;
 import pt.core.cloudEndpoints.services.CEService;
+import pt.core.cloudEndpoints.services.annotations.InstanceType;
+import pt.core.cloudEndpoints.services.annotations.PhotoUploadClass;
+import pt.core.cloudEndpoints.services.annotations.PhotoUploadMethod;
+import pt.core.cloudEndpoints.services.annotations.PhotoUploadedKey;
+import pt.core.validators.BeanChecker;
+import pt.core.validators.GlobalError;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @PhotoUploadClass(type = InstanceType.SINGLETONE)
-public class ArticleService implements CEService<ArticleAM> {
+public class ArticleService implements CEService {
 
     private Authorization authorization;
-    private ArticleAM action;
-    private Object[] args;
+    private String method;
+    private Object args;
+    private BeanChecker beanChecker;
 
-    public static CEService<ArticleAM> create() {
+    public static CEService create() {
         return new ArticleService();
     }
 
     public Map<String, Object> createArticle() throws CEError {
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> entryMap = (Map<String, Object>) args[0];
-
-        ArticleParams articleParams = new ArticleParams(entryMap, ArticleParams.Type.CREATE);
-
+        ArticleCreationE articleCreationE = (ArticleCreationE) args;
         Article article = new Article();
         article.setAuthorEmail(getAuthorization().savedUserFromApp().getEmail());
 
-        article.setTitle(articleParams.getTitle());
-        article.setPhotoKey(articleParams.getPhotoUrl());
-        article.setBody(articleParams.getBody());
-        article.setSummary(articleParams.getSummary());
-        article.setPublic(articleParams.isPublic());
+        article.setTitle(articleCreationE.getTitle());
+        article.setPhotoKey(articleCreationE.getPhotoToken());
+        article.setBody(articleCreationE.getBody());
+        article.setSummary(articleCreationE.getSummary());
+        article.setPublic(articleCreationE.isPublic());
 
         Key<Article> id = BD.ofy().save().entity(article).now();
         if (id == null)
@@ -62,18 +63,17 @@ public class ArticleService implements CEService<ArticleAM> {
 
     public Map<String, Object> update() throws CEError {
         @SuppressWarnings("unchecked")
-        Map<String, Object> entryMap = (Map<String, Object>) args[0];
-        ArticleParams articleParams = new ArticleParams(entryMap, ArticleParams.Type.UPDATE);
+        ArticleUpdateE articleUpdateE = (ArticleUpdateE) args;
 
-        Article article = getArticle(articleParams.getId());
+        Article article = getArticle(articleUpdateE.getId());
 
-        article.setTitle(articleParams.getTitle());
-        article.setPhotoKey(articleParams.getPhotoUrl());
-        article.setBody(articleParams.getBody());
-        article.setSummary(articleParams.getSummary());
+        article.setTitle(articleUpdateE.getTitle());
+        article.setPhotoKey(articleUpdateE.getPhotoToken());
+        article.setBody(articleUpdateE.getBody());
+        article.setSummary(articleUpdateE.getSummary());
 
         if (article.getAuthorEmail().equals(getAuthorization().getUserFromApp().getEmail()))
-            throw new CEError(CEErrorR.NOT_OWNER.addArgs(article.getTitle(), "atualizá-lo"));
+            throw new CEError(AricleError.NOT_OWNER, article.getTitle(), "atualizá-lo");
 
         BD.ofy().save().entity(article).now();
         Map<String, Object> map = new HashMap<String, Object>();
@@ -83,18 +83,16 @@ public class ArticleService implements CEService<ArticleAM> {
 
     private Article getArticle(Long id) throws CEError {
         Article article;
-        if (id == null) throw new CEError(CEErrorR.ID_REQUIRED);
+        if (id == null) throw new CEError(GlobalError.REQUIRED);
         article = BD.ofy().load().type(Article.class).id(id).now();
         if (article == null)
-            throw new CEError(CEErrorR.ID_NOT_FOUND.addArgs(id.toString()));
+            throw new CEError(AricleError.ID_NOT_FOUND,id.toString());
         return article;
     }
 
 
     @PhotoUploadMethod(key = "article-edit")
     public Map<String, Object> updatePhoto(@Named("id") Long id, @PhotoUploadedKey String key) throws CEError {
-        //getAuthorization().check("atualização do url da foto do artigo", Role.HEALTHTEC);
-
         Article article = getArticle(id);
         article.setPhotoKey(key);
         BD.ofy().save().entity(article).now();
@@ -104,7 +102,7 @@ public class ArticleService implements CEService<ArticleAM> {
 
 
     public Map<String, Object> delete() throws CEError {
-        ListIDs listIds = (ListIDs) args[0];
+        ListIDs listIds = (ListIDs) args;
         long[] ids = listIds.getIds();
 
         Long[] tIds = new Long[ids.length];
@@ -116,7 +114,7 @@ public class ArticleService implements CEService<ArticleAM> {
 
         for (Map.Entry<Long, Article> entry : articlesMap.entrySet()) {
             if (!entry.getValue().getAuthorEmail().equals(getAuthorization().getUserFromApp().getEmail())) {
-                throw new CEError(CEErrorR.NOT_OWNER);
+                throw new CEError(AricleError.NOT_OWNER);
             }
         }
 
@@ -134,8 +132,9 @@ public class ArticleService implements CEService<ArticleAM> {
         return CEUtils.createMapAndPut("articles", CEUtils.listMapPojo(query));
     }
 
-    public Map<String, Object> get() {
-        Article article = BD.ofy().load().type(Article.class).id((Long) args[0]).now();
+    public Map<String, Object> get() throws CEError {
+        beanChecker.check(args);
+        Article article = BD.ofy().load().type(Article.class).id(((IdArticleE) args).getId()).now();
         return CEUtils.getMap(article);
     }
 
@@ -154,68 +153,37 @@ public class ArticleService implements CEService<ArticleAM> {
     }
 
     @Override
-    public CEService<ArticleAM> execute(User user, ArticleAM action, Object... args) throws UnauthorizedException {
+    public CEService execute(User user, String method, Object args) throws UnauthorizedException {
         this.authorization = new BHAuthorization(user);
-
-        this.authorization.check(action);
-        this.action = action;
+        this.authorization.check(method);
+        this.method = method;
         this.args = args;
+        this.beanChecker = new BeanChecker();
         return this;
     }
 
     @Override
     public Object getCEResponse() throws CEError {
-        switch (action) {
-            case CREATE:
+        switch (method) {
+            case ArticleAM.CREATE:
                 return createArticle();
-            case DELETE:
+            case ArticleAM.DELETE:
                 return delete();
-            case GET:
+            case ArticleAM.GET:
                 return get();
-            case LIST_PUBLIC:
+            case ArticleAM.LIST_PUBLIC:
                 return listPublic();
-            case UPDATE:
+            case ArticleAM.UPDATE:
                 return update();
-            case LIST_MY:
+            case ArticleAM.LIST_MY:
                 return listMyArticles();
         }
         throw new UnsupportedOperationException(CEErrorReturn.NOT_IMPLEMENTED);
     }
 
-    enum CEErrorR implements CEErrorReturn {
-        WRONG_ROLE(1, "Não tem previlégios suficientes para executar esta ação"),
-        ID_REQUIRED(2, "O id é obrigatório para atualizar o artigo"),
-        ID_NOT_FOUND(3, "Não foi encontrado nenhum artigo com o id %s"),
-        NOT_OWNER(4, "Não é o proprietário do artigo '%s', por isso não pode %s"),
-        FIELD_REQUIRED(5, "O campo %s é obrigatório");
 
-        private String msg;
-        private int code;
-
-        CEErrorR(int code, String msg) {
-            this.msg = msg;
-            this.code = code;
-        }
-
-        @Override
-        public int getCode() {
-            return this.code;
-        }
-
-        @Override
-        public String getMsg() {
-            return this.msg;
-        }
-
-        public CEErrorR addArgs(String... vars) {
-            this.msg = String.format(msg, vars);
-            return this;
-        }
-
-        @Override
-        public String getContext() {
-            return "article";
-        }
+    @Override
+    public CEService execute(User user, String action) throws UnauthorizedException {
+        return execute(user, action, null);
     }
-
 }

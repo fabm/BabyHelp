@@ -1,4 +1,4 @@
-package pt.babyHelp.servlets;
+package pt.core.servlets;
 
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
@@ -13,8 +13,6 @@ import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.repackaged.org.codehaus.jackson.JsonNode;
 import com.google.appengine.repackaged.org.codehaus.jackson.map.ObjectMapper;
-import pt.core.cloudEndpoints.CEErrorReturn;
-import pt.core.cloudEndpoints.Authorization;
 import pt.babyHelp.cloudEndpoints.UserAcessible;
 import pt.core.cloudEndpoints.services.annotations.InstanceType;
 import pt.core.cloudEndpoints.services.annotations.PhotoUploadClass;
@@ -34,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class Upload extends HttpServlet {
+public abstract class Upload extends HttpServlet {
 
 
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
@@ -108,7 +106,7 @@ public class Upload extends HttpServlet {
      * @throws java.io.IOException
      * @throws org.apache.http.client.HttpResponseException
      */
-    public static String getCurrentUserEmail(String accessToken)
+    public String getCurrentUserEmail(String accessToken)
             throws IOException, pt.core.cloudEndpoints.CEError, UnauthorizedException {
         if (accessToken == null) return null;
         GenericUrl userInfo = new GenericUrl("https://www.googleapis.com/userinfo/v2/me");
@@ -120,7 +118,7 @@ public class Upload extends HttpServlet {
         try {
             httpResponse = requestFactory.buildGetRequest(userInfo).execute();
         } catch (HttpResponseException e) {
-            if (e.getStatusCode() == 401) throw Authorization.createNotAuthorizedError("email atual");
+            if (e.getStatusCode() == 401) throw errorAuthorizationOauth();
         }
         ObjectMapper om = new ObjectMapper();
         JsonNode jsonNode = om.readTree(httpResponse.getContent());
@@ -134,6 +132,8 @@ public class Upload extends HttpServlet {
         return mapError;
     }
 
+    protected abstract UnauthorizedException errorAuthorizationOauth();
+
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
@@ -141,7 +141,7 @@ public class Upload extends HttpServlet {
         List<String> params = UrlParameters.getParameters(req);
         Map<String, Object> map = new HashMap<String, Object>();
         try {
-            if (!params.isEmpty()) throw Authorization.createNotAuthenticatedError("Upload");
+            if (!params.isEmpty()) throw errorAuthorizationUpload();
             String token = params.get(0);
             try {
                 map.put("email", getCurrentUserEmail(token));
@@ -156,6 +156,8 @@ public class Upload extends HttpServlet {
         addObjectMapper(res);
         //getOld(res);
     }
+
+    protected abstract UnauthorizedException errorAuthorizationUpload();
 
     private void getOld(HttpServletResponse res) throws IOException {
         ObjectMapper objectMaper = addObjectMapper(res);
@@ -176,10 +178,10 @@ public class Upload extends HttpServlet {
         String errorMessageReturnMap = "The method '%s' must return a Map<String,Object>";
         try {
             String action = req.getParameter("action");
-            if (action == null || action.isEmpty()) throw new pt.core.cloudEndpoints.CEError(CEError.NO_ACTION_PARAMETER);
+            if (action == null || action.isEmpty()) throw new pt.core.cloudEndpoints.CEError(GlobalUploadError.NO_ACTION_PARAMETER);
 
             UploadClassMethod<? extends UserAcessible> uploadClassMethod = uploadMethodMap.get(action);
-            if (uploadClassMethod == null) throw new pt.core.cloudEndpoints.CEError(CEError.NO_UPLOAD_ACTION_REGISTERED, action);
+            if (uploadClassMethod == null) throw new pt.core.cloudEndpoints.CEError(GlobalUploadError.NO_UPLOAD_ACTION_REGISTERED, action);
             Method method = uploadClassMethod.methodsMap.get(action);
 
             errorMessageReturnMap = String.format(errorMessageReturnMap, method.getName());
@@ -262,35 +264,6 @@ public class Upload extends HttpServlet {
         objectMaper.writeValue(res.getWriter(), map);
     }
 
-    static enum CEError implements CEErrorReturn {
-        NO_ACTION_PARAMETER("Não foi enviado um parâmetro action", 0),
-        NO_UPLOAD_ACTION_REGISTERED("Não foi registada nenhuma acção de upload para a action:'%s'", 1);
-
-        private String message;
-        private int code;
-
-        CEError(String message, int code) {
-            this.message = message;
-            this.code = code;
-        }
-
-        @Override
-        public String getContext() {
-            return "upload";
-        }
-
-        @Override
-        public int getCode() {
-            return this.code;
-        }
-
-        @Override
-        public String getMsg() {
-            return this.message;
-        }
-
-
-    }
 
     private static class UploadClassMethod<T extends UserAcessible> {
         public Class<T> clazz;

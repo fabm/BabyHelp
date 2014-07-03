@@ -4,6 +4,7 @@ import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
 import pt.core.cloudEndpoints.CEReturn;
 
-public interface CEService<A extends CEActionMap<?,?>> extends CEReturn{
-    CEService<A> execute(User user,A action,Object...args) throws UnauthorizedException;
+public interface CEService extends CEReturn{
+    CEService execute(User user,String action,Object entry) throws UnauthorizedException;
+    CEService execute(User user,String action) throws UnauthorizedException;
 }

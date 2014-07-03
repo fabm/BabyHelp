@@ -1,4 +1,4 @@
-package pt.babyHelp.servlets;
+package pt.core.servlets;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;

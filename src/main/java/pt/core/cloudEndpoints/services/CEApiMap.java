@@ -1,8 +1,8 @@
 package pt.core.cloudEndpoints.services;
 
-public interface CEActionMap<T extends Enum<T>,A extends Enum<A>> {
+public interface CEApiMap<T extends Enum<T>> {
     T[] getRoles();
-    A getAction();
+    String getMethod();
     boolean autenticationRequired();
     String getArea();
 }

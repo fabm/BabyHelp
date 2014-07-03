@@ -9,20 +9,29 @@ import pt.babyHelp.bd.Son;
 import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.cloudEndpoints.BHAuthorization;
-import pt.babyHelp.cloudEndpoints.user.RolesParameters;
+import pt.babyHelp.cloudEndpoints.user.UpdateProfessionP;
+import pt.babyHelp.cloudEndpoints.user.UserApiMap;
+import pt.babyHelp.cloudEndpoints.user.parameters.GetRolesP;
+import pt.babyHelp.cloudEndpoints.user.parameters.RolesE;
+import pt.babyHelp.cloudEndpoints.user.parameters.UpdateRolesP;
+import pt.babyHelp.cloudEndpoints.user.parameters.UpdateUserNameP;
+import pt.babyHelp.services.BHChecker;
 import pt.babyHelp.services.BabyHelp;
-import pt.core.cloudEndpoints.*;
+import pt.core.cloudEndpoints.Authorization;
+import pt.core.cloudEndpoints.CEError;
+import pt.core.cloudEndpoints.CEErrorReturn;
+import pt.core.cloudEndpoints.CEUtils;
 import pt.core.cloudEndpoints.services.CEService;
-import pt.core.validators.EmailChecker;
 
 import java.util.*;
 
-public class UserBHService implements CEService<UserAM> {
+public class UserBHService implements CEService {
     private Authorization authorization;
-    private Object[] args;
-    private UserAM action;
+    private Object entry;
+    private UserApiMap apiMap;
+    private BHChecker bhChecker;
 
-    public static CEService<UserAM> create() {
+    public static CEService create() {
         return new UserBHService();
     }
 
@@ -50,16 +59,9 @@ public class UserBHService implements CEService<UserAM> {
     }
 
     private Map<String, Object> updateRoles() throws CEError {
-
-        Map<String, Object> map = new HashMap<String, Object>();
-        String email = (String) args[0];
-        if (email == null) {
-            throw new CEError(CEErrorR.EMAIL_REQUIRED);
-        }
-
-        if (!EmailChecker.check(email)) {
-            throw new CEError(CEErrorR.EMAIL_MALFORMED);
-        }
+        UpdateRolesP updateRolesP = bhChecker.check(entry);
+        String email = updateRolesP.getEmail();
+        RolesE rolesEntry = updateRolesP.getRolesE();
 
         UserFromApp userFromApp = UserFromApp.findByEmail(email);
         if (userFromApp == null) {
@@ -68,23 +70,22 @@ public class UserBHService implements CEService<UserAM> {
         }
 
         try {
-            RolesParameters rolesParameters = (RolesParameters) args[1];
-            userFromApp.setRoles(rolesParameters.toEnum());
+            userFromApp.setRoles(rolesEntry.toEnum());
             if (BD.ofy().save().entity(userFromApp).now() == null)
                 throw new CEError(BabyHelp.CEError.PERSIST, UserFromApp.class.getSimpleName());
-            map.put("state", "user atualizado");
+            return CEUtils.createMapAndPut("state", "user atualizado");
         } catch (Role.ConvertException e) {
             throw new CEError(CEErrorR.ROLE_NOT_MATCH.addArgs(e.getRoleStr()));
         }
-        return map;
     }
 
     private Map<String, Object> list() throws CEError {
         return getList();
     }
 
-    private Map<String, Object> getRoles(String email) throws CEError {
-        Map<String, Object> map = new HashMap<String, Object>();
+    private Map<String, Object> getRoles() throws CEError {
+        GetRolesP getRolesP = bhChecker.check(entry);
+        String email = getRolesP.getEmail();
 
         if (email == null || email.isEmpty()) {
             throw new CEError(CEErrorR.EMAIL_REQUIRED);
@@ -92,11 +93,10 @@ public class UserBHService implements CEService<UserAM> {
 
         UserFromApp userFromApp = UserFromApp.findByEmail(email);
         if (userFromApp == null) {
-            map.put("body", new HashSet<String>());
+            return CEUtils.createMapAndPut("body",new ArrayList<String>(0));
         } else {
-            map.put("body", Role.toStringSet(userFromApp.getRoles()));
+            return CEUtils.createMapAndPut("body", Role.toStringSet(userFromApp.getRoles()));
         }
-        return map;
     }
 
     private Map<String, Object> pendingActions() {
@@ -163,60 +163,66 @@ public class UserBHService implements CEService<UserAM> {
         return null;
     }
 
-    private Map<String, Object> updateHealthTec() throws CEError {
-        Map<String,Object> entryMap = (Map<String, Object>) args[0];
-        MapFieldValidator mapFV = new MapFieldValidator(entryMap);
-        mapFV.setErrorReturnRequired(BabyHelp.CEError.REQUIRED_FIELD);
-        authorization.getUserFromApp().setProfession(mapFV.<String>require("profession", "profissão"));
+    private Map<String, Object> updateProfession() throws CEError {
+        UpdateProfessionP updateProfessionP = bhChecker.check(entry);
+        bhChecker.check(updateProfessionP);
+        authorization.getUserFromApp().setProfession(updateProfessionP.getProfession());
         authorization.savedUserFromApp();
 
-        Map<String, Object> map = CEUtils.createMapAndPut("message", "A sua profissão como técnico de saude foi atualizada");
+        Map<String, Object> map = new HashMap<>();
+        map.put("message", "A sua profissão como técnico de saude foi atualizada");
         map.put("current", authorization.getUserFromApp().getProfession());
         return map;
     }
 
-    private Map<String, Object> updateUserName(Map<String, Object> entryMap) throws CEError {
-        MapFieldValidator mapFV = new MapFieldValidator(entryMap);
-        authorization.getUserFromApp().setName(mapFV.<String>get("name"));
+    private Map<String, Object> updateUserName() throws CEError {
+        UpdateUserNameP updateUserNameP = bhChecker.check(entry);
         authorization.savedUserFromApp();
         return CEUtils.createMapAndPut("message", "Utilizador atualizado com sucesso");
     }
 
 
     @Override
-    public UserBHService execute(User user, UserAM action, Object... args) throws UnauthorizedException {
+    public CEService execute(User user, String method, Object entry) throws UnauthorizedException {
         this.authorization = new BHAuthorization(user);
-        this.authorization.check(action);
-        this.args = args;
-        this.action = action;
+        this.authorization.check(method);
+        this.entry = entry;
+        this.apiMap = new UserApiMap(method);
+        this.bhChecker = new BHChecker();
         return this;
     }
-    private Map<String,Object> currentUser() {
-        return CEUtils.createMapAndPut("result",authorization.getUserFromApp().getEmail());
+
+    @Override
+    public CEService execute(User user, String method) throws UnauthorizedException {
+        return execute(user, method, null);
+    }
+
+    private Map<String, Object> currentUser() {
+        return CEUtils.createMapAndPut("result", authorization.getUserFromApp().getEmail());
     }
 
 
     @Override
     public Object getCEResponse() throws CEError {
-        switch (action) {
-            case LIST:
+        switch (apiMap.getMethod()) {
+            case UserApiMap.LIST:
                 return getList();
-            case PENDING_ACTIONS:
+            case UserApiMap.PENDING_ACTIONS:
                 return pendingActions();
-            case UPDATE_PROFESSION:
-                return updateHealthTec();
-            case UPDATE_ROLES:
+            case UserApiMap.UPDATE_PROFESSION:
+                return updateProfession();
+            case UserApiMap.UPDATE_ROLES:
                 return updateRoles();
-            case GET_ROLES:
-                return getRoles((String) args[0]);
-            case UPDATE_USERNAME:
-                return updateUserName((Map<String, Object>) args[0]);
-            case CURRENT:return currentUser();
+            case UserApiMap.GET_ROLES:
+                return getRoles();
+            case UserApiMap.UPDATE_USERNAME:
+                return updateUserName();
+            case UserApiMap.CURRENT:
+                return currentUser();
 
         }
         throw new UnsupportedOperationException(CEErrorReturn.NOT_IMPLEMENTED);
     }
-
 
     enum CEErrorR implements CEErrorReturn {
         ROLE_NOT_MATCH(0, "Não é possível corresponder o role %s a nenhum role existente"),

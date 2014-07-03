@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class CEError extends Exception {
 
-    private CEErrorReturn CEErrorReturn;
+    private CEErrorReturn ceErrorReturn;
 
     public String[] getParameters() {
         return parameters;
@@ -17,51 +17,24 @@ public class CEError extends Exception {
     public CEError(CEErrorReturn ceErrorReturn, String... parameters) {
         super(String.format(ceErrorReturn.getMsg(), parameters));
         this.parameters = parameters;
-        this.CEErrorReturn = ceErrorReturn;
+        this.ceErrorReturn = ceErrorReturn;
     }
 
-    public CEErrorReturn getCEErrorReturn() {
-        return CEErrorReturn;
+    public CEErrorReturn getCeErrorReturn() {
+        return ceErrorReturn;
     }
 
     public Map<String, Object> getMap() {
         HashMap<String, Object> map = new HashMap<String, Object>();
         HashMap<String, Object> errorMap = new HashMap<String, Object>();
         map.put("message", this.getMessage());
-        map.put("code", CEErrorReturn.getCode());
-        map.put("context", CEErrorReturn.getContext());
+        map.put("code", ceErrorReturn.getCode());
+        map.put("context", ceErrorReturn.getContext());
         errorMap = new HashMap<String, Object>();
         errorMap.put("error", map);
         return errorMap;
     }
 
 
-    public static enum GlobalCEErrorReturn implements CEErrorReturn {
-        FIELD_REQUIRED(0, "The field %s is required"),
-        NO_NAME_USER(1, "Missing the user name");
-
-        int code;
-        String msg;
-
-        GlobalCEErrorReturn(int code, String msg) {
-            this.code = code;
-            this.msg = msg;
-        }
-
-        @Override
-        public String getContext() {
-            return "global";
-        }
-
-        @Override
-        public int getCode() {
-            return this.code;
-        }
-
-        @Override
-        public String getMsg() {
-            return this.msg;
-        }
-    }
 
 }

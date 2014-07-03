@@ -12,11 +12,11 @@ import pt.core.cloudEndpoints.services.CEService;
 
 import java.util.Map;
 
-public class PhotoTokenService implements CEService<PhotoTokenAM> {
+public class PhotoTokenService implements CEService {
     private Authorization authorization;
-    private PhotoTokenAM action;
+    private String method;
 
-    public static CEService<PhotoTokenAM> create() {
+    public static CEService create() {
         return new PhotoTokenService();
     }
 
@@ -30,17 +30,22 @@ public class PhotoTokenService implements CEService<PhotoTokenAM> {
     }
 
     @Override
-    public CEService<PhotoTokenAM> execute(User user, PhotoTokenAM action, Object... args) throws UnauthorizedException {
+    public CEService execute(User user, String method, Object args) throws UnauthorizedException {
         authorization = new BHAuthorization(user);
-        authorization.check(action);
-        this.action = action;
+        authorization.check(method);
+        this.method = method;
         return this;
     }
 
     @Override
+    public CEService execute(User user, String method) throws UnauthorizedException {
+        return execute(user, method,null);
+    }
+
+    @Override
     public Object getCEResponse() throws CEError {
-        switch (action) {
-            case GET:
+        switch (method) {
+            case PhotoTokenApiMap.GET:
                 return getToken();
         }
         throw new UnsupportedOperationException(CEErrorReturn.NOT_IMPLEMENTED);

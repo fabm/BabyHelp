@@ -7,11 +7,12 @@ import com.google.appengine.api.utils.SystemProperty;
 import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.UserFromApp;
 import pt.babyHelp.services.BabyHelp;
-import pt.core.cloudEndpoints.services.CEActionMap;
+import pt.core.cloudEndpoints.services.CEApiMap;
+import pt.core.validators.GlobalError;
+
 
 public abstract class Authorization<T extends Enum<T>> {
 
-    protected CEErrorReturn noNameUser = CEError.GlobalCEErrorReturn.FIELD_REQUIRED;
     protected UserFromApp<T> userFromApp;
     protected boolean userRegistered = false;
 
@@ -26,17 +27,17 @@ public abstract class Authorization<T extends Enum<T>> {
         else this.init(null);
     }
 
-    public static UnauthorizedException createNotAuthenticatedError(String area) {
-        return new UnauthorizedException(String.format(BabyHelp.CEError.NOT_AUTHENTICATED.getMsg(), area));
+    protected UnauthorizedException createNotAuthenticatedError(String area) {
+        return new UnauthorizedException(String.format(GlobalError.NOT_AUTHENTICATED.getMsg(), area));
     }
 
-    public static UnauthorizedException createNotAuthorizedError(String area) {
-        return new UnauthorizedException(String.format(BabyHelp.CEError.NOT_AUTHORIZED.getMsg(), area));
+    protected UnauthorizedException createNotAuthorizedError(String area) {
+        return new UnauthorizedException(String.format(GlobalError.NOT_AUTHORIZED.getMsg(), area));
     }
 
-    public static void checkDevMode() {
+    public void checkDevMode() {
         if (SystemProperty.Environment.Value.Development != SystemProperty.Environment.Value.Development)
-            createNotAuthenticatedError("Área apenas premitida em devmode");
+            createNotAuthenticatedError("only authorized in devmode");
     }
 
     protected void loadDataStore(String email) {
@@ -77,10 +78,10 @@ public abstract class Authorization<T extends Enum<T>> {
     }
 
     @SuppressWarnings("unchecked")
-    public void check(CEActionMap<T, ?> ceActionMap) throws UnauthorizedException {
-        if(ceActionMap == null) return;
-        if (ceActionMap.autenticationRequired())
-            check(ceActionMap.getArea(), ceActionMap.getRoles());
+    public void check(CEApiMap<T> ceApiMap) throws UnauthorizedException {
+        if(ceApiMap == null) return;
+        if (ceApiMap.autenticationRequired())
+            check(ceApiMap.getArea(), ceApiMap.getRoles());
     }
 
     public boolean hasRole(T roleRequired) {
@@ -96,7 +97,7 @@ public abstract class Authorization<T extends Enum<T>> {
         if (this.userRegistered) return userFromApp;
 
         if (userFromApp.getName() == null)
-            throw new CEError(noNameUser);
+            throw new CEError(GlobalError.NO_NAME);
 
         BD.checkKey(BD.ofy().save().entity(getUserFromApp()).now(), UserFromApp.class);
         userRegistered = true;

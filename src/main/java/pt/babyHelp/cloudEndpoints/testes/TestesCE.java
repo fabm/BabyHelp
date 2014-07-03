@@ -11,6 +11,7 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import pt.babyHelp.bd.embededs.Role;
+import pt.babyHelp.cloudEndpoints.BHAuthorization;
 import pt.babyHelp.cloudEndpoints.Constants;
 import pt.babyHelp.services.impl.TestesImpl;
 import pt.babyHelp.validation.BHParameterEvaluater;
@@ -46,6 +47,10 @@ public class TestesCE {
     private TestesImpl testesService = new TestesImpl();
     private int count = 0;
 
+    private BHAuthorization getBHAuthorization(User user){
+        return new BHAuthorization(user);
+    }
+
     @ApiMethod(name = "countTest", httpMethod = ApiMethod.HttpMethod.GET, path = "countTest")
     public Map<String, Object> countTest() {
         count++;
@@ -78,7 +83,7 @@ public class TestesCE {
 
     @ApiMethod(name = "testuser", httpMethod = ApiMethod.HttpMethod.GET, path = "test/method")
     public Map<String, Object> getTester(User user) {
-        Authorization.checkDevMode();
+        getBHAuthorization(user).checkDevMode();
 
         Map<String, Object> map = new HashMap<String, Object>();
 
@@ -94,7 +99,7 @@ public class TestesCE {
 
     @ApiMethod(name = "userEntry", httpMethod = ApiMethod.HttpMethod.POST, path = "entry")
     public CEReturn dadosDaConsola(final UserEntry userCurrent) {
-        Authorization.checkDevMode();
+        getBHAuthorization(null).checkDevMode();
         CEReturn ceReturn = new CEReturn() {
             @Override
             public Object getCEResponse() throws CEError {
@@ -116,7 +121,7 @@ public class TestesCE {
 
     @ApiMethod(name = "insert.son", httpMethod = ApiMethod.HttpMethod.POST, path = "insert/son")
     public CEReturn insertson(User user, SonParameter sonParameter) throws UnauthorizedException {
-        Authorization.checkDevMode();
+        getBHAuthorization(user).checkDevMode();
         testesService.setUser(user);
         testesService.getAuthorization().check("teste de inserção do filho", Role.PARENT);
         testesService.getAuthorization().checkDevMode();
@@ -132,6 +137,7 @@ public class TestesCE {
     //TODO list parents testar
     @ApiMethod(name = "list.parents", httpMethod = ApiMethod.HttpMethod.POST, path = "list/parents")
     public Map<String, Object> listParents(User user, @Named("name") String name) throws UnauthorizedException {
+        getBHAuthorization(user).checkDevMode();
         testesService.setUser(user);
         testesService.getAuthorization().check("teste de listagem de filhos", Role.PARENT);
         return testesService.getParentsList(name);

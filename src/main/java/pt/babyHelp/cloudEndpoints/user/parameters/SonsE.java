@@ -1,10 +1,10 @@
-package pt.babyHelp.cloudEndpoints.user;
+package pt.babyHelp.cloudEndpoints.user.parameters;
 
 import pt.babyHelp.bd.Son;
 
 import java.util.List;
 
-public class SonsParameters{
+public class SonsE {
     private List<Son> sons;
 
     public List<Son> getSons() {

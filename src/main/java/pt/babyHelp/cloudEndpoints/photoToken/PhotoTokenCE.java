@@ -3,17 +3,11 @@ package pt.babyHelp.cloudEndpoints.photoToken;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.response.UnauthorizedException;
-import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.users.User;
-import pt.babyHelp.cloudEndpoints.BHAuthorization;
 import pt.babyHelp.cloudEndpoints.Constants;
-import pt.babyHelp.services.photoToken.PhotoTokenAM;
+import pt.babyHelp.services.photoToken.PhotoTokenApiMap;
 import pt.babyHelp.services.photoToken.PhotoTokenService;
-import pt.core.cloudEndpoints.Authorization;
 import pt.core.cloudEndpoints.CEReturn;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Api(name = "photoToken",
         version = "v1",
@@ -24,9 +18,9 @@ import java.util.Map;
         audiences = {Constants.ANDROID_AUDIENCE})
 public class PhotoTokenCE {
 
-    @ApiMethod(name = "get", httpMethod = ApiMethod.HttpMethod.GET, path = "get")
+    @ApiMethod(name = PhotoTokenApiMap.GET, httpMethod = ApiMethod.HttpMethod.GET, path = "get")
     public CEReturn get(User user) throws UnauthorizedException {
-        return PhotoTokenService.create().execute(user, PhotoTokenAM.GET);
+        return PhotoTokenService.create().execute(user, PhotoTokenApiMap.GET);
     }
 
 }

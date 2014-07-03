@@ -21,6 +21,10 @@ public class BabyHelp {
             this.message = message;
         }
 
+        public void setCode(int code){
+            this.code = code;
+        }
+
         @Override
         public String getContext() {
             return "baby-help";

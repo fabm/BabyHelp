@@ -7,17 +7,16 @@ import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
 import pt.babyHelp.cloudEndpoints.Constants;
-import pt.babyHelp.services.user.UserAM;
+import pt.babyHelp.cloudEndpoints.user.parameters.*;
 import pt.babyHelp.services.user.UserBHService;
 import pt.core.cloudEndpoints.CEReturn;
-import pt.json.proccess.Validation;
 
 import java.util.Map;
 
 import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 
 
-@Api(name = "userBH",
+@Api(name = UserApiMap.API,
         version = "v1",
         description = "Endpoint do user BabyHelp",
         scopes = {Constants.EMAIL},
@@ -27,58 +26,64 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 )
 public class UserBHCE {
 
-    @ApiMethod(name = "updateRoles", httpMethod = HttpMethod.POST)
+    @ApiMethod(name = UserApiMap.UPDATE_ROLES, httpMethod = HttpMethod.POST)
     public CEReturn updateRoles
             (User user, @Named("email") String email,
-
-             RolesParameters rolesParameters)
+             RolesE rolesE)
             throws UnauthorizedException {
+
+        UpdateRolesP updateRolesP = new UpdateRolesP();
+        updateRolesP.setEmail(email);
+        updateRolesP.setRolesE(rolesE);
+
         return UserBHService.create()
-                .execute(user, UserAM.UPDATE_ROLES, email, rolesParameters);
+                .execute(user, UserApiMap.UPDATE_ROLES, updateRolesP);
     }
 
-    @ApiMethod(name = "updateUserName", httpMethod = HttpMethod.PUT)
-    public CEReturn updateUserName(User user, Map<String, Object> entryMap) throws UnauthorizedException {
+    @ApiMethod(name = UserApiMap.UPDATE_USERNAME, httpMethod = HttpMethod.PUT)
+    public CEReturn updateUserName(User user, UpdateUserNameP updateUserNameP)
+            throws UnauthorizedException {
+
         return UserBHService.create()
-                .execute(user, UserAM.UPDATE_USERNAME, entryMap);
+                .execute(user, UserApiMap.UPDATE_ROLES, updateUserNameP);
     }
 
-    @ApiMethod(name = "list")
+    @ApiMethod(name = UserApiMap.LIST)
     public CEReturn list(User user) throws UnauthorizedException {
         return UserBHService.create()
-                .execute(user, UserAM.LIST);
+                .execute(user, UserApiMap.LIST);
     }
 
-    @ApiMethod(name = "getRoles")
+    @ApiMethod(name = UserApiMap.GET_ROLES)
     public CEReturn getRoles(User user,
-                             @Validation.Email
                              @Named("email") String email) throws UnauthorizedException {
+        GetRolesP getRolesP;
         return UserBHService.create()
-                .execute(user, UserAM.GET_ROLES, email);
+                .execute(user, UserApiMap.GET_ROLES, email);
     }
 
-    @ApiMethod(name = "update.sons", httpMethod = HttpMethod.PUT, path = "update/sons")
-    public CEReturn updateSons(User user, SonsParameters sons) throws UnauthorizedException {
+    @ApiMethod(name = UserApiMap.UPDATE_SONS, httpMethod = HttpMethod.PUT, path = "update/sons")
+    public CEReturn updateSons(User user, SonsE sons) throws UnauthorizedException {
         return UserBHService.create()
-                .execute(user, UserAM.UPDATE_SONS, sons);
+                .execute(user, UserApiMap.UPDATE_SONS, sons);
     }
 
-    @ApiMethod(name = "update.profession", httpMethod = HttpMethod.PUT, path = "update/profession")
-    public CEReturn updateProfession(User user, Map<String, Object> entryMap) throws UnauthorizedException {
+    @ApiMethod(name = UserApiMap.UPDATE_PROFESSION, httpMethod = HttpMethod.PUT, path = "update/profession")
+    public CEReturn updateProfession(User user, UpdateProfessionP updateProfession) throws UnauthorizedException {
         return UserBHService.create()
-                .execute(user, UserAM.UPDATE_PROFESSION, entryMap);
+                .execute(user, UserApiMap.UPDATE_PROFESSION, updateProfession);
     }
 
-    @ApiMethod(name = "pendingActions", httpMethod = ApiMethod.HttpMethod.GET, path = "pendingactions")
+    @ApiMethod(name = UserApiMap.PENDING_ACTIONS, httpMethod = ApiMethod.HttpMethod.GET, path = "pendingactions")
     public CEReturn pendingActions(User user) throws UnauthorizedException {
         return UserBHService.create()
-                .execute(user, UserAM.PENDING_ACTIONS);
+                .execute(user, UserApiMap.PENDING_ACTIONS);
     }
 
-    @ApiMethod(name = "current", httpMethod = ApiMethod.HttpMethod.GET, path = "current")
+    @ApiMethod(name = UserApiMap.CURRENT, httpMethod = ApiMethod.HttpMethod.GET, path = "current")
     public CEReturn current(User user) throws UnauthorizedException {
         return UserBHService.create()
-                .execute(user, UserAM.CURRENT);
+                .execute(user, UserApiMap.CURRENT);
     }
 
 }

@@ -20,15 +20,15 @@ declare module ng.resource {
     ///////////////////////////////////////////////////////////////////////////
     interface IResourceService {
         (url: string, paramDefaults?: any,
-                                 /** example:  {update: { method: 'PUT' }, delete: deleteDescriptor }
+                                 /** example:  {update: { method: 'PUT' }, DELETE: deleteDescriptor }
                                   where deleteDescriptor : IActionDescriptor */
                                  actionDescriptors?: any): IResourceClass<IResource<any>>;
         <T, U>(url: string, paramDefaults?: any,
-                                 /** example:  {update: { method: 'PUT' }, delete: deleteDescriptor }
+                                 /** example:  {update: { method: 'PUT' }, DELETE: deleteDescriptor }
                                   where deleteDescriptor : IActionDescriptor */
                                  actionDescriptors?: any): U;
         <T>(url: string, paramDefaults?: any,
-                                 /** example:  {update: { method: 'PUT' }, delete: deleteDescriptor }
+                                 /** example:  {update: { method: 'PUT' }, DELETE: deleteDescriptor }
                                   where deleteDescriptor : IActionDescriptor */
                                  actionDescriptors?: any): IResourceClass<T>;
     }

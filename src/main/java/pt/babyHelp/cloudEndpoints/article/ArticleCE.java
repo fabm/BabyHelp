@@ -11,8 +11,6 @@ import pt.babyHelp.services.article.ArticleAM;
 import pt.babyHelp.services.article.ArticleService;
 import pt.core.cloudEndpoints.CEReturn;
 
-import java.util.Map;
-
 import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 
 @Api(name = "article",
@@ -26,40 +24,40 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 public class ArticleCE {
 
 
-    @ApiMethod(name = "create", httpMethod = HttpMethod.PUT, path = "create")
-    public CEReturn createArticle(User user, Map<String,Object> map) throws UnauthorizedException {
+    @ApiMethod(name = ArticleAM.CREATE, httpMethod = HttpMethod.PUT, path = "create")
+    public CEReturn createArticle(User user, ArticleCreationE articleCreationE) throws UnauthorizedException {
         return ArticleService.create()
-                .execute(user, ArticleAM.CREATE, map);
+                .execute(user, ArticleAM.CREATE, articleCreationE);
     }
 
 
-    @ApiMethod(name = "update", httpMethod = HttpMethod.POST, path = "update")
-    public CEReturn currentEmail(User user, Map<String,Object> entryMap) throws UnauthorizedException {
+    @ApiMethod(name = ArticleAM.UPDATE, httpMethod = HttpMethod.POST, path = "update")
+    public CEReturn currentEmail(User user, ArticleUpdateE articleParamsUpdate) throws UnauthorizedException {
         return ArticleService.create()
-                .execute(user, ArticleAM.UPDATE, entryMap);
+                .execute(user, ArticleAM.UPDATE, articleParamsUpdate);
     }
 
-    @ApiMethod(name = "list.my", httpMethod = HttpMethod.GET, path = "list-my")
+    @ApiMethod(name = ArticleAM.LIST_MY, httpMethod = HttpMethod.GET, path = "list-my")
     public CEReturn myArticles(User user) throws UnauthorizedException {
         return ArticleService.create()
                 .execute(user, ArticleAM.LIST_MY);
     }
 
-    @ApiMethod(name = "list.public", httpMethod = HttpMethod.GET, path = "list-public")
+    @ApiMethod(name = ArticleAM.LIST_PUBLIC, httpMethod = HttpMethod.GET, path = "list-public")
     public CEReturn listPublicArticles(User user) throws UnauthorizedException {
         return ArticleService.create()
                 .execute(user, ArticleAM.LIST_PUBLIC);
     }
 
-    @ApiMethod(name = "delete", httpMethod = HttpMethod.PUT, path = "delete")
+    @ApiMethod(name = ArticleAM.DELETE, httpMethod = HttpMethod.PUT, path = "delete")
     public CEReturn delete(User user, ListIDs listIDs) throws UnauthorizedException {
         return ArticleService.create()
                 .execute(user, ArticleAM.DELETE);
     }
 
-    @ApiMethod(name = "get", httpMethod = HttpMethod.GET, path = "get")
-    public CEReturn get(User user, @Named(value = "id") long id) throws UnauthorizedException {
+    @ApiMethod(name = ArticleAM.GET, httpMethod = HttpMethod.GET, path = "get")
+    public CEReturn get(User user, @Named(value = "id") Long id) throws UnauthorizedException {
         return ArticleService.create()
-                .execute(user, ArticleAM.GET);
+                .execute(user, ArticleAM.GET, new IdArticleE(id));
     }
 }

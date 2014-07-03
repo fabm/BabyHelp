@@ -1,9 +1,9 @@
-package pt.babyHelp.cloudEndpoints.user;
+package pt.babyHelp.cloudEndpoints.user.parameters;
 
 import pt.babyHelp.bd.embededs.Role;
 import pt.json.proccess.Validation;
 
-public class RolesParameters {
+public class RolesE {
 
 
     @Validation.Email

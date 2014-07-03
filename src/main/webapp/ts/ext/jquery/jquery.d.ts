@@ -1816,13 +1816,13 @@ interface JQuery {
     /**
      * Remove a previously-stored piece of data.
      *
-     * @param name A string naming the piece of data to delete or space-separated string naming the pieces of data to delete.
+     * @param name A string naming the piece of data to DELETE or space-separated string naming the pieces of data to DELETE.
      */
     removeData(name: string): JQuery;
     /**
      * Remove a previously-stored piece of data.
      *
-     * @param list An array of strings naming the pieces of data to delete.
+     * @param list An array of strings naming the pieces of data to DELETE.
      */
     removeData(list: string[]): JQuery;
 
