@@ -1,6 +1,6 @@
 package pt.babyHelp.cloudEndpoints.user.parameters;
 
-import com.annotation.processor.validation.Required;
+import pt.json.proccess.validation.annotations.Required;
 
 public class UpdateUserNameP {
     @Required

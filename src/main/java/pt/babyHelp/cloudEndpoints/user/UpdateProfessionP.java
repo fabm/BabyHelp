@@ -1,9 +1,15 @@
 package pt.babyHelp.cloudEndpoints.user;
 
-import com.annotation.processor.ApiMethodParameters;
-import com.annotation.processor.validation.Required;
 
-@ApiMethodParameters(api = UserApiMap.API,method = UserApiMap.UPDATE_PROFESSION)
+import pt.json.proccess.annotations.ApiMethodParameters;
+import pt.json.proccess.validation.DefaultValidator;
+import pt.json.proccess.validation.annotations.Required;
+
+@ApiMethodParameters(
+        api = UserApiMap.API,
+        method = UserApiMap.UPDATE_PROFESSION,
+        validator = DefaultValidator.class
+)
 public class UpdateProfessionP {
     @Required
     String profession;

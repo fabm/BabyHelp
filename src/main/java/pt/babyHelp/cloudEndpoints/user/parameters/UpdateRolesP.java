@@ -1,18 +1,22 @@
 package pt.babyHelp.cloudEndpoints.user.parameters;
 
-import com.annotation.processor.ApiMethodParameters;
-import com.annotation.processor.GetEntry;
-import com.annotation.processor.PostEntry;
-import com.annotation.processor.validation.Required;
+import com.annotation.processor.validation.Embedded;
 import pt.babyHelp.cloudEndpoints.user.UserApiMap;
+import pt.json.proccess.annotations.ApiMethodParameters;
+import pt.json.proccess.validation.DefaultValidator;
+import pt.json.proccess.validation.annotations.Required;
 
-@ApiMethodParameters(api = UserApiMap.API, method = UserApiMap.UPDATE_ROLES)
+@ApiMethodParameters(
+        api = UserApiMap.API,
+        method = UserApiMap.UPDATE_ROLES,
+        validator = DefaultValidator.class
+)
 public class UpdateRolesP {
-    @PostEntry
-    RolesE rolesE;
+
+    @Embedded
+    private RolesE rolesE;
     @Required
-    @GetEntry("email")
-    String email;
+    private String email;
 
     public RolesE getRolesE() {
         return rolesE;
@@ -29,4 +33,5 @@ public class UpdateRolesP {
     public void setEmail(String email) {
         this.email = email;
     }
+
 }

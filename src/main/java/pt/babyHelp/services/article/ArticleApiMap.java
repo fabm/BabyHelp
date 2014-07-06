@@ -3,7 +3,9 @@ package pt.babyHelp.services.article;
 import pt.babyHelp.bd.embededs.Role;
 import pt.core.cloudEndpoints.services.CEApiMap;
 
-public class ArticleAM implements CEApiMap<Role> {
+public class ArticleApiMap implements CEApiMap<Role> {
+
+    public static final String API = "article";
 
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
@@ -18,7 +20,7 @@ public class ArticleAM implements CEApiMap<Role> {
     private String area;
     private String method;
 
-    ArticleAM(String method) {
+    ArticleApiMap(String method) {
         this.method = method;
     }
 

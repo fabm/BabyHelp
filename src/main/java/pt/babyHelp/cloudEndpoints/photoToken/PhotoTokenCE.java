@@ -9,7 +9,7 @@ import pt.babyHelp.services.photoToken.PhotoTokenApiMap;
 import pt.babyHelp.services.photoToken.PhotoTokenService;
 import pt.core.cloudEndpoints.CEReturn;
 
-@Api(name = "photoToken",
+@Api(name = PhotoTokenApiMap.API,
         version = "v1",
         description = "Endpoint para criação de sessões para uploads de fotos BabyHelp",
         scopes = {Constants.EMAIL},

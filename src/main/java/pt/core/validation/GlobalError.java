@@ -1,4 +1,4 @@
-package pt.core.validators;
+package pt.core.validation;
 
 import pt.core.cloudEndpoints.CEErrorReturn;
 

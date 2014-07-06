@@ -6,9 +6,8 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.api.utils.SystemProperty;
 import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.UserFromApp;
-import pt.babyHelp.services.BabyHelp;
 import pt.core.cloudEndpoints.services.CEApiMap;
-import pt.core.validators.GlobalError;
+import pt.core.validation.GlobalError;
 
 
 public abstract class Authorization<T extends Enum<T>> {

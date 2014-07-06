@@ -5,7 +5,7 @@ import pt.core.cloudEndpoints.CEError;
 import pt.core.cloudEndpoints.CEReturn;
 import pt.core.cloudEndpoints.parameter.evaluation.CEParameterEvaluater;
 import pt.core.cloudEndpoints.parameter.evaluation.ParameterEvaluated;
-import pt.core.validators.EmailChecker;
+import pt.json.proccess.validation.EmailChecker;
 
 public class BHParameterEvaluater extends CEParameterEvaluater {
 
@@ -29,9 +29,9 @@ public class BHParameterEvaluater extends CEParameterEvaluater {
 
     @Override
     protected boolean isValid(String name, Object value, String validation) {
-        if (validation.equals(BHValidation.REQUIRED) && !validateRequire(value))
+        if (validation.equals(BHValidationToRemove.REQUIRED) && !validateRequire(value))
             return false;
-        if(validation.equals(BHValidation.EMAIL) && !EmailChecker.check(value))
+        if(validation.equals(BHValidationToRemove.EMAIL) && !EmailChecker.check(value))
             return false;
         return true;
     }

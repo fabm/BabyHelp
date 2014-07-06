@@ -4,6 +4,7 @@ import pt.babyHelp.bd.embededs.Role;
 import pt.core.cloudEndpoints.services.CEApiMap;
 
 public class PhotoTokenApiMap implements CEApiMap<Role> {
+    public static final String API = "photoToken";
     public static final String GET = "get";
 
 

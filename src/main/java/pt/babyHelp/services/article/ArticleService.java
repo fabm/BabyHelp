@@ -12,6 +12,7 @@ import pt.babyHelp.cloudEndpoints.article.ArticleCreationE;
 import pt.babyHelp.cloudEndpoints.article.ArticleUpdateE;
 import pt.babyHelp.cloudEndpoints.article.IdArticleE;
 import pt.babyHelp.cloudEndpoints.article.ListIDs;
+import pt.babyHelp.services.BHChecker;
 import pt.babyHelp.services.BabyHelp;
 import pt.core.cloudEndpoints.Authorization;
 import pt.core.cloudEndpoints.CEError;
@@ -22,8 +23,7 @@ import pt.core.cloudEndpoints.services.annotations.InstanceType;
 import pt.core.cloudEndpoints.services.annotations.PhotoUploadClass;
 import pt.core.cloudEndpoints.services.annotations.PhotoUploadMethod;
 import pt.core.cloudEndpoints.services.annotations.PhotoUploadedKey;
-import pt.core.validators.BeanChecker;
-import pt.core.validators.GlobalError;
+import pt.core.validation.GlobalError;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +34,7 @@ public class ArticleService implements CEService {
     private Authorization authorization;
     private String method;
     private Object args;
-    private BeanChecker beanChecker;
+    private BHChecker bhChecker;
 
     public static CEService create() {
         return new ArticleService();
@@ -133,8 +133,8 @@ public class ArticleService implements CEService {
     }
 
     public Map<String, Object> get() throws CEError {
-        beanChecker.check(args);
-        Article article = BD.ofy().load().type(Article.class).id(((IdArticleE) args).getId()).now();
+        IdArticleE idArticleE = bhChecker.check(args);
+        Article article = BD.ofy().load().type(Article.class).id(idArticleE.getId()).now();
         return CEUtils.getMap(article);
     }
 
@@ -158,24 +158,24 @@ public class ArticleService implements CEService {
         this.authorization.check(method);
         this.method = method;
         this.args = args;
-        this.beanChecker = new BeanChecker();
+        this.bhChecker = new BHChecker();
         return this;
     }
 
     @Override
     public Object getCEResponse() throws CEError {
         switch (method) {
-            case ArticleAM.CREATE:
+            case ArticleApiMap.CREATE:
                 return createArticle();
-            case ArticleAM.DELETE:
+            case ArticleApiMap.DELETE:
                 return delete();
-            case ArticleAM.GET:
+            case ArticleApiMap.GET:
                 return get();
-            case ArticleAM.LIST_PUBLIC:
+            case ArticleApiMap.LIST_PUBLIC:
                 return listPublic();
-            case ArticleAM.UPDATE:
+            case ArticleApiMap.UPDATE:
                 return update();
-            case ArticleAM.LIST_MY:
+            case ArticleApiMap.LIST_MY:
                 return listMyArticles();
         }
         throw new UnsupportedOperationException(CEErrorReturn.NOT_IMPLEMENTED);

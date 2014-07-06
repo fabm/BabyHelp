@@ -1,0 +1,5 @@
+- class : com.annotation.processor.validation.Min
+  name  : min
+  vars  : {value: number}
+- class : pt.json.proccess.validation.annotations.Required
+  name  : min

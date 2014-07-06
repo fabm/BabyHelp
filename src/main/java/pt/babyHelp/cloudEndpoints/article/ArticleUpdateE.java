@@ -1,6 +1,15 @@
 package pt.babyHelp.cloudEndpoints.article;
 
-import com.annotation.processor.validation.Required;
+import pt.babyHelp.services.article.ArticleApiMap;
+import pt.json.proccess.annotations.ApiMethodParameters;
+import pt.json.proccess.validation.DefaultValidator;
+import pt.json.proccess.validation.annotations.Required;
+
+@ApiMethodParameters(
+        api = ArticleApiMap.API,
+        method = ArticleApiMap.UPDATE,
+        validator = DefaultValidator.class
+)
 
 public class ArticleUpdateE extends ArticleCreationE {
     @Required

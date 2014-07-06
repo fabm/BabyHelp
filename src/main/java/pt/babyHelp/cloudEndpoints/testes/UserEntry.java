@@ -1,13 +1,13 @@
 package pt.babyHelp.cloudEndpoints.testes;
 
-import pt.babyHelp.validation.BHValidation;
+import pt.babyHelp.validation.BHValidationToRemove;
 import pt.core.cloudEndpoints.parameter.evaluation.Evaluation;
 import pt.core.cloudEndpoints.parameter.evaluation.ParameterEvaluated;
 
 import java.util.List;
 
 public class UserEntry implements ParameterEvaluated {
-    @Evaluation(validations = {BHValidation.EMAIL})
+    @Evaluation(validations = {BHValidationToRemove.EMAIL})
     private String email;
     @Evaluation
     private List<String> roles;
@@ -15,7 +15,7 @@ public class UserEntry implements ParameterEvaluated {
     private boolean registered;
     @Evaluation
     private String name;
-    @Evaluation(validations = BHValidation.REQUIRED)
+    @Evaluation(validations = BHValidationToRemove.REQUIRED)
     private boolean logged;
     @Evaluation
     private String profession;
