@@ -1,8 +1,8 @@
 package pt.babyHelp.cloudEndpoints.user.parameters;
 
-import com.annotation.processor.validation.Embedded;
 import pt.babyHelp.cloudEndpoints.user.UserApiMap;
 import pt.json.proccess.annotations.ApiMethodParameters;
+import pt.json.proccess.annotations.Embedded;
 import pt.json.proccess.validation.DefaultValidator;
 import pt.json.proccess.validation.annotations.Required;
 

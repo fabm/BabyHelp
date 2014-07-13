@@ -4,6 +4,7 @@ import pt.babyHelp.cloudEndpoints.user.UserApiMap;
 import pt.json.proccess.annotations.ApiMethodParameters;
 import pt.json.proccess.validation.DefaultValidator;
 import pt.json.proccess.validation.annotations.Email;
+import pt.json.proccess.validation.annotations.Required;
 
 @ApiMethodParameters(
         api = UserApiMap.API,
@@ -12,6 +13,7 @@ import pt.json.proccess.validation.annotations.Email;
 )
 public class GetRolesP {
     @Email
+    @Required
     private String email;
 
     public String getEmail() {

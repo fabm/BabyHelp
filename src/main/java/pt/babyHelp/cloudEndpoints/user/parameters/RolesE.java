@@ -2,11 +2,13 @@ package pt.babyHelp.cloudEndpoints.user.parameters;
 
 import pt.babyHelp.bd.embededs.Role;
 import pt.json.proccess.Validation;
+import pt.json.proccess.validation.annotations.Email;
+import pt.json.proccess.validation.annotations.Required;
 
 public class RolesE {
 
 
-    @Validation.Email
+    @Required
     private String[] roles;
 
     public String[] getRoles() {
