@@ -231,3 +231,12 @@ apiTestes.testes.afterLoad = function () {
     console.log('loaded ' + this.client);
 
 }
+
+var param = {field:'título'};
+
+app.factory('campo',function($interpolate) {
+    var fn = $interpolate("O campo '{{field}}' é obrigatório!");
+    var result = fn(param);
+    console.log(result);
+});
+
