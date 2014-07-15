@@ -5,7 +5,7 @@ import pt.core.cloudEndpoints.CEError;
 import pt.core.cloudEndpoints.CEReturn;
 import pt.core.cloudEndpoints.parameter.evaluation.CEParameterEvaluater;
 import pt.core.cloudEndpoints.parameter.evaluation.ParameterEvaluated;
-import pt.json.proccess.validation.EmailChecker;
+import pt.gapiap.proccess.validation.EmailChecker;
 
 public class BHParameterEvaluater extends CEParameterEvaluater {
 

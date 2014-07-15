@@ -3,6 +3,8 @@ package pt.babyHelp.bd;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
+import pt.babyHelp.bd.embededs.Role;
+import pt.gapiap.cloud.endpoints.UserWithRoles;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -10,7 +12,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 @Entity
-public class UserFromApp<T extends Enum<T>> {
+public class UserFromApp implements UserWithRoles<Role> {
 
     private String profession;
     @Id
@@ -19,7 +21,7 @@ public class UserFromApp<T extends Enum<T>> {
     @Index
 
     private String name;
-    private Set<T> roles;
+    private Set<Role> roles;
     private Set<Son> sons;
 
     public static UserFromApp findByEmail(String email) {
@@ -65,18 +67,20 @@ public class UserFromApp<T extends Enum<T>> {
     }
 
 
-    public Set<T> getRoles() {
+    @Override
+    public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(T... roles) {
-        this.roles = new HashSet<T>(roles.length);
-        for (T role : roles) {
+
+    public void setRoles(Role... roles) {
+        this.roles = new HashSet<Role>(roles.length);
+        for (Role role : roles) {
             this.roles.add(role);
         }
     }
 
-    public void setRoles(Set<T> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 

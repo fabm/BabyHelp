@@ -61,8 +61,8 @@
             <version>5.0.2</version>
         </dependency>
         <dependency>
-            <groupId>pt.processor.json.validator</groupId>
-            <artifactId>pt.processor.json.validator</artifactId>
+            <groupId>gapiap</groupId>
+            <artifactId>gapiap</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
@@ -135,7 +135,7 @@
                     <!--<compilerArgument>-proc:none</compilerArgument>-->
                     <generatedSourcesDirectory>${project.build.directory}/generated-sources/js</generatedSourcesDirectory>
                     <annotationProcessors>
-                        <annotationProcessor>pt.json.proccess.AnnotationProcessor</annotationProcessor>
+                        <annotationProcessor>pt.gapiap.proccess.AnnotationProcessor</annotationProcessor>
                     </annotationProcessors>
                 </configuration>
             </plugin>

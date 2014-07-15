@@ -1,7 +1,7 @@
 package pt.babyHelp.cloudEndpoints.article;
 
 
-import pt.json.proccess.validation.annotations.Required;
+import pt.gapiap.proccess.validation.annotations.Required;
 
 public class IdArticleE {
     @Required

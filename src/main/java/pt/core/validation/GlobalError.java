@@ -1,6 +1,7 @@
 package pt.core.validation;
 
-import pt.core.cloudEndpoints.CEErrorReturn;
+
+import pt.gapiap.cloud.endpoints.CEErrorReturn;
 
 public enum GlobalError implements CEErrorReturn {
     REQUIRED,

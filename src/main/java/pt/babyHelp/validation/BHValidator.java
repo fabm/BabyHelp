@@ -1,10 +1,11 @@
 package pt.babyHelp.validation;
 
-import pt.json.proccess.validation.DefaultValidator;
-import pt.json.proccess.validation.ValidationContext;
-import pt.json.proccess.validation.ValidationMethod;
-import pt.json.proccess.validation.annotations.Email;
-import pt.json.proccess.validation.annotations.Required;
+
+import pt.gapiap.proccess.validation.DefaultValidator;
+import pt.gapiap.proccess.validation.ValidationContext;
+import pt.gapiap.proccess.validation.ValidationMethod;
+import pt.gapiap.proccess.validation.annotations.Email;
+import pt.gapiap.proccess.validation.annotations.Required;
 
 public class BHValidator {
     private DefaultValidator defaultValidator = new DefaultValidator();

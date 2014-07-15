@@ -9,7 +9,7 @@ import pt.babyHelp.cloudEndpoints.article.ArticleUpdateE;
 import pt.babyHelp.services.BHChecker;
 import pt.babyHelp.services.BabyHelpError;
 import pt.core.cloudEndpoints.CEError;
-import pt.json.proccess.annotations.ApiMethodParameters;
+import pt.gapiap.proccess.annotations.ApiMethodParameters;
 
 import java.lang.annotation.Annotation;
 

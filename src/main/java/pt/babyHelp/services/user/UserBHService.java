@@ -18,15 +18,15 @@ import pt.babyHelp.cloudEndpoints.user.parameters.UpdateUserNameP;
 import pt.babyHelp.services.BHChecker;
 import pt.babyHelp.services.BabyHelp;
 import pt.core.cloudEndpoints.Authorization;
-import pt.core.cloudEndpoints.CEError;
-import pt.core.cloudEndpoints.CEErrorReturn;
 import pt.core.cloudEndpoints.CEUtils;
 import pt.core.cloudEndpoints.services.CEService;
+import pt.gapiap.cloud.endpoints.CEError;
+import pt.gapiap.cloud.endpoints.CEErrorReturn;
 
 import java.util.*;
 
 public class UserBHService implements CEService {
-    private Authorization authorization;
+    private BHAuthorization authorization;
     private Object entry;
     private UserApiMap apiMap;
     private BHChecker bhChecker;
@@ -100,8 +100,8 @@ public class UserBHService implements CEService {
     }
 
     private Map<String, Object> pendingActions() {
-        UserFromApp userFromApp = authorization.getUserFromApp();
-        if (authorization.getUserFromApp().getName() == null)
+        UserFromApp userFromApp = authorization.getUserWithRoles();
+        if (authorization.getUserWithRoles().getName() == null)
             return CEUtils.createMapAndPut("pending", "userName");
 
         if (authorization.hasRole(Role.HEALTHTEC) && userFromApp.getProfession() == null) {
@@ -166,12 +166,12 @@ public class UserBHService implements CEService {
     private Map<String, Object> updateProfession() throws CEError {
         UpdateProfessionP updateProfessionP = bhChecker.check(entry);
         bhChecker.check(updateProfessionP);
-        authorization.getUserFromApp().setProfession(updateProfessionP.getProfession());
+        authorization.getUserWithRoles().setProfession(updateProfessionP.getProfession());
         authorization.savedUserFromApp();
 
         Map<String, Object> map = new HashMap<>();
         map.put("message", "A sua profissão como técnico de saude foi atualizada");
-        map.put("current", authorization.getUserFromApp().getProfession());
+        map.put("current", authorization.getUserWithRoles().getProfession());
         return map;
     }
 

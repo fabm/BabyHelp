@@ -7,6 +7,8 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import pt.babyHelp.bd.Article;
 import pt.babyHelp.bd.BD;
+import pt.babyHelp.bd.UserFromApp;
+import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.cloudEndpoints.BHAuthorization;
 import pt.babyHelp.cloudEndpoints.article.ArticleCreationE;
 import pt.babyHelp.cloudEndpoints.article.ArticleUpdateE;
@@ -14,9 +16,7 @@ import pt.babyHelp.cloudEndpoints.article.IdArticleE;
 import pt.babyHelp.cloudEndpoints.article.ListIDs;
 import pt.babyHelp.services.BHChecker;
 import pt.babyHelp.services.BabyHelp;
-import pt.core.cloudEndpoints.Authorization;
-import pt.core.cloudEndpoints.CEError;
-import pt.core.cloudEndpoints.CEErrorReturn;
+import pt.babyHelp.services.RolesValidation;
 import pt.core.cloudEndpoints.CEUtils;
 import pt.core.cloudEndpoints.services.CEService;
 import pt.core.cloudEndpoints.services.annotations.InstanceType;
@@ -24,6 +24,11 @@ import pt.core.cloudEndpoints.services.annotations.PhotoUploadClass;
 import pt.core.cloudEndpoints.services.annotations.PhotoUploadMethod;
 import pt.core.cloudEndpoints.services.annotations.PhotoUploadedKey;
 import pt.core.validation.GlobalError;
+import pt.gapiap.cloud.endpoints.Authorization;
+import pt.gapiap.cloud.endpoints.CEError;
+import pt.gapiap.cloud.endpoints.CEErrorReturn;
+import pt.gapiap.proccess.annotations.MappedAction;
+import pt.gapiap.services.Dispatcher;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,13 +41,15 @@ public class ArticleService implements CEService {
     private Object args;
     private BHChecker bhChecker;
 
+
     public static CEService create() {
         return new ArticleService();
     }
 
-    public Map<String, Object> createArticle() throws CEError {
+    @MappedAction(value = ArticleApiMap.CREATE,area = "")
+    @RolesValidation(Role.HEALTHTEC)
+    public Map<String, Object> createArticle(ArticleCreationE articleCreationE) throws CEError {
 
-        ArticleCreationE articleCreationE = (ArticleCreationE) args;
         Article article = new Article();
         article.setAuthorEmail(getAuthorization().savedUserFromApp().getEmail());
 
@@ -53,13 +60,15 @@ public class ArticleService implements CEService {
         article.setPublic(articleCreationE.isPublic());
 
         Key<Article> id = BD.ofy().save().entity(article).now();
-        if (id == null)
+        if (id == null) {
             throw new CEError(BabyHelp.CEError.PERSIST, Article.class.getSimpleName());
+        }
 
         Map<String, Object> map = CEUtils.createMapAndPut("id", id.getId());
         map.put("message", "Artigo atualizado com sucesso");
         return map;
     }
+
 
     public Map<String, Object> update() throws CEError {
         @SuppressWarnings("unchecked")
@@ -72,8 +81,9 @@ public class ArticleService implements CEService {
         article.setBody(articleUpdateE.getBody());
         article.setSummary(articleUpdateE.getSummary());
 
-        if (article.getAuthorEmail().equals(getAuthorization().getUserFromApp().getEmail()))
+        if (article.getAuthorEmail().equals(getAuthorization().getUserFromApp().getEmail())) {
             throw new CEError(AricleError.NOT_OWNER, article.getTitle(), "atualizá-lo");
+        }
 
         BD.ofy().save().entity(article).now();
         Map<String, Object> map = new HashMap<String, Object>();
@@ -83,10 +93,13 @@ public class ArticleService implements CEService {
 
     private Article getArticle(Long id) throws CEError {
         Article article;
-        if (id == null) throw new CEError(GlobalError.REQUIRED);
+        if (id == null) {
+            throw new CEError(GlobalError.REQUIRED);
+        }
         article = BD.ofy().load().type(Article.class).id(id).now();
-        if (article == null)
-            throw new CEError(AricleError.ID_NOT_FOUND,id.toString());
+        if (article == null) {
+            throw new CEError(AricleError.ID_NOT_FOUND, id.toString());
+        }
         return article;
     }
 
@@ -162,7 +175,6 @@ public class ArticleService implements CEService {
         return this;
     }
 
-    @Override
     public Object getCEResponse() throws CEError {
         switch (method) {
             case ArticleApiMap.CREATE:

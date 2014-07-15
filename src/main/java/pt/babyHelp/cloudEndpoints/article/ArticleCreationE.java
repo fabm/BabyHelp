@@ -1,9 +1,9 @@
 package pt.babyHelp.cloudEndpoints.article;
 
 import pt.babyHelp.services.article.ArticleApiMap;
-import pt.json.proccess.annotations.ApiMethodParameters;
-import pt.json.proccess.validation.DefaultValidator;
-import pt.json.proccess.validation.annotations.Required;
+import pt.gapiap.proccess.annotations.ApiMethodParameters;
+import pt.gapiap.proccess.validation.DefaultValidator;
+import pt.gapiap.proccess.validation.annotations.Required;
 
 @ApiMethodParameters(
         api = ArticleApiMap.API,
