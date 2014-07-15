@@ -1,9 +1,8 @@
 package pt.babyHelp.cloudEndpoints.user;
 
-
-import pt.json.proccess.annotations.ApiMethodParameters;
-import pt.json.proccess.validation.DefaultValidator;
-import pt.json.proccess.validation.annotations.Required;
+import pt.gapiap.proccess.annotations.ApiMethodParameters;
+import pt.gapiap.proccess.validation.DefaultValidator;
+import pt.gapiap.proccess.validation.annotations.Required;
 
 @ApiMethodParameters(
         api = UserApiMap.API,

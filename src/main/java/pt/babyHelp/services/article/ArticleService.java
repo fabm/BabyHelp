@@ -15,8 +15,6 @@ import pt.babyHelp.cloudEndpoints.article.ListIDs;
 import pt.babyHelp.services.BHChecker;
 import pt.babyHelp.services.BabyHelp;
 import pt.core.cloudEndpoints.Authorization;
-import pt.core.cloudEndpoints.CEError;
-import pt.core.cloudEndpoints.CEErrorReturn;
 import pt.core.cloudEndpoints.CEUtils;
 import pt.core.cloudEndpoints.services.CEService;
 import pt.core.cloudEndpoints.services.annotations.InstanceType;
@@ -24,6 +22,8 @@ import pt.core.cloudEndpoints.services.annotations.PhotoUploadClass;
 import pt.core.cloudEndpoints.services.annotations.PhotoUploadMethod;
 import pt.core.cloudEndpoints.services.annotations.PhotoUploadedKey;
 import pt.core.validation.GlobalError;
+import pt.gapiap.cloud.endpoints.CEError;
+import pt.gapiap.cloud.endpoints.CEErrorReturn;
 
 import java.util.HashMap;
 import java.util.Map;

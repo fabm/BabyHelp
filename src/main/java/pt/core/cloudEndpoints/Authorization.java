@@ -8,6 +8,7 @@ import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.UserFromApp;
 import pt.core.cloudEndpoints.services.CEApiMap;
 import pt.core.validation.GlobalError;
+import pt.gapiap.cloud.endpoints.CEError;
 
 
 public abstract class Authorization<T extends Enum<T>> {

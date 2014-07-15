@@ -15,10 +15,9 @@ import pt.babyHelp.cloudEndpoints.BHAuthorization;
 import pt.babyHelp.cloudEndpoints.Constants;
 import pt.babyHelp.services.impl.TestesImpl;
 import pt.babyHelp.validation.BHParameterEvaluater;
-import pt.core.cloudEndpoints.Authorization;
-import pt.core.cloudEndpoints.CEError;
-import pt.core.cloudEndpoints.CEReturn;
 import pt.core.cloudEndpoints.CEUtils;
+import pt.gapiap.cloud.endpoints.CEError;
+import pt.gapiap.cloud.endpoints.CEReturn;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;

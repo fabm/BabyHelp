@@ -1,14 +1,14 @@
 package pt.babyHelp.services;
 
-import pt.core.cloudEndpoints.CEError;
-import pt.core.cloudEndpoints.CEErrorReturn;
 import pt.core.validation.GlobalError;
-import pt.json.proccess.Bundle;
-import pt.json.proccess.validation.BeanChecker;
-import pt.json.proccess.validation.DefaultValidator;
-import pt.json.proccess.validation.ValidationContext;
-import pt.json.proccess.validation.annotations.Email;
-import pt.json.proccess.validation.annotations.Required;
+import pt.gapiap.cloud.endpoints.CEError;
+import pt.gapiap.cloud.endpoints.CEErrorReturn;
+import pt.gapiap.proccess.Bundle;
+import pt.gapiap.proccess.validation.BeanChecker;
+import pt.gapiap.proccess.validation.DefaultValidator;
+import pt.gapiap.proccess.validation.ValidationContext;
+import pt.gapiap.proccess.validation.annotations.Email;
+import pt.gapiap.proccess.validation.annotations.Required;
 
 import java.lang.annotation.Annotation;
 

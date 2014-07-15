@@ -4,6 +4,7 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import pt.babyHelp.services.BabyHelp;
+import pt.gapiap.cloud.endpoints.CEError;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,8 +25,8 @@ public class BD {
         return ObjectifyService.ofy();
     }
 
-    public static <T>Key<T> checkKey(Key<T> key,Class<T> clazz) throws pt.core.cloudEndpoints.CEError {
-        if(key == null)throw new pt.core.cloudEndpoints.CEError(BabyHelp.CEError.PERSIST,clazz.getSimpleName());
+    public static <T>Key<T> checkKey(Key<T> key,Class<T> clazz) throws CEError {
+        if(key == null)throw new CEError(BabyHelp.CEError.PERSIST,clazz.getSimpleName());
         return key;
     }
 

@@ -7,7 +7,7 @@ import com.google.appengine.api.users.User;
 import pt.babyHelp.cloudEndpoints.Constants;
 import pt.babyHelp.services.photoToken.PhotoTokenApiMap;
 import pt.babyHelp.services.photoToken.PhotoTokenService;
-import pt.core.cloudEndpoints.CEReturn;
+import pt.gapiap.cloud.endpoints.CEReturn;
 
 @Api(name = PhotoTokenApiMap.API,
         version = "v1",

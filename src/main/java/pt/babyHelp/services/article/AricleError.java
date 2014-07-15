@@ -1,6 +1,6 @@
 package pt.babyHelp.services.article;
 
-import pt.core.cloudEndpoints.CEErrorReturn;
+import pt.gapiap.cloud.endpoints.CEErrorReturn;
 
 public enum AricleError implements CEErrorReturn {
     NOT_OWNER,

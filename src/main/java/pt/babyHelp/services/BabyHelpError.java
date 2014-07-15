@@ -1,6 +1,6 @@
 package pt.babyHelp.services;
 
-import pt.core.cloudEndpoints.CEErrorReturn;
+import pt.gapiap.cloud.endpoints.CEErrorReturn;
 
 public enum BabyHelpError implements CEErrorReturn {
     NOT_AUTHORIZED,

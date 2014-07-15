@@ -5,10 +5,10 @@ import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.users.User;
 import pt.babyHelp.cloudEndpoints.BHAuthorization;
 import pt.core.cloudEndpoints.Authorization;
-import pt.core.cloudEndpoints.CEError;
-import pt.core.cloudEndpoints.CEErrorReturn;
 import pt.core.cloudEndpoints.CEUtils;
 import pt.core.cloudEndpoints.services.CEService;
+import pt.gapiap.cloud.endpoints.CEError;
+import pt.gapiap.cloud.endpoints.CEErrorReturn;
 
 import java.util.Map;
 

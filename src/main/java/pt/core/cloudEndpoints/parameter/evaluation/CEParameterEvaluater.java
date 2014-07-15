@@ -1,7 +1,7 @@
 package pt.core.cloudEndpoints.parameter.evaluation;
 
-import pt.core.cloudEndpoints.CEError;
-import pt.core.cloudEndpoints.CEReturn;
+import pt.gapiap.cloud.endpoints.CEError;
+import pt.gapiap.cloud.endpoints.CEReturn;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;

@@ -1,6 +1,6 @@
 package pt.core.servlets;
 
-import pt.core.cloudEndpoints.CEErrorReturn;
+import pt.gapiap.cloud.endpoints.CEErrorReturn;
 
 public enum GlobalUploadError implements CEErrorReturn {
     NO_ACTION_PARAMETER,

@@ -18,10 +18,10 @@ import pt.babyHelp.cloudEndpoints.user.parameters.UpdateUserNameP;
 import pt.babyHelp.services.BHChecker;
 import pt.babyHelp.services.BabyHelp;
 import pt.core.cloudEndpoints.Authorization;
-import pt.core.cloudEndpoints.CEError;
-import pt.core.cloudEndpoints.CEErrorReturn;
 import pt.core.cloudEndpoints.CEUtils;
 import pt.core.cloudEndpoints.services.CEService;
+import pt.gapiap.cloud.endpoints.CEError;
+import pt.gapiap.cloud.endpoints.CEErrorReturn;
 
 import java.util.*;
 

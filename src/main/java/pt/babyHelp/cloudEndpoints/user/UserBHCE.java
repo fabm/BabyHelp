@@ -9,9 +9,7 @@ import com.google.appengine.api.users.User;
 import pt.babyHelp.cloudEndpoints.Constants;
 import pt.babyHelp.cloudEndpoints.user.parameters.*;
 import pt.babyHelp.services.user.UserBHService;
-import pt.core.cloudEndpoints.CEReturn;
-
-import java.util.Map;
+import pt.gapiap.cloud.endpoints.CEReturn;
 
 import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 
