@@ -1,5 +1,6 @@
 package pt.babyHelp.services.article;
 
+import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
@@ -8,6 +9,7 @@ import com.googlecode.objectify.cmd.Query;
 import pt.babyHelp.bd.Article;
 import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.UserFromApp;
+
 import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.cloudEndpoints.BHAuthorization;
 import pt.babyHelp.cloudEndpoints.article.ArticleCreationE;
@@ -34,19 +36,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @PhotoUploadClass(type = InstanceType.SINGLETONE)
-public class ArticleService implements CEService {
-
-    private Authorization authorization;
-    private String method;
-    private Object args;
-    private BHChecker bhChecker;
+public class ArticleService {
 
 
-    public static CEService create() {
-        return new ArticleService();
-    }
-
-    @MappedAction(value = ArticleApiMap.CREATE,area = "")
+    @MappedAction(value = ArticleApiMap.CREATE,area = "criação de um artigo")
     @RolesValidation(Role.HEALTHTEC)
     public Map<String, Object> createArticle(ArticleCreationE articleCreationE) throws CEError {
 
@@ -70,9 +63,9 @@ public class ArticleService implements CEService {
     }
 
 
-    public Map<String, Object> update() throws CEError {
+    @MappedAction(value = ArticleApiMap.UPDATE,area = "atualização de um artigo")
+    public Map<String, Object> update(ArticleUpdateE articleUpdateE) throws CEError {
         @SuppressWarnings("unchecked")
-        ArticleUpdateE articleUpdateE = (ArticleUpdateE) args;
 
         Article article = getArticle(articleUpdateE.getId());
 
@@ -81,7 +74,7 @@ public class ArticleService implements CEService {
         article.setBody(articleUpdateE.getBody());
         article.setSummary(articleUpdateE.getSummary());
 
-        if (article.getAuthorEmail().equals(getAuthorization().getUserFromApp().getEmail())) {
+        if (article.getAuthorEmail().equals(getAuthorization().getUserWithRoles().getEmail())) {
             throw new CEError(AricleError.NOT_OWNER, article.getTitle(), "atualizá-lo");
         }
 
@@ -114,9 +107,9 @@ public class ArticleService implements CEService {
     }
 
 
-    public Map<String, Object> delete() throws CEError {
-        ListIDs listIds = (ListIDs) args;
-        long[] ids = listIds.getIds();
+    @MappedAction(value = ArticleApiMap.DELETE,area = "delete")
+    public Map<String, Object> delete(ListIDs listIDs) throws CEError {
+        long[] ids = listIDs.getIds();
 
         Long[] tIds = new Long[ids.length];
         for (int i = 0; i < ids.length; i++) {
@@ -126,7 +119,7 @@ public class ArticleService implements CEService {
         Map<Long, Article> articlesMap = BD.ofy().load().type(Article.class).ids(tIds);
 
         for (Map.Entry<Long, Article> entry : articlesMap.entrySet()) {
-            if (!entry.getValue().getAuthorEmail().equals(getAuthorization().getUserFromApp().getEmail())) {
+            if (!entry.getValue().getAuthorEmail().equals(getAuthorization().getUserWithRoles().getEmail())) {
                 throw new CEError(AricleError.NOT_OWNER);
             }
         }
@@ -136,66 +129,26 @@ public class ArticleService implements CEService {
     }
 
 
+    @MappedAction(value = ArticleApiMap.LIST_MY, area = "lista dos artigos do autor")
     public Map<String, Object> listMyArticles() {
-
-
-        Query<Article> query = BD.ofy().load().type(Article.class)
-                .filter("authorEmail", getAuthorization().getUserFromApp().getEmail());
+    Query<Article> query = BD.ofy().load().type(Article.class)
+                .filter("authorEmail", getAuthorization().getUserWithRoles().getEmail());
 
         return CEUtils.createMapAndPut("articles", CEUtils.listMapPojo(query));
     }
 
-    public Map<String, Object> get() throws CEError {
-        IdArticleE idArticleE = bhChecker.check(args);
+    @MappedAction(value = ArticleApiMap.GET,area = "detalhe do artigo")
+    public Map<String, Object> get(IdArticleE idArticleE) throws CEError {
         Article article = BD.ofy().load().type(Article.class).id(idArticleE.getId()).now();
         return CEUtils.getMap(article);
     }
 
+    @MappedAction(value = ArticleApiMap.LIST_PUBLIC,area = "lista dos artigos públicos")
     public Map<String, Object> listPublic() {
         Query<Article> query = BD.ofy().load().type(Article.class).filter("isPublic", true);
         return CEUtils.createMapAndPut("articles", CEUtils.listMapPojo(query));
     }
 
 
-    public void setUser(User user) {
-        authorization = new BHAuthorization(user);
-    }
 
-    public Authorization getAuthorization() {
-        return authorization;
-    }
-
-    @Override
-    public CEService execute(User user, String method, Object args) throws UnauthorizedException {
-        this.authorization = new BHAuthorization(user);
-        this.authorization.check(method);
-        this.method = method;
-        this.args = args;
-        this.bhChecker = new BHChecker();
-        return this;
-    }
-
-    public Object getCEResponse() throws CEError {
-        switch (method) {
-            case ArticleApiMap.CREATE:
-                return createArticle();
-            case ArticleApiMap.DELETE:
-                return delete();
-            case ArticleApiMap.GET:
-                return get();
-            case ArticleApiMap.LIST_PUBLIC:
-                return listPublic();
-            case ArticleApiMap.UPDATE:
-                return update();
-            case ArticleApiMap.LIST_MY:
-                return listMyArticles();
-        }
-        throw new UnsupportedOperationException(CEErrorReturn.NOT_IMPLEMENTED);
-    }
-
-
-    @Override
-    public CEService execute(User user, String action) throws UnauthorizedException {
-        return execute(user, action, null);
-    }
 }

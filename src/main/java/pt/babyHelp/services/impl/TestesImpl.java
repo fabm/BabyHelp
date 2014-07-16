@@ -10,14 +10,14 @@ import pt.babyHelp.bd.Son;
 import pt.babyHelp.cloudEndpoints.BHAuthorization;
 import pt.babyHelp.cloudEndpoints.UserAcessible;
 import pt.babyHelp.cloudEndpoints.testes.SonParameter;
-import pt.core.cloudEndpoints.Authorization;
 import pt.core.cloudEndpoints.CEUtils;
 import pt.gapiap.cloud.endpoints.CEError;
 
 import java.util.*;
 
 public class TestesImpl implements UserAcessible {
-    private Authorization authorization;
+
+    private BHAuthorization authorization;
 
     private List<SonParameter> putSomeValuesForMe() {
         List<SonParameter> list = new ArrayList<SonParameter>();
@@ -81,7 +81,7 @@ public class TestesImpl implements UserAcessible {
     }
 
     @Override
-    public Authorization getAuthorization() {
+    public BHAuthorization getAuthorization() {
         return authorization;
     }
 
