@@ -7,8 +7,8 @@ import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.Parentality;
 import pt.babyHelp.bd.Son;
 import pt.babyHelp.cloudEndpoints.BHAuthorization;
-import pt.core.cloudEndpoints.Authorization;
 import pt.babyHelp.services.SonService;
+import pt.gapiap.cloud.endpoints.Authorization;
 
 import java.util.*;
 
@@ -31,7 +31,7 @@ public class SonServiceImpl implements SonService {
 
     public Map<String, Object> getParentsListQ(String q) {
         List<Map<String, Object>> sons = new ArrayList<Map<String, Object>>();
-        for (Son son : queriedSonsFromEmail(getAuthorization().getUserFromApp().getEmail())) {
+        for (Son son : queriedSonsFromEmail(getAuthorization().getUserWithRoles().getEmail())) {
             if (son.getName().contains(q)) {
                 Map<String, Object> map = new HashMap<String, Object>();
                 map.put("name", son.getName());

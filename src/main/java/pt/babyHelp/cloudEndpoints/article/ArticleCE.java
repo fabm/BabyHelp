@@ -6,8 +6,6 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
-import pt.babyHelp.bd.Article;
-import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.cloudEndpoints.Constants;
 import pt.babyHelp.services.article.ArticleApiMap;
 import pt.babyHelp.services.article.ArticleService;
@@ -26,7 +24,7 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 )
 public class ArticleCE {
 
-    Dispatcher<Role>
+    Dispatcher dispatcher;
 
     @ApiMethod(name = ArticleApiMap.CREATE, httpMethod = HttpMethod.PUT, path = "create")
     public CEReturn createArticle(User user, ArticleCreationE articleCreationE) throws UnauthorizedException {
