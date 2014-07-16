@@ -39,6 +39,8 @@ import java.util.Map;
 public class ArticleService {
 
 
+
+
     @MappedAction(value = ArticleApiMap.CREATE,area = "criação de um artigo")
     @RolesValidation(Role.HEALTHTEC)
     public Map<String, Object> createArticle(ArticleCreationE articleCreationE) throws CEError {

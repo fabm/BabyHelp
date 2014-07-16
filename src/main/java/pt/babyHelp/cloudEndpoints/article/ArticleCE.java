@@ -6,12 +6,15 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
+import pt.babyHelp.bd.Article;
+import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.cloudEndpoints.Constants;
 import pt.babyHelp.services.BHDispatcher;
 import pt.babyHelp.services.article.ArticleApiMap;
 import pt.babyHelp.services.article.ArticleService;
 import pt.gapiap.cloud.endpoints.CEError;
 import pt.gapiap.cloud.endpoints.CEReturn;
+import pt.gapiap.services.Dispatcher;
 
 import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 
@@ -24,6 +27,7 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
         audiences = {Constants.ANDROID_AUDIENCE}
 )
 public class ArticleCE {
+
 
     private BHDispatcher getDispatcher(User user){
         BHDispatcher bhDispatcher = new BHDispatcher(new ArticleService(),user);
@@ -58,6 +62,6 @@ public class ArticleCE {
 
     @ApiMethod(name = ArticleApiMap.GET, httpMethod = HttpMethod.GET, path = "get")
     public CEReturn get(User user, @Named(value = "id") Long id) throws UnauthorizedException, CEError {
-        return getDispatcher(user).dispatch(new IdEntry(id));
+        return getDispatcher(user).dispatch(new IdArticleE(id));
     }
 }
