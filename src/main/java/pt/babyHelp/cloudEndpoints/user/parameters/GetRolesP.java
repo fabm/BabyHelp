@@ -6,7 +6,6 @@ import pt.gapiap.proccess.validation.DefaultValidator;
 import pt.gapiap.proccess.validation.annotations.Email;
 import pt.gapiap.proccess.validation.annotations.Required;
 
-
 @ApiMethodParameters(
         api = UserApiMap.API,
         method = UserApiMap.GET_ROLES,

@@ -1,8 +1,8 @@
 package pt.babyHelp.cloudEndpoints.article;
 
 import pt.babyHelp.services.article.ArticleApiMap;
-import pt.gapiap.proccess.validation.DefaultValidator;
 import pt.gapiap.proccess.annotations.ApiMethodParameters;
+import pt.gapiap.proccess.validation.DefaultValidator;
 import pt.gapiap.proccess.validation.annotations.Required;
 
 @ApiMethodParameters(

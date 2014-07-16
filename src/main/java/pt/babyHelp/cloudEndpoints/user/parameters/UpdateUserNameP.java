@@ -1,5 +1,6 @@
 package pt.babyHelp.cloudEndpoints.user.parameters;
 
+
 import pt.gapiap.proccess.validation.annotations.Required;
 
 public class UpdateUserNameP {

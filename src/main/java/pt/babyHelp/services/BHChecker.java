@@ -1,8 +1,8 @@
 package pt.babyHelp.services;
 
+import pt.core.cloudEndpoints.CEError;
+import pt.core.cloudEndpoints.CEErrorReturn;
 import pt.core.validation.GlobalError;
-import pt.gapiap.cloud.endpoints.CEError;
-import pt.gapiap.cloud.endpoints.CEErrorReturn;
 import pt.gapiap.proccess.Bundle;
 import pt.gapiap.proccess.validation.BeanChecker;
 import pt.gapiap.proccess.validation.DefaultValidator;

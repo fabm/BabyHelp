@@ -6,7 +6,6 @@ import pt.gapiap.proccess.annotations.Embedded;
 import pt.gapiap.proccess.validation.DefaultValidator;
 import pt.gapiap.proccess.validation.annotations.Required;
 
-
 @ApiMethodParameters(
         api = UserApiMap.API,
         method = UserApiMap.UPDATE_ROLES,
