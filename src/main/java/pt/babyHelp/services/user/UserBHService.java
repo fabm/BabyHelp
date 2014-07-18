@@ -17,25 +17,24 @@ import pt.babyHelp.cloudEndpoints.user.parameters.UpdateRolesP;
 import pt.babyHelp.cloudEndpoints.user.parameters.UpdateUserNameP;
 import pt.babyHelp.services.BHChecker;
 import pt.babyHelp.services.BabyHelp;
-import pt.core.cloudEndpoints.Authorization;
+import pt.babyHelp.services.RolesValidation;
 import pt.core.cloudEndpoints.CEUtils;
 import pt.core.cloudEndpoints.services.CEService;
 import pt.gapiap.cloud.endpoints.CEError;
 import pt.gapiap.cloud.endpoints.CEErrorReturn;
+import pt.gapiap.proccess.annotations.GapiAPResource;
+import pt.gapiap.proccess.annotations.MappedAction;
 
 import java.util.*;
 
-public class UserBHService implements CEService {
+public class UserBHService {
+
+    @GapiAPResource
     private BHAuthorization authorization;
-    private Object entry;
-    private UserApiMap apiMap;
-    private BHChecker bhChecker;
 
-    public static CEService create() {
-        return new UserBHService();
-    }
-
-    private static Map<String, Object> getList() throws CEError {
+    @MappedAction(value = UserApiMap.LIST, area = "lista de utilizadores")
+    @RolesValidation(Role.ADMINISTRATOR)
+    public Map<String, Object> getList() throws CEError {
         Iterator<UserFromApp> it = UserFromApp.iterateAll();
         Map<String, Object> map = new HashMap<String, Object>();
         List<Object> users = new ArrayList<Object>();
@@ -47,10 +46,11 @@ public class UserBHService implements CEService {
             user.add(userFromApp.getEmail());
 
             Set<Role> userRoles = userFromApp.getRoles();
-            if (userRoles != null)
+            if (userRoles != null) {
                 for (Role role : userRoles) {
                     roles.add(role.toString());
                 }
+            }
             user.add(roles);
             users.add(user);
         }
@@ -58,8 +58,9 @@ public class UserBHService implements CEService {
         return map;
     }
 
-    private Map<String, Object> updateRoles() throws CEError {
-        UpdateRolesP updateRolesP = bhChecker.check(entry);
+    @MappedAction(value = UserApiMap.UPDATE_ROLES, area = "atualização de roles")
+    @RolesValidation(Role.ADMINISTRATOR)
+    public Map<String, Object> updateRoles(UpdateRolesP updateRolesP) throws CEError {
         String email = updateRolesP.getEmail();
         RolesE rolesEntry = updateRolesP.getRolesE();
 
@@ -71,20 +72,18 @@ public class UserBHService implements CEService {
 
         try {
             userFromApp.setRoles(rolesEntry.toEnum());
-            if (BD.ofy().save().entity(userFromApp).now() == null)
+            if (BD.ofy().save().entity(userFromApp).now() == null) {
                 throw new CEError(BabyHelp.CEError.PERSIST, UserFromApp.class.getSimpleName());
+            }
             return CEUtils.createMapAndPut("state", "user atualizado");
         } catch (Role.ConvertException e) {
             throw new CEError(CEErrorR.ROLE_NOT_MATCH.addArgs(e.getRoleStr()));
         }
     }
 
-    private Map<String, Object> list() throws CEError {
-        return getList();
-    }
-
-    private Map<String, Object> getRoles() throws CEError {
-        GetRolesP getRolesP = bhChecker.check(entry);
+    @MappedAction(value = UserApiMap.GET_ROLES, area = "visialização de roles")
+    @RolesValidation(Role.ADMINISTRATOR)
+    public Map<String, Object> getRoles(GetRolesP getRolesP) throws CEError {
         String email = getRolesP.getEmail();
 
         if (email == null || email.isEmpty()) {
@@ -93,16 +92,19 @@ public class UserBHService implements CEService {
 
         UserFromApp userFromApp = UserFromApp.findByEmail(email);
         if (userFromApp == null) {
-            return CEUtils.createMapAndPut("body",new ArrayList<String>(0));
+            return CEUtils.createMapAndPut("body", new ArrayList<String>(0));
         } else {
             return CEUtils.createMapAndPut("body", Role.toStringSet(userFromApp.getRoles()));
         }
     }
 
-    private Map<String, Object> pendingActions() {
+    @MappedAction(value = UserApiMap.PENDING_ACTIONS, area = "ações pendentes")
+    @RolesValidation(Role.ADMINISTRATOR)
+    public Map<String, Object> pendingActions() {
         UserFromApp userFromApp = authorization.getUserWithRoles();
-        if (authorization.getUserWithRoles().getName() == null)
+        if (authorization.getUserWithRoles().getName() == null) {
             return CEUtils.createMapAndPut("pending", "userName");
+        }
 
         if (authorization.hasRole(Role.HEALTHTEC) && userFromApp.getProfession() == null) {
             return CEUtils.createMapAndPut("pending", "profession");
@@ -163,9 +165,9 @@ public class UserBHService implements CEService {
         return null;
     }
 
-    private Map<String, Object> updateProfession() throws CEError {
-        UpdateProfessionP updateProfessionP = bhChecker.check(entry);
-        bhChecker.check(updateProfessionP);
+    @MappedAction(value = UserApiMap.UPDATE_PROFESSION, area = "atualização da profissão")
+    @RolesValidation(Role.ADMINISTRATOR)
+    public Map<String, Object> updateProfession(UpdateProfessionP updateProfessionP) throws CEError {
         authorization.getUserWithRoles().setProfession(updateProfessionP.getProfession());
         authorization.savedUserFromApp();
 
@@ -175,53 +177,11 @@ public class UserBHService implements CEService {
         return map;
     }
 
-    private Map<String, Object> updateUserName() throws CEError {
-        UpdateUserNameP updateUserNameP = bhChecker.check(entry);
+    @MappedAction(value = UserApiMap.UPDATE_USERNAME, area = "atualização do username")
+    @RolesValidation(Role.ADMINISTRATOR)
+    public Map<String, Object> updateUserName(UpdateUserNameP updateUserNameP) throws CEError {
         authorization.savedUserFromApp();
         return CEUtils.createMapAndPut("message", "Utilizador atualizado com sucesso");
-    }
-
-
-    @Override
-    public CEService execute(User user, String method, Object entry) throws UnauthorizedException {
-        this.authorization = new BHAuthorization(user);
-        this.authorization.check(method);
-        this.entry = entry;
-        this.apiMap = new UserApiMap(method);
-        this.bhChecker = new BHChecker();
-        return this;
-    }
-
-    @Override
-    public CEService execute(User user, String method) throws UnauthorizedException {
-        return execute(user, method, null);
-    }
-
-    private Map<String, Object> currentUser() {
-        return CEUtils.createMapAndPut("result", authorization.getUserFromApp().getEmail());
-    }
-
-
-    @Override
-    public Object getCEResponse() throws CEError {
-        switch (apiMap.getMethod()) {
-            case UserApiMap.LIST:
-                return getList();
-            case UserApiMap.PENDING_ACTIONS:
-                return pendingActions();
-            case UserApiMap.UPDATE_PROFESSION:
-                return updateProfession();
-            case UserApiMap.UPDATE_ROLES:
-                return updateRoles();
-            case UserApiMap.GET_ROLES:
-                return getRoles();
-            case UserApiMap.UPDATE_USERNAME:
-                return updateUserName();
-            case UserApiMap.CURRENT:
-                return currentUser();
-
-        }
-        throw new UnsupportedOperationException(CEErrorReturn.NOT_IMPLEMENTED);
     }
 
     enum CEErrorR implements CEErrorReturn {

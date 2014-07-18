@@ -7,8 +7,10 @@ import pt.gapiap.services.Dispatcher;
 
 public class BHDispatcher extends Dispatcher<Role>{
 
-
-    public BHDispatcher(Object service, User user) {
-        super(service, RolesValidation.class, new BHAuthorization(user));
+    public BHDispatcher(Object service) {
+        super(service, RolesValidation.class);
+    }
+    public void setUser(User user){
+        super.setAuthorization(new BHAuthorization(user));
     }
 }

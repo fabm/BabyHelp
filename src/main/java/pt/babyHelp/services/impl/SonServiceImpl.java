@@ -12,7 +12,7 @@ import pt.gapiap.cloud.endpoints.Authorization;
 
 import java.util.*;
 
-public class SonServiceImpl implements SonService {
+public class SonServiceImpl {
 
     private Authorization authorization;
 
@@ -29,29 +29,6 @@ public class SonServiceImpl implements SonService {
         return BD.ofy().load().type(Son.class).ids(sonIds).values();
     }
 
-    public Map<String, Object> getParentsListQ(String q) {
-        List<Map<String, Object>> sons = new ArrayList<Map<String, Object>>();
-        for (Son son : queriedSonsFromEmail(getAuthorization().getUserWithRoles().getEmail())) {
-            if (son.getName().contains(q)) {
-                Map<String, Object> map = new HashMap<String, Object>();
-                map.put("name", son.getName());
-                map.put("birthday", son.getBirthDate());
-                map.put("photokey", son.getPhotoKey());
-                sons.add(map);
-            }
-        }
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("sons", sons);
-        return map;
-    }
 
-    @Override
-    public void setUser(User user) {
-        this.authorization = new BHAuthorization(user);
-    }
 
-    @Override
-    public Authorization getAuthorization() {
-        return authorization;
-    }
 }

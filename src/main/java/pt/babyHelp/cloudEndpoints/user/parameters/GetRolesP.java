@@ -16,6 +16,10 @@ public class GetRolesP {
     @Required
     private String email;
 
+    public GetRolesP(String email) {
+        this.email = email;
+    }
+
     public String getEmail() {
         return email;
     }

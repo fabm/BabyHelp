@@ -28,10 +28,15 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 )
 public class ArticleCE {
 
+    private BHDispatcher dispatcher;
+
+    public ArticleCE() {
+        dispatcher = new BHDispatcher(new ArticleService());
+    }
 
     private BHDispatcher getDispatcher(User user){
-        BHDispatcher bhDispatcher = new BHDispatcher(new ArticleService(),user);
-        return bhDispatcher;
+        dispatcher.setUser(user);
+        return dispatcher;
     }
 
     @ApiMethod(name = ArticleApiMap.CREATE, httpMethod = HttpMethod.PUT, path = "create")

@@ -118,28 +118,5 @@ public class TestesCE {
         return CEUtils.createMapAndPut("success", "user for development loggedOut");
     }
 
-    @ApiMethod(name = "insert.son", httpMethod = ApiMethod.HttpMethod.POST, path = "insert/son")
-    public CEReturn insertson(User user, SonParameter sonParameter) throws UnauthorizedException {
-        getBHAuthorization(user).checkDevMode();
-        testesService.setUser(user);
-        testesService.getAuthorization().check("teste de inserção do filho", Role.PARENT);
-        testesService.getAuthorization().checkDevMode();
-        return new CEReturn() {
-            @Override
-            public Object getCEResponse() throws CEError {
-                return testesService.insertSuns();
-            }
-        };
-    }
-
-
-    //TODO list parents testar
-    @ApiMethod(name = "list.parents", httpMethod = ApiMethod.HttpMethod.POST, path = "list/parents")
-    public Map<String, Object> listParents(User user, @Named("name") String name) throws UnauthorizedException {
-        getBHAuthorization(user).checkDevMode();
-        testesService.setUser(user);
-        testesService.getAuthorization().check("teste de listagem de filhos", Role.PARENT);
-        return testesService.getParentsList(name);
-    }
 
 }
