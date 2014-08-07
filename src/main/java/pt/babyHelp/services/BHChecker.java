@@ -5,6 +5,7 @@ import pt.gapiap.cloud.endpoints.CEError;
 import pt.gapiap.cloud.endpoints.CEErrorReturn;
 import pt.gapiap.proccess.Bundle;
 import pt.gapiap.proccess.validation.BeanChecker;
+import pt.gapiap.proccess.validation.BeanCheckerException;
 import pt.gapiap.proccess.validation.DefaultValidator;
 import pt.gapiap.proccess.validation.ValidationContext;
 import pt.gapiap.proccess.validation.annotations.Email;
@@ -21,7 +22,12 @@ public class BHChecker {
     }
 
     public <T> T check(Object object) throws CEError {
-        T ret = beanChecker.check(object);
+        T ret = null;
+        try {
+            ret = beanChecker.check(object);
+        } catch (BeanCheckerException e) {
+            e.printStackTrace();
+        }
 
         DefaultValidator val = beanChecker.getValidator();
         Annotation annotation;

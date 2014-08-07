@@ -1,5 +1,6 @@
 package pt.core.cloudEndpoints.parameter.evaluation;
 
+import com.google.api.server.spi.response.UnauthorizedException;
 import pt.gapiap.cloud.endpoints.CEError;
 import pt.gapiap.cloud.endpoints.CEReturn;
 
@@ -25,7 +26,7 @@ public abstract class CEParameterEvaluater implements CEReturn {
 
 
     @Override
-    public Object getCEResponse() throws CEError {
+    public Object getCEResponse() throws CEError, UnauthorizedException {
         if (parameter.isDefinitionRequest()) {
             return getDefenition();
         } else {

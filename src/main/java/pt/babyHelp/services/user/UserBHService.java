@@ -22,6 +22,7 @@ import pt.core.cloudEndpoints.CEUtils;
 import pt.core.cloudEndpoints.services.CEService;
 import pt.gapiap.cloud.endpoints.CEError;
 import pt.gapiap.cloud.endpoints.CEErrorReturn;
+import pt.gapiap.cloud.endpoints.CEReturn;
 import pt.gapiap.proccess.annotations.GapiAPResource;
 import pt.gapiap.proccess.annotations.MappedAction;
 
@@ -86,9 +87,6 @@ public class UserBHService {
     public Map<String, Object> getRoles(GetRolesP getRolesP) throws CEError {
         String email = getRolesP.getEmail();
 
-        if (email == null || email.isEmpty()) {
-            throw new CEError(CEErrorR.EMAIL_REQUIRED);
-        }
 
         UserFromApp userFromApp = UserFromApp.findByEmail(email);
         if (userFromApp == null) {

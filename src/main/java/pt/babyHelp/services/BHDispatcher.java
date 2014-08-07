@@ -10,7 +10,4 @@ public class BHDispatcher extends Dispatcher<Role>{
     public BHDispatcher(Object service) {
         super(service, RolesValidation.class);
     }
-    public void setUser(User user){
-        super.setAuthorization(new BHAuthorization(user));
-    }
 }

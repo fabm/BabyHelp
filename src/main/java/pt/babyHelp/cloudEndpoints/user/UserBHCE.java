@@ -7,12 +7,15 @@ import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
+import pt.babyHelp.bd.embededs.Role;
 import pt.babyHelp.cloudEndpoints.Constants;
 import pt.babyHelp.cloudEndpoints.user.parameters.*;
+import pt.babyHelp.services.BHCEDispatcher;
 import pt.babyHelp.services.BHDispatcher;
 import pt.babyHelp.services.user.UserBHService;
 import pt.gapiap.cloud.endpoints.CEError;
 import pt.gapiap.cloud.endpoints.CEReturn;
+import pt.gapiap.services.CEDispatcher;
 
 import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 
@@ -33,9 +36,10 @@ public class UserBHCE {
         dispatcher = new BHDispatcher(new UserBHService());
     }
 
-    private BHDispatcher getDispatcher(User user) {
-        dispatcher.setUser(user);
-        return dispatcher;
+    private BHCEDispatcher getDispatcher(User user) {
+        BHCEDispatcher bhceDispatcher = new BHCEDispatcher(dispatcher);
+        bhceDispatcher.setUser(user);
+        return bhceDispatcher;
     }
 
     @ApiMethod(name = UserApiMap.UPDATE_ROLES, httpMethod = HttpMethod.POST)
@@ -48,44 +52,44 @@ public class UserBHCE {
         updateRolesP.setEmail(email);
         updateRolesP.setRolesE(rolesE);
 
-        return dispatcher.dispatch(updateRolesP);
+        return getDispatcher(null);
     }
 
     @ApiMethod(name = UserApiMap.UPDATE_USERNAME, httpMethod = HttpMethod.PUT)
     public CEReturn updateUserName(User user, UpdateUserNameP updateUserNameP)
             throws UnauthorizedException, CEError {
-        return getDispatcher(user).dispatch(updateUserNameP);
+        return getDispatcher(user).setEntry(updateUserNameP);
     }
 
     @ApiMethod(name = UserApiMap.LIST)
     public CEReturn list(User user) throws UnauthorizedException, CEError {
-        return getDispatcher(user).dispatch(UserApiMap.LIST);
+        return getDispatcher(user).setEntry(UserApiMap.LIST);
     }
 
     @ApiMethod(name = UserApiMap.GET_ROLES)
-    public CEReturn getRoles(User user,
+    public Object getRoles(User user,
                              @Named("email") String email) throws UnauthorizedException, CEError {
-        return getDispatcher(user).dispatch(new GetRolesP(email));
+        return getDispatcher(user).setEntry(new GetRolesP(email));
     }
 
     @ApiMethod(name = UserApiMap.UPDATE_SONS, httpMethod = HttpMethod.PUT, path = "update/sons")
     public CEReturn updateSons(User user, SonsE sons) throws UnauthorizedException, CEError {
-        return getDispatcher(user).dispatch(sons);
+        return getDispatcher(user).setEntry(sons);
     }
 
     @ApiMethod(name = UserApiMap.UPDATE_PROFESSION, httpMethod = HttpMethod.PUT, path = "update/profession")
     public CEReturn updateProfession(User user, UpdateProfessionP updateProfession) throws UnauthorizedException, CEError {
-        return getDispatcher(user).dispatch(updateProfession);
+        return getDispatcher(user).setEntry(updateProfession);
     }
 
     @ApiMethod(name = UserApiMap.PENDING_ACTIONS, httpMethod = ApiMethod.HttpMethod.GET, path = "pendingactions")
     public CEReturn pendingActions(User user) throws UnauthorizedException, CEError {
-        return getDispatcher(user).dispatch(UserApiMap.PENDING_ACTIONS);
+        return getDispatcher(user).setEntry(UserApiMap.PENDING_ACTIONS);
     }
 
     @ApiMethod(name = UserApiMap.CURRENT, httpMethod = ApiMethod.HttpMethod.GET, path = "current")
     public CEReturn current(User user) throws UnauthorizedException, CEError {
-        return getDispatcher(user).dispatch(UserApiMap.CURRENT);
+        return getDispatcher(user).setEntry(UserApiMap.CURRENT);
     }
 
 }

@@ -1,5 +1,6 @@
 package pt.babyHelp.validation;
 
+import com.google.api.server.spi.response.UnauthorizedException;
 import pt.babyHelp.cloudEndpoints.testes.UserEntry;
 import pt.core.cloudEndpoints.parameter.evaluation.CEParameterEvaluater;
 import pt.core.cloudEndpoints.parameter.evaluation.ParameterEvaluated;
@@ -37,7 +38,7 @@ public class BHParameterEvaluater extends CEParameterEvaluater {
     }
 
     @Override
-    public Object getCEResponse() throws CEError {
+    public Object getCEResponse() throws CEError, UnauthorizedException {
         return super.getCEResponse();
     }
 }

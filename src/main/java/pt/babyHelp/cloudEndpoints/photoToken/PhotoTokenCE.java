@@ -5,6 +5,7 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
 import pt.babyHelp.cloudEndpoints.Constants;
+import pt.babyHelp.services.BHCEDispatcher;
 import pt.babyHelp.services.BHDispatcher;
 import pt.babyHelp.services.photoToken.PhotoTokenApiMap;
 import pt.babyHelp.services.photoToken.PhotoTokenService;
@@ -26,14 +27,16 @@ public class PhotoTokenCE {
         dispatcher = new BHDispatcher(new PhotoTokenService());
     }
 
-    private BHDispatcher getDispatcher(User user) {
-        dispatcher.setUser(user);
-        return dispatcher;
+    private BHCEDispatcher getDispatcher(User user) {
+        BHCEDispatcher bhceDispatcher = new BHCEDispatcher(dispatcher);
+        bhceDispatcher.setUser(user);
+        return bhceDispatcher;
     }
 
     @ApiMethod(name = PhotoTokenApiMap.GET, httpMethod = ApiMethod.HttpMethod.GET, path = "get")
     public CEReturn get(User user) throws UnauthorizedException, CEError {
-        return getDispatcher(user).dispatch(PhotoTokenApiMap.GET);
+
+        return getDispatcher(user).setEntry(PhotoTokenApiMap.GET);
     }
 
 }
