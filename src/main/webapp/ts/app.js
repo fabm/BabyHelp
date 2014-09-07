@@ -12,6 +12,8 @@ var RouteState = {
     home: 'default'
 };
 
+var shared = 0;
+
 app.config(function ($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise("/");
 
@@ -181,11 +183,8 @@ var Users;
 (function (Users) {
     function ListUsersCtrl($scope, gns, userService) {
         $scope.modalShown = false;
-        $scope.loading = 'a carragar dados...';
-
-        function resetLoading() {
-            delete $scope.loading;
-        }
+        $scope.loading = true;
+        $scope.loadingMessage = localeMessage('loadingData', 'loading data ...');
 
         function setErrorMesg(response) {
             gns.growl.setMessage(response, GrowlBH.typeMessage.error);
@@ -196,15 +195,15 @@ var Users;
                 success: function (response) {
                     $scope.state = 'list';
                     $scope.users = response.body;
-                    resetLoading();
+                    $scope.loading = false;
                     $scope.$digest();
                 },
                 error: function (response) {
-                    resetLoading();
+                    $scope.loading = false;
                     setErrorMesg(response);
                 },
                 unauthorized: function (response) {
-                    resetLoading();
+                    $scope.loading = false;
                     setErrorMesg(response);
                     gns.state.goto(RouteState.home);
                 }

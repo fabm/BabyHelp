@@ -19,7 +19,8 @@ interface ScopeUserList extends ng.IScope {
     selectRole:(email:string, role:string, current:any)=>void;
     confirm:Function;
     addRole:Function;
-    loading:string;
+    loading:boolean;
+    loadingMessage:string;
 }
 
 interface ScopeMain extends ng.IScope {
@@ -40,6 +41,9 @@ var RouteState = {
     usersEdit: 'users-edit',
     home: 'default'
 }
+
+
+var shared = 0;
 
 app.config(
     ($stateProvider:ng.ui.IStateProvider, $urlRouterProvider:ng.ui.IUrlRouterProvider)=> {
@@ -217,11 +221,8 @@ module Users {
 
     export function ListUsersCtrl($scope:ScopeUserList, gns:GrowlAndState, userService:UserService) {
         $scope.modalShown = false;
-        $scope.loading = 'a carragar dados...';
-
-        function resetLoading() {
-            delete $scope.loading;
-        }
+        $scope.loading = true;
+        $scope.loadingMessage = localeMessage('loadingData','loading data ...');
 
         function setErrorMesg(response) {
             gns.growl.setMessage(response, GrowlBH.typeMessage.error);
@@ -232,15 +233,15 @@ module Users {
                 success: (response)=> {
                     $scope.state = 'list';
                     $scope.users = response.body;
-                    resetLoading();
+                    $scope.loading = false;
                     $scope.$digest();
                 },
                 error: (response)=> {
-                    resetLoading();
+                    $scope.loading = false;
                     setErrorMesg(response);
                 },
                 unauthorized: (response)=> {
-                    resetLoading();
+                    $scope.loading = false;
                     setErrorMesg(response);
                     gns.state.goto(RouteState.home);
                 }

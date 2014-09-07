@@ -7,6 +7,35 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 
+var lang = navigator.userLanguage || navigator.language;
+
+function localeMessage(name, original, args) {
+    var localMessage;
+    if (isNull(locale[locale.current])) {
+        return original;
+    }
+    localMessage = locale[locale.current];
+    if (!isNull(localMessage[name])) {
+        return localMessage[name](args);
+    }
+    return original;
+}
+
+function localeError(error) {
+    if (!isNull(locale[lang])) {
+        return error.message;
+    }
+    var localError = localError[lang];
+    if (!isNull(localeError[error.context])) {
+        return error.message;
+    }
+    localError = localError[error.context];
+    if (!isNull(localeError[error.code])) {
+        return error.message;
+    }
+    return localError[error.code](error.args);
+}
+
 var StateLoading;
 (function (StateLoading) {
     StateLoading[StateLoading["loadingGAPI"] = 0] = "loadingGAPI";
@@ -175,12 +204,10 @@ var ClientLoader = (function () {
                             }
 
                         client[this.mName](self.args).execute(function (response) {
-                            if (isNull(response.code)) {
-                                resolver.success(response);
-                            } else if (response.code == 401) {
-                                resolver.unauthorized(response.error.message);
+                            if (isNull(response.error)) {
+                                resolver.success(response.result);
                             } else {
-                                resolver.error(response.error);
+                                resolver.error(response.message);
                             }
                         });
                     }
@@ -296,7 +323,7 @@ var UserService = (function (_super) {
                     if (value.role)
                         rolesSelected.push(value.name);
                 });
-                var updateRoles = self.api['updateRoles'];
+                var updateRoles = self.api['update']['roles'];
                 updateRoles.args = { 'email': user.email, 'roles': rolesSelected };
                 updateRoles.execute(resolver);
             }

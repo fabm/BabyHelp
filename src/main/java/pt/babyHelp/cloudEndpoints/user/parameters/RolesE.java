@@ -1,11 +1,12 @@
 package pt.babyHelp.cloudEndpoints.user.parameters;
 
 import pt.babyHelp.bd.embededs.Role;
-import pt.gapiap.proccess.validation.annotations.Required;
+
+import javax.validation.constraints.NotNull;
 
 public class RolesE {
 
-    @Required
+    @NotNull
     private String[] roles;
 
     public String[] getRoles() {
@@ -16,7 +17,7 @@ public class RolesE {
         this.roles = roles;
     }
 
-    public Role[] toEnum(){
+    public Role[] toEnum() {
         Role[] eRoles = new Role[roles.length];
         for (int i = 0; i < roles.length; i++) {
             eRoles[i] = Role.convert(roles[i]);

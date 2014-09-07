@@ -2,29 +2,29 @@ package pt.babyHelp.cloudEndpoints.article;
 
 import pt.babyHelp.services.article.ArticleApiMap;
 import pt.gapiap.proccess.annotations.ApiMethodParameters;
-import pt.gapiap.proccess.validation.DefaultValidator;
-import pt.gapiap.proccess.validation.annotations.Required;
+import pt.gapiap.proccess.validation.defaultValidator.DefaultValidator;
+
+import javax.validation.constraints.NotNull;
 
 @ApiMethodParameters(
         api = ArticleApiMap.API,
         method = ArticleApiMap.CREATE,
-        validator = DefaultValidator.class
+        validators = DefaultValidator.class
 )
 
 public class ArticleCreationE {
-    @Required
+    @NotNull
     private String title;
 
     private String photoToken;
-    @Required
+    @NotNull
     private String body;
 
-    @Required
+    @NotNull
     private String summary;
 
-    @Required
+    @NotNull
     private boolean isPublic;
-
 
     public String getTitle() {
         return title;
@@ -65,4 +65,6 @@ public class ArticleCreationE {
     public void setPublic(boolean isPublic) {
         this.isPublic = isPublic;
     }
+
+
 }

@@ -1,21 +1,17 @@
 package user;
 
-import environment.Environment;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
 import pt.babyHelp.cloudEndpoints.article.ArticleCreationE;
 import pt.babyHelp.cloudEndpoints.article.ArticleUpdateE;
-import pt.babyHelp.services.BHChecker;
-import pt.babyHelp.services.BabyHelpError;
-import pt.gapiap.cloud.endpoints.CEError;
 import pt.gapiap.proccess.annotations.ApiMethodParameters;
+import pt.gapiap.proccess.validation.bean.checker.BeanChecker;
+import pt.gapiap.proccess.validation.bean.checker.BeanCheckerException;
 
+import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 
-public class UsersPersistence {
-    @Rule
-    public Environment store = new Environment(true);
+public class BeanCheckTest {
 
     @Test
     public void checkEntryArticleCreate() {
@@ -25,12 +21,15 @@ public class UsersPersistence {
         articleCreationE.setPublic(false);
         articleCreationE.setTitle("aaa");
 
-        BHChecker bhChecker = new BHChecker();
+        BeanChecker beanChecker = new BeanChecker(false);
         try {
-            bhChecker.check(articleCreationE);
-        } catch (CEError ceError) {
-            Assert.assertEquals(BabyHelpError.REQUIRED_FIELD, ceError.getCeErrorReturn());
-            Assert.assertEquals("resumo", ceError.getParameters()[0]);
+            beanChecker.check(articleCreationE);
+            //the instruction above never happens
+            Assert.assertTrue(false);
+        } catch (BeanCheckerException e) {
+            Assert.assertEquals(NotNull.class, e.getValidationContext()
+                    .getAnnotation().annotationType());
+            Assert.assertEquals("summary", e.getValidationContext().getName());
         }
     }
 
@@ -42,14 +41,15 @@ public class UsersPersistence {
         articleUpdateE.setPublic(false);
         articleUpdateE.setTitle("aaa");
 
-        BHChecker bhChecker = new BHChecker();
+        BeanChecker bhChecker = new BeanChecker(false);
         try {
             bhChecker.check(articleUpdateE);
-            //é suposto entrar no catch
+            //the instruction above never happens
             Assert.assertTrue(false);
-        } catch (CEError ceError) {
-            Assert.assertEquals(BabyHelpError.REQUIRED_FIELD, ceError.getCeErrorReturn());
-            Assert.assertEquals("resumo", ceError.getParameters()[0]);
+        } catch (BeanCheckerException e) {
+            Assert.assertEquals(NotNull.class, e.getValidationContext()
+                    .getAnnotation().annotationType());
+            Assert.assertEquals("summary", e.getValidationContext().getName());
         }
     }
 

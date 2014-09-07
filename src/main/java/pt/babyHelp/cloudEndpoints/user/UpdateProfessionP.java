@@ -2,16 +2,17 @@ package pt.babyHelp.cloudEndpoints.user;
 
 
 import pt.gapiap.proccess.annotations.ApiMethodParameters;
-import pt.gapiap.proccess.validation.DefaultValidator;
-import pt.gapiap.proccess.validation.annotations.Required;
+import pt.gapiap.proccess.validation.defaultValidator.DefaultValidator;
+
+import javax.validation.constraints.NotNull;
 
 @ApiMethodParameters(
         api = UserApiMap.API,
         method = UserApiMap.UPDATE_PROFESSION,
-        validator = DefaultValidator.class
+        validators = DefaultValidator.class
 )
 public class UpdateProfessionP {
-    @Required
+    @NotNull
     String profession;
 
     public String getProfession() {

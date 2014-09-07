@@ -8,10 +8,9 @@ import pt.babyHelp.bd.MyDate;
 import pt.babyHelp.bd.Parentality;
 import pt.babyHelp.bd.Son;
 import pt.babyHelp.cloudEndpoints.BHAuthorization;
-import pt.babyHelp.cloudEndpoints.UserAcessible;
 import pt.babyHelp.cloudEndpoints.testes.SonParameter;
-import pt.core.cloudEndpoints.CEUtils;
-import pt.gapiap.cloud.endpoints.CEError;
+import pt.gapiap.cloud.endpoints.errors.CEError;
+import pt.gapiap.services.UserAcessible;
 
 import java.util.*;
 
@@ -57,7 +56,7 @@ public class TestesImpl implements UserAcessible {
             son.setPhotoKey(sonParameter.getPhotokey());
 
             String sonName = BD.checkKey(BD.ofy().save().entity(son).now(), Son.class).getName();
-            String userParentEmail = getAuthorization().savedUserFromApp().getEmail();
+            String userParentEmail = getAuthorization().savedUser().getEmail();
 
             Parentality parentality = new Parentality();
             parentality.setUserFromAppEmail(userParentEmail);
@@ -71,13 +70,10 @@ public class TestesImpl implements UserAcessible {
         return map;
     }
 
-    public Map<String, Object> getParentsList(String name) {
-        return CEUtils.createMapAndPut("falta", "completar");
-    }
-
     @Override
     public void setUser(User user) {
-        authorization = new BHAuthorization(user);
+        authorization = new BHAuthorization();
+        authorization.init(user);
     }
 
     @Override

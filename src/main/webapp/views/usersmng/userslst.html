@@ -1,10 +1,10 @@
+<div ng-if="loading">{{loadingMessage}}</div>
 <div ng-if="showUsersList()">
     <h2>Lista de utilizadores registados</h2>
 
     <div ng-if="(users.length == 0)">
         Sem utilizadores
     </div>
-    <div ng-if="loading">{{loading}}</div>
     <table ng-if="(users.length > 0)">
         <tr>
             <th>Email</th>
@@ -20,11 +20,6 @@
     <a ng-href="#/users/edit/">Criar roles para novo utilizador</a>
 
 </div>
-
-<div ng-if="error" class="erro">
-    {{error}}
-</div>
-
 
 <modal-dialog show='modalShown' data="data" width='750px' height='40%'>
     <div>{{data}}</div>

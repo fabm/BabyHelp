@@ -1,10 +1,9 @@
 package pt.babyHelp.cloudEndpoints.article;
 
-
-import pt.gapiap.proccess.validation.annotations.Required;
+import javax.validation.constraints.NotNull;
 
 public class IdArticleE {
-    @Required
+    @NotNull
     private Long id;
 
     public IdArticleE(Long id) {

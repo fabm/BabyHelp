@@ -1,16 +1,15 @@
 package pt.babyHelp.services.impl;
 
 
-import com.google.appengine.api.users.User;
 import com.googlecode.objectify.cmd.Query;
 import pt.babyHelp.bd.BD;
 import pt.babyHelp.bd.Parentality;
 import pt.babyHelp.bd.Son;
-import pt.babyHelp.cloudEndpoints.BHAuthorization;
-import pt.babyHelp.services.SonService;
-import pt.gapiap.cloud.endpoints.Authorization;
+import pt.gapiap.cloud.endpoints.authorization.Authorization;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class SonServiceImpl {
 
@@ -28,7 +27,6 @@ public class SonServiceImpl {
         }
         return BD.ofy().load().type(Son.class).ids(sonIds).values();
     }
-
 
 
 }

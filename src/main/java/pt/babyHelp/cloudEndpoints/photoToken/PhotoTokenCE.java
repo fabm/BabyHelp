@@ -4,13 +4,14 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
+import com.google.inject.Inject;
 import pt.babyHelp.cloudEndpoints.Constants;
-import pt.babyHelp.services.BHCEDispatcher;
-import pt.babyHelp.services.BHDispatcher;
+import pt.babyHelp.services.BHACLInvoker;
 import pt.babyHelp.services.photoToken.PhotoTokenApiMap;
 import pt.babyHelp.services.photoToken.PhotoTokenService;
-import pt.gapiap.cloud.endpoints.CEError;
-import pt.gapiap.cloud.endpoints.CEReturn;
+import pt.babyHelp.services.photoToken.PhotoTokenServiceImp;
+import pt.gapiap.cloud.endpoints.authorization.ACLInvoker;
+import pt.gapiap.cloud.endpoints.errors.CEError;
 
 @Api(name = PhotoTokenApiMap.API,
         version = "v1",
@@ -21,22 +22,14 @@ import pt.gapiap.cloud.endpoints.CEReturn;
         audiences = {Constants.ANDROID_AUDIENCE})
 public class PhotoTokenCE {
 
-    private BHDispatcher dispatcher;
 
-    public PhotoTokenCE() {
-        dispatcher = new BHDispatcher(new PhotoTokenService());
-    }
-
-    private BHCEDispatcher getDispatcher(User user) {
-        BHCEDispatcher bhceDispatcher = new BHCEDispatcher(dispatcher);
-        bhceDispatcher.setUser(user);
-        return bhceDispatcher;
+    BHACLInvoker<PhotoTokenService> getACL(User user){
+        return null;
     }
 
     @ApiMethod(name = PhotoTokenApiMap.GET, httpMethod = ApiMethod.HttpMethod.GET, path = "get")
-    public CEReturn get(User user) throws UnauthorizedException, CEError {
-
-        return getDispatcher(user).setEntry(PhotoTokenApiMap.GET);
+    public Object get(User user) throws UnauthorizedException, CEError {
+        return getACL(user).execute().getToken();
     }
 
 }

@@ -1,18 +1,20 @@
 package pt.babyHelp.cloudEndpoints.article;
 
+import com.google.inject.name.Named;
 import pt.babyHelp.services.article.ArticleApiMap;
 import pt.gapiap.proccess.annotations.ApiMethodParameters;
-import pt.gapiap.proccess.validation.DefaultValidator;
-import pt.gapiap.proccess.validation.annotations.Required;
+import pt.gapiap.proccess.validation.defaultValidator.DefaultValidator;
+
+import javax.validation.constraints.NotNull;
 
 @ApiMethodParameters(
         api = ArticleApiMap.API,
         method = ArticleApiMap.UPDATE,
-        validator = DefaultValidator.class
+        validators = DefaultValidator.class
 )
 
 public class ArticleUpdateE extends ArticleCreationE {
-    @Required
+    @NotNull
     private Long id;
 
     public Long getId() {

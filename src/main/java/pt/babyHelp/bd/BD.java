@@ -3,8 +3,7 @@ package pt.babyHelp.bd;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
-import pt.babyHelp.services.BabyHelp;
-import pt.gapiap.cloud.endpoints.CEError;
+import pt.gapiap.cloud.endpoints.errors.CEError;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -25,35 +24,35 @@ public class BD {
         return ObjectifyService.ofy();
     }
 
-    public static <T>Key<T> checkKey(Key<T> key,Class<T> clazz) throws CEError {
-        if(key == null)throw new CEError(BabyHelp.CEError.PERSIST,clazz.getSimpleName());
+    public static <T> Key<T> checkKey(Key<T> key, Class<T> clazz) throws CEError {
         return key;
     }
 
-    public static <T> List<Key<T>> keys(Class<T> entityClass, long...ids){
+    public static <T> List<Key<T>> keys(Class<T> entityClass, long... ids) {
         List<Key<T>> list = new ArrayList<Key<T>>(ids.length);
-        for (long id:ids){
+        for (long id : ids) {
             Key<T> key = Key.create(entityClass, id);
-            list.add(Key.create(entityClass,id));
+            list.add(Key.create(entityClass, id));
         }
         return list;
     }
-    public static <T> List<Key<T>> keys(Class<T> entityClass, String...ids){
+
+    public static <T> List<Key<T>> keys(Class<T> entityClass, String... ids) {
         List<Key<T>> list = new ArrayList<Key<T>>(ids.length);
-        for (String id:ids){
-            list.add(Key.create(entityClass,id));
+        for (String id : ids) {
+            list.add(Key.create(entityClass, id));
         }
         return list;
     }
 
     protected synchronized static <T> Iterator<T> loadIterablePage(Class<T> cl, int itemsPerPage, int page) {
         Iterator<T> iterator;
-            iterator =
-                    BD.ofy().load().type(cl).
-                    limit(itemsPerPage).
-                    offset(itemsPerPage * (page - 1))
-                    .iterator()
-            ;
+        iterator =
+                BD.ofy().load().type(cl).
+                        limit(itemsPerPage).
+                        offset(itemsPerPage * (page - 1))
+                        .iterator()
+        ;
         return iterator;
     }
 
@@ -82,14 +81,12 @@ public class BD {
         return BD.ofy().load().type(cl).id(id).safe();
     }
 
+    public static void register(Class<?> clazz) {
+        ObjectifyService.register(clazz);
+    }
 
     public void delete() {
         BD.ofy().delete().entity(this).now();
-    }
-
-
-    public static void register(Class<?> clazz) {
-        ObjectifyService.register(clazz);
     }
 
 

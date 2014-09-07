@@ -1,10 +1,20 @@
 package pt.babyHelp.services.article;
 
-import pt.gapiap.cloud.endpoints.CEErrorReturn;
+public class AricleError {
+/*
+    private static final MessageFormat[] MESSAGES;
 
-public enum AricleError implements CEErrorReturn {
-    NOT_OWNER,
-    ID_NOT_FOUND;
+    static {
+        MESSAGES = new MessageFormat[2];
+        MESSAGES[NOT_OWNER.code] = new MessageFormat("Não é possível aceder ao artigo pois não é o autor");
+        MESSAGES[ID_NOT_FOUND.code] = new MessageFormat("Não foi encontrado o artigo com o id:{0}");
+    }
+
+    private final int code;
+
+    AricleError(int index) {
+        this.code = index;
+    }
 
     @Override
     public String getContext() {
@@ -13,17 +23,8 @@ public enum AricleError implements CEErrorReturn {
 
     @Override
     public int getCode() {
-        return this.ordinal();
+        return this.code;
     }
 
-    @Override
-    public String getMsg() {
-        switch (this){
-            case NOT_OWNER:
-                return "Não é possível aceder ao artigo pois não é o autor";
-            case ID_NOT_FOUND:
-                return "Não foi encontrado o artigo com o id:%s";
-        }
-        return null;
-    }
+*/
 }

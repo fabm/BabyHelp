@@ -12,6 +12,43 @@ interface Resolve {
     unauthorized?:(response)=>void;
 }
 
+interface Error {
+    context:string;
+    code:number;
+    args:any;
+}
+
+declare var locale;
+
+var lang = navigator.userLanguage || navigator.language;
+
+function localeMessage(name:string, original:string, args?:any):string {
+    var localMessage;
+    if (isNull(locale[locale.current])) {
+        return original;
+    }
+    localMessage = locale[locale.current];
+    if (!isNull(localMessage[name])) {
+        return localMessage[name](args);
+    }
+    return original;
+}
+
+function localeError(error:Error):string {
+    if (!isNull(locale[lang])) {
+        return error.message;
+    }
+    var localError = localError[lang];
+    if (!isNull(localeError[error.context])) {
+        return error.message;
+    }
+    localError = localError[error.context];
+    if (!isNull(localeError[error.code])) {
+        return error.message;
+    }
+    return localError[error.code](error.args);
+}
+
 interface Executor {
     execute:(resolver:Resolve)=>void;
 }
@@ -19,6 +56,7 @@ interface Executor {
 enum StateLoading{
     loadingGAPI , authenticating, clientLoading, callService, authFail
 }
+
 
 class ClientLoader {
     public static logged:boolean = false;
@@ -189,12 +227,10 @@ class ClientLoader {
 
 
                         client[this.mName](self.args).execute((response)=> {
-                            if (isNull(response.code)) {
-                                resolver.success(response);
-                            } else if (response.code == 401) {
-                                resolver.unauthorized(response.error.message);
+                            if (isNull(response.error)) {
+                                resolver.success(response.result);
                             } else {
-                                resolver.error(response.error);
+                                resolver.error(response.message);
                             }
                         });
                     }
@@ -311,7 +347,7 @@ class UserService extends ClientBabyHelp {
                 user.roles.forEach((value, index, arr)=> {
                     if (value.role)rolesSelected.push(value.name);
                 });
-                var updateRoles = self.api['updateRoles'];
+                var updateRoles = self.api['update']['roles'];
                 updateRoles.args = {'email': user.email, 'roles': rolesSelected};
                 updateRoles.execute(resolver);
             }

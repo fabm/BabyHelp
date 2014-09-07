@@ -1,31 +1,16 @@
 package pt.babyHelp.cloudEndpoints.testes;
 
-import pt.babyHelp.validation.BHValidationToRemove;
-import pt.core.cloudEndpoints.parameter.evaluation.Evaluation;
-import pt.core.cloudEndpoints.parameter.evaluation.ParameterEvaluated;
-
 import java.util.List;
 
-public class UserEntry implements ParameterEvaluated {
-    @Evaluation(validations = {BHValidationToRemove.EMAIL})
+public class UserEntry {
     private String email;
-    @Evaluation
     private List<String> roles;
-    @Evaluation
     private boolean registered;
-    @Evaluation
     private String name;
-    @Evaluation(validations = BHValidationToRemove.REQUIRED)
     private boolean logged;
-    @Evaluation
     private String profession;
-    @Evaluation
     private boolean loadFromDS = false;
-    private boolean eval;
 
-    public void setEval(boolean eval) {
-        this.eval = eval;
-    }
 
     public boolean isLoadFromDS() {
         return loadFromDS;
@@ -83,8 +68,4 @@ public class UserEntry implements ParameterEvaluated {
         this.profession = profession;
     }
 
-    @Override
-    public boolean isDefinitionRequest() {
-        return eval;
-    }
 }

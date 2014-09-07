@@ -2,18 +2,19 @@ package pt.babyHelp.cloudEndpoints.user.parameters;
 
 import pt.babyHelp.cloudEndpoints.user.UserApiMap;
 import pt.gapiap.proccess.annotations.ApiMethodParameters;
-import pt.gapiap.proccess.validation.DefaultValidator;
+import pt.gapiap.proccess.validation.defaultValidator.DefaultValidator;
 import pt.gapiap.proccess.validation.annotations.Email;
-import pt.gapiap.proccess.validation.annotations.Required;
+
+import javax.validation.constraints.NotNull;
 
 @ApiMethodParameters(
         api = UserApiMap.API,
         method = UserApiMap.GET_ROLES,
-        validator = DefaultValidator.class
+        validators = DefaultValidator.class
 )
 public class GetRolesP {
     @Email
-    @Required
+    @NotNull
     private String email;
 
     public GetRolesP(String email) {

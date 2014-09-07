@@ -5,14 +5,9 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
-    <servlet>
-        <servlet-name>Services</servlet-name>
-        <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>Services</servlet-name>
-        <url-pattern>/_ah/spi/*</url-pattern>
-    </servlet-mapping>
+    <listener>
+        <listener-class>pt.core.BHGSCL</listener-class>
+    </listener>
 
     <servlet>
         <servlet-name>photoServe</servlet-name>
@@ -34,6 +29,14 @@
         <url-pattern>/upload/*</url-pattern>
     </servlet-mapping>
 
+    <filter>
+        <filter-name>guiceFilter</filter-name>
+        <filter-class>com.google.inject.servlet.GuiceFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>guiceFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>

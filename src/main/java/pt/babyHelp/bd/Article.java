@@ -1,35 +1,30 @@
 package pt.babyHelp.bd;
 
+import com.google.common.collect.ImmutableMap;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
-import pt.core.pojoMap.ToMap;
+
+import java.util.Map;
 
 @Entity
 public class Article {
 
     @Id
-    @ToMap
     private Long id;
 
     @Index
-    @ToMap("author")
     private String authorEmail;
 
-    @ToMap
     private String title;
 
-    @ToMap
     private String body;
 
-    @ToMap
     private String summary;
 
-    @ToMap
     private String photoKey;
 
     @Index
-    @ToMap("public")
     private boolean isPublic;
 
     public boolean isPublic() {
@@ -82,5 +77,17 @@ public class Article {
 
     public void setAuthorEmail(String authorEmail) {
         this.authorEmail = authorEmail;
+    }
+
+    public Map<String, Object> toMap() {
+        return ImmutableMap.<String, Object>builder()
+                .put("id", id)
+                .put("author", authorEmail)
+                .put("title", title)
+                .put("body", body)
+                .put("summary", summary)
+                .put("photoKey", photoKey)
+                .put("isPublic", isPublic)
+                .build();
     }
 }
