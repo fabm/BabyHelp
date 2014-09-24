@@ -1,5 +1,6 @@
 /// <reference path="ext/gapi/gapi.d.ts" />
 /// <reference path="lib.ts" />
+/// <reference path="api.ts" />
 
 interface AuthResponse {
     logged:()=>void;
@@ -67,6 +68,12 @@ class ClientLoader {
     public cbState:(state:StateLoading)=>void;
     public api:{[index:string]:any};
     private config = {};
+    private apiMapDepot:ApiMapDepot;
+
+    constructor(apiMapDepot:ApiMapDepot) {
+        this.apiMapDepot = apiMapDepot;
+    }
+
     public defaultResolver:Resolve = {
         success: function (success) {
             console.log(success);
@@ -78,7 +85,6 @@ class ClientLoader {
             console.log(unauthorized);
         }
     }
-
 
     public static logout() {
         gapi.auth.setToken(null);
@@ -127,10 +133,17 @@ class ClientLoader {
         var self = this;
 
         function callAttributes() {
+
             self.api = {};
-            self.attribClient(gapi.client[self.client], self.api);
-            self.callCBState(StateLoading.callService);
-            if (!isNull(callback))callback();
+
+            self.apiMapDepot.afterLoaded(()=> {
+                self.attribClient(self.apiMapDepot.getMap(self.client), self.api);
+                self.apiMapDepot.setApi(null);
+                self.callCBState(StateLoading.callService);
+                if (!isNull(callback))callback();
+                return self.api;
+            });
+            self.apiMapDepot.setApi(gapi.client);
         }
 
         if (isNull(gapi.auth)) {
@@ -154,7 +167,7 @@ class ClientLoader {
                 callAttributes();
             }, self.apiUrl);
         } else if (isNull(self.api)) {
-            callAttributes()
+            callAttributes();
         } else {
             if (!isNull(callback))callback();
         }
@@ -164,16 +177,32 @@ class ClientLoader {
         console.log('loaded ' + this.client);
     }
 
-    private attribClient(client, context) {
+    private attribClient(map:ApiMap, contextApi) {
         var obSelf = this;
-        for (var m in client) {
-            if (typeof (client[m]) === 'function')
-                context[m] = {
+
+        for (var m in map.api) {
+
+            function load(current) {
+                if (typeof (current) === 'undefined' || typeof (current[m]) === 'undefined') {
+                    return null;
+                } else {
+                    return current[m];
+                }
+            }
+
+            if (typeof (map.api[m]) === 'function') {
+                var currentValidations;
+                contextApi[m] = {
                     args: undefined,
                     mName: m,
+                    validations: load(map.validations),
+                    fields: load(map.fields),
+                    errors: map.errors,
+                    validator: map.validator,
+                    lang: map.lang,
                     argsEval: function () {
                         var self = this;
-                        client[this.mName]({'eval': true}).execute((response)=> {
+                        map.api[this.mName]({'eval': true}).execute((response)=> {
                             var result = response.result;
                             self.args = {};
                             self['validations'] = {};
@@ -202,42 +231,85 @@ class ClientLoader {
                         if (isNull(resolver))
                             resolver = obSelf.defaultResolver;
 
-                        function getValidation(name, value) {
-                            var valArr = self['validations'][name];
-                            if (!isNull(valArr))
-                                for (var val in valArr) {
-                                    if (!obSelf['validations'][valArr[val]].check(value)) {
-                                        var al = self['alias'][name];
-                                        al = (al == undefined) ? name : al;
-                                        resolver.error(
-                                            {error: {
-                                                message: obSelf['validations'][valArr[val]].alert(al)
-                                            }}
-                                        );
-                                        return;
+                        function getErrorMessage(val, name) {
+                            var template = self['errors'][val]['lang'][self.lang]['template'];
+                            var render = [];
+                            var localField = self.fields[name][self.lang];
+                            render[0] = template[0] + localField + template[1];
+                            for (var i = 2; i < template.length; i++) {
+                                render[i - 1] = template[i];
+                            }
+                            return render;
+                        }
+
+                        function getValidation(arr, name, value) {
+                            if (!isNull(arr)) {
+                                for (var val in arr) {
+                                    var current = arr[val]['id'];
+                                    var checked = self['validator'][current](value);
+                                    if (!checked) {
+                                        return getErrorMessage(current, name);
                                     }
                                 }
+                            }
+                            return null;
                         }
 
 
-                        if (!isNull(self.args) && !isNull(self['validations']))
-                            for (var p in self.validations) {
-                                var ret = getValidation(p, self.args[p]);
-                            }
+                        var response = null;
 
-
-                        client[this.mName](self.args).execute((response)=> {
-                            if (isNull(response.error)) {
-                                resolver.success(response.result);
+                        function createErrorResponse(template) {
+                            if (template.length == 1) {
+                                return response = template[0];
                             } else {
-                                resolver.error(response.message);
+                                return response['template'] = template;
                             }
-                        });
+                        }
+
+                        function orderedValidations(current) {
+                            var arr = [];
+                            for (var c in self.validations[current]) {
+                                arr.push({
+                                    'id': c,
+                                    'priority': self.validations[current][c]['priority']
+                                });
+                            }
+                            arr.sort((a, b)=> {
+                                return b.priority - a.priority;
+                            });
+                            return arr;
+                        }
+
+                        if (!isNull(self.args) && !isNull(self['validations'])) {
+                            for (var p in self.validations) {
+                                var sorted = orderedValidations(p);
+                                var validationError = getValidation(sorted, p, self['args'][p]);
+                                if (validationError == null) {
+                                    continue;
+                                } else {
+                                    createErrorResponse(validationError);
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (response == null) {
+                            map.api[this.mName](self.args).execute((response)=> {
+                                if (isNull(response.error)) {
+                                    resolver.success(response.result);
+                                } else {
+                                    resolver.error(response.error.message);
+                                }
+                            });
+                        } else {
+                            resolver.error(response);
+                        }
                     }
                 }
-            else {
-                context[m] = {};
-                obSelf.attribClient(client[m], context[m]);
+
+            } else {
+                contextApi[m] = {};
+                obSelf.attribClient(ApiMapDepot.in(map, m), contextApi[m]);
             }
         }
     }
@@ -249,166 +321,3 @@ class ClientLoader {
     }
 }
 
-class ClientBabyHelp extends ClientLoader {
-    constructor() {
-        super();
-        this.apiUrl = 'http' + (isLocal ? '' : 's') + '://' + window.location.host + "/_ah/api";
-        super.setClientID('942158003504-3c2sv8q1ukhneffl2sfl1mm9g8ac281u.apps.googleusercontent.com');
-        super.setScope(['https://www.googleapis.com/auth/userinfo.email']);
-    }
-
-    validations = {
-        EMAIL: {
-            check(value) {
-                return /^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/.test(value);
-            },
-            alert(alias) {
-                return "O campo " + alias + " não é reconhecido como email";
-            }
-        },
-        REQUIRED: {
-            check(value) {
-                if (isNull(value))return false;
-                if (value.length == 0) return false;
-                return true;
-            },
-            alert(alias) {
-                return "O campo " + alias + " não pode ser vazio";
-            }
-        }
-    }
-
-}
-
-interface Role {
-    name:string;alias:string;role:boolean;
-}
-
-class UserService extends ClientBabyHelp {
-    constructor() {
-        super();
-        this.client = 'userBH';
-    }
-
-    public static loadAllRoles():Array<Role> {
-        function create(alias, name):Role {
-            return {
-                name: name,
-                alias: alias,
-                role: false
-            };
-        }
-
-        var all:Array<Role> = [];
-        all.push(create('técnico de saúde', 'HEALTHTEC'));
-        all.push(create('administrador', 'ADMINISTRATOR'));
-        all.push(create('educador', 'PARENT'));
-        return all;
-    }
-
-
-    getRoles(user):Executor {
-        var self = this;
-
-        var onSuccess;
-
-        var iResolver = {
-            success: (response)=> {
-                var allRoles:Array<Role> = UserService.loadAllRoles();
-                allRoles.forEach((value, index, arr)=> {
-                    value.role = response.body.indexOf(value.name) != -1;
-                });
-                user.roles = allRoles;
-                onSuccess(null);
-            },
-            error: null,
-            unauthorized: null
-        };
-
-
-        return {
-            execute: (resolver:Resolve)=> {
-                iResolver.error = resolver.error;
-                iResolver.unauthorized = resolver.unauthorized;
-                onSuccess = resolver.success;
-                super.loadApi(()=> {
-                    self.api['getRoles']({email: user.email}).execute(iResolver);
-                });
-            }
-        };
-    }
-
-    updateRoles(user:{email:string;roles:Array<Role>}):Executor {
-        var self = this;
-
-        return {
-            execute: (resolver:Resolve)=> {
-                var rolesSelected:Array<string> = [];
-                user.roles.forEach((value, index, arr)=> {
-                    if (value.role)rolesSelected.push(value.name);
-                });
-                var updateRoles = self.api['update']['roles'];
-                updateRoles.args = {'email': user.email, 'roles': rolesSelected};
-                updateRoles.execute(resolver);
-            }
-        }
-    }
-
-    list():Executor {
-        return this.api['list'];
-    }
-}
-
-interface ArticleCreation {
-    body:string;
-    summary:string;
-    title:string;
-    photoUrl:string;
-    isPublic:boolean;
-}
-
-interface ArticleUpdate extends ArticleCreation {
-    id:number;
-}
-
-class ArticlesService extends ClientBabyHelp {
-    constructor() {
-        super();
-        this.client = 'article';
-    }
-
-    get(id):Executor {
-        return this.api['get']({id: id});
-    }
-
-    create(article:ArticleCreation):Executor {
-        return this.api['create']({article: article});
-    }
-
-    listMy():Executor {
-        return this.api['list']['my']();
-    }
-
-    listPublic():Executor {
-        return this.api['list']['public']();
-    }
-
-    update(article:ArticleUpdate):Executor {
-        return this.api['update'](article);
-    }
-
-    delete(ids):Executor {
-        return this.api['delete']({ids: ids});
-    }
-}
-
-class PhotoTokenService extends ClientBabyHelp {
-    constructor() {
-        super();
-        this.client = 'photoToken';
-    }
-
-    getPhotoToken() {
-        return this.api['getuploadurl']();
-    }
-}

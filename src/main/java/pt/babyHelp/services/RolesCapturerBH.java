@@ -1,16 +1,16 @@
 package pt.babyHelp.services;
 
 import pt.babyHelp.bd.embededs.Role;
-import pt.gapiap.cloud.endpoints.authorization.RolesCapturer;
+import pt.gapiap.runtime.reflection.EnumArrayFromAnnotation;
 
-public class RolesCapturerBH implements RolesCapturer<Role,RolesValidation>{
+public class RolesCapturerBH implements EnumArrayFromAnnotation<Role, RolesValidation> {
   @Override
   public Class<RolesValidation> getAnnotationClass() {
     return RolesValidation.class;
   }
 
   @Override
-  public Role[] getRoles(RolesValidation annotation) {
+  public Role[] getEnumArray(RolesValidation annotation) {
     return annotation.value();
   }
 }

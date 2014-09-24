@@ -1,0 +1,90 @@
+{
+    "userBH": {
+        "update": {
+            "username": {
+                "name": {
+                    "pt": "nome",
+                    "en": "name"
+                }
+            },
+            "profession": {
+                "profession": {
+                    "pt": "profissão",
+                    "en": "profession"
+                }
+            },
+            "roles": {
+                "email": {
+                    "pt": "email",
+                    "en": "email"
+                },
+                "roles": {
+                    "pt":"roles",
+                    "en":"roles"
+                }
+            }
+        },
+        "get": {
+            "roles": {
+                "email": {
+                    "pt":"email",
+                    "en":"email"
+                }
+            }
+        }
+    },
+    "article": {
+        "update": {
+            "id": {
+                "pt":"id",
+                "en":"id"
+            },
+            "summary": {
+                "pt":"resumo",
+                "en":"summary"
+            },
+            "body": {
+                "pt":"corpo",
+                "en":"body"
+            },
+            "title": {
+                "pt":"titulo",
+                "en":"title"
+            },
+            "isPublic": {
+                "pt":"público",
+                "en":"public"
+            },
+            "photoToken": {
+                "pt":"token",
+                "en":"token"
+            }
+        },
+        "create": {
+            "id": {
+                "pt":"id",
+                "en":"id"
+            },
+            "summary": {
+                "pt":"resumo",
+                "en":"summary"
+            },
+            "body": {
+                "pt":"corpo",
+                "en":"body"
+            },
+            "title": {
+                "pt":"titulo",
+                "en":"title"
+            },
+            "isPublic": {
+                "pt":"público",
+                "en":"public"
+            },
+            "photoToken": {
+                "pt":"token",
+                "en":"token"
+            }
+        }
+    }
+}

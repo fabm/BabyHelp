@@ -2,6 +2,7 @@ package pt.babyHelp.services.article;
 
 import com.google.api.server.spi.config.Named;
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Inject;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import pt.babyHelp.bd.Article;
@@ -14,6 +15,7 @@ import pt.babyHelp.cloudEndpoints.article.IdArticleE;
 import pt.babyHelp.cloudEndpoints.article.ListIDs;
 import pt.gapiap.cloud.endpoints.authorization.Authorization;
 import pt.gapiap.cloud.endpoints.errors.CEError;
+import pt.gapiap.cloud.endpoints.errors.ErrorManager;
 import pt.gapiap.cloudEndpoints.services.annotations.InstanceType;
 import pt.gapiap.cloudEndpoints.services.annotations.PhotoUploadClass;
 import pt.gapiap.cloudEndpoints.services.annotations.PhotoUploadMethod;
@@ -27,8 +29,10 @@ import java.util.Map;
 @PhotoUploadClass(type = InstanceType.SINGLETONE)
 public class ArticleServiceImp implements ArticleService {
 
+  @Inject
+  private ErrorManager errorManager;
+
   @Override
-  @MappedAction(value = ArticleApiMap.CREATE, area = "criação de um artigo")
   public Object createArticle(ArticleCreationE articleCreationE, Authorization<Role, UserFromApp> authorization) throws CEError {
 
     Article article = new Article();
@@ -54,7 +58,6 @@ public class ArticleServiceImp implements ArticleService {
 
 
   @Override
-  @MappedAction(value = ArticleApiMap.UPDATE, area = "atualização de um artigo")
   public Map<String, String> update(ArticleUpdateE articleUpdateE, Authorization<Role, UserFromApp> authorization) throws CEError {
     @SuppressWarnings("unchecked")
 
@@ -66,8 +69,6 @@ public class ArticleServiceImp implements ArticleService {
     article.setSummary(articleUpdateE.getSummary());
 
     if (article.getAuthorEmail().equals(authorization.getUserWithRoles().getEmail())) {
-      //todo throw error
-      //throw new SimpleError(AricleError.NOT_OWNER);
     }
 
     BD.ofy().save().entity(article).now();
@@ -96,7 +97,6 @@ public class ArticleServiceImp implements ArticleService {
 
 
   @Override
-  @MappedAction(value = ArticleApiMap.DELETE, area = "delete")
   public ImmutableMap<String, String> delete(ListIDs listIDs, Authorization<Role, UserFromApp> authorization) throws CEError {
     long[] ids = listIDs.getIds();
 
@@ -109,8 +109,7 @@ public class ArticleServiceImp implements ArticleService {
 
     for (Map.Entry<Long, Article> entry : articlesMap.entrySet()) {
       if (!entry.getValue().getAuthorEmail().equals(authorization.getUserWithRoles().getEmail())) {
-        //todo throw error
-        //throw new SimpleError(AricleError.NOT_OWNER);
+
       }
     }
 
@@ -120,7 +119,6 @@ public class ArticleServiceImp implements ArticleService {
 
 
   @Override
-  @MappedAction(value = ArticleApiMap.LIST_MY, area = "lista dos artigos do autor")
   public ImmutableMap<String, List<Map<String, Object>>> listMyArticles(Authorization<Role, UserFromApp> authorization) {
     Query<Article> query = BD.ofy().load().type(Article.class)
         .filter("authorEmail", authorization.getUserWithRoles().getEmail());
@@ -135,14 +133,12 @@ public class ArticleServiceImp implements ArticleService {
   }
 
   @Override
-  @MappedAction(value = ArticleApiMap.GET, area = "detalhe do artigo")
   public Map<String, Object> get(IdArticleE idArticleE) throws CEError {
     Article article = BD.ofy().load().type(Article.class).id(idArticleE.getId()).now();
     return article.toMap();
   }
 
   @Override
-  @MappedAction(value = ArticleApiMap.LIST_PUBLIC, area = "lista dos artigos públicos")
   public List<Map<String, Object>> listPublic() {
     Query<Article> query = BD.ofy().load().type(Article.class).filter("isPublic", true);
 

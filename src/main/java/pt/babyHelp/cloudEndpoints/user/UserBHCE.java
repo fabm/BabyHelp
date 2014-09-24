@@ -38,7 +38,6 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod;
 )
 public class UserBHCE {
 
-
   @Inject
   private ACLInvokerBuilderBH<UserBHService> aclBuilder;
 
@@ -65,11 +64,6 @@ public class UserBHCE {
     return getACL(user).execute().updateRoles(updateRolesP);
   }
 
-  @ApiMethod(name = UserApiMap.UPDATE_USERNAME, httpMethod = HttpMethod.PUT)
-  public Object updateUserName(User user, UpdateUserNameP updateUserNameP)
-      throws UnauthorizedException, CEError {
-    return getACL(user).execute().updateUserName(updateUserNameP);
-  }
 
   @ApiMethod(name = UserApiMap.LIST)
   public Object list(User user) throws UnauthorizedException, CEError {
@@ -82,19 +76,5 @@ public class UserBHCE {
     return getACL(user).execute().getRoles(new GetRolesP(email));
   }
 
-  @ApiMethod(name = UserApiMap.UPDATE_PROFESSION, httpMethod = HttpMethod.PUT, path = "update/profession")
-  public Object updateProfession(User user, UpdateProfessionP updateProfession) throws UnauthorizedException, CEError {
-    return getACL(user).execute().updateProfession(updateProfession);
-  }
-
-  @ApiMethod(name = UserApiMap.PENDING_ACTIONS, httpMethod = ApiMethod.HttpMethod.GET, path = "pendingactions")
-  public Object pendingActions(User user) throws UnauthorizedException, CEError {
-    ACLInvoker<UserBHService,BHAuthorization> userBHServiceACLInvoker = getACL(user);
-    BHAuthorization authorization = userBHServiceACLInvoker.getAuthorization();
-
-    UserFromApp userFromApp = authorization.getUserWithRoles();
-
-    return userBHServiceACLInvoker.execute().pendingActions(userFromApp);
-  }
 }
 

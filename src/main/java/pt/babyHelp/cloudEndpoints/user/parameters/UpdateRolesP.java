@@ -3,35 +3,40 @@ package pt.babyHelp.cloudEndpoints.user.parameters;
 import pt.babyHelp.cloudEndpoints.user.UserApiMap;
 import pt.gapiap.proccess.annotations.ApiMethodParameters;
 import pt.gapiap.proccess.annotations.Embedded;
+import pt.gapiap.proccess.validation.annotations.Email;
 import pt.gapiap.proccess.validation.defaultValidator.DefaultValidator;
+
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @ApiMethodParameters(
-        api = UserApiMap.API,
-        method = UserApiMap.UPDATE_ROLES,
-        validators = DefaultValidator.class
+    api = UserApiMap.API,
+    method = UserApiMap.UPDATE_ROLES,
+    validators = DefaultValidator.class
 )
 public class UpdateRolesP {
 
-    @Embedded
-    private RolesE rolesE;
-    @NotNull
-    private String email;
+  @Embedded
+  private RolesE rolesE;
 
-    public RolesE getRolesE() {
-        return rolesE;
-    }
+  @NotNull
+  @Email
+  private String email;
 
-    public void setRolesE(RolesE rolesE) {
-        this.rolesE = rolesE;
-    }
+  public RolesE getRolesE() {
+    return rolesE;
+  }
 
-    public String getEmail() {
-        return email;
-    }
+  public void setRolesE(RolesE rolesE) {
+    this.rolesE = rolesE;
+  }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
 }

@@ -8,6 +8,6 @@ public class BHGSCL extends GuiceServletContextListener{
 
   @Override
   protected Injector getInjector() {
-    return Guice.createInjector(new BabyHelpServiceSystemModule(), new BabyHelpGuiceModule());
+    return Guice.createInjector( new BabyHelpGuiceModule(),new BabyHelpServiceSystemModule());
   }
 }

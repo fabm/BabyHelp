@@ -12,8 +12,6 @@ var RouteState = {
     home: 'default'
 };
 
-var shared = 0;
-
 app.config(function ($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise("/");
 
@@ -133,24 +131,26 @@ var Articles;
         }
 
         $scope.save = function () {
-            if ($scope.create) {
-                articleService.create($scope.article).execute({
-                    success: function (success) {
-                        gns.growl.setMessage(success.message, GrowlBH.typeMessage.success);
-                        id = success.id;
-                        upPhoto();
-                    }, error: function (response) {
-                        setErrorMessage(response.error.message);
-                        gns.growl.showGrowl();
-                    }, unauthorized: function (response) {
-                        setErrorMessage(response.message);
-                    } });
-            } else {
-                loadId(function (success) {
-                    $scope.article = success;
-                    id = null;
-                });
-            }
+            articleService.loadApi(function () {
+                if ($scope.create) {
+                    articleService.create($scope.article).execute({
+                        success: function (success) {
+                            gns.growl.setMessage(success.message, GrowlBH.typeMessage.success);
+                            id = success.id;
+                            upPhoto();
+                        }, error: function (response) {
+                            setErrorMessage(response.error.message);
+                            gns.growl.showGrowl();
+                        }, unauthorized: function (response) {
+                            setErrorMessage(response.message);
+                        } });
+                } else {
+                    loadId(function (success) {
+                        $scope.article = success;
+                        id = null;
+                    });
+                }
+            });
         };
 
         $scope.cancel = function () {
@@ -198,14 +198,13 @@ var Users;
                     $scope.loading = false;
                     $scope.$digest();
                 },
-                error: function (response) {
+                error: function (error) {
                     $scope.loading = false;
-                    setErrorMesg(response);
-                },
-                unauthorized: function (response) {
-                    $scope.loading = false;
-                    setErrorMesg(response);
-                    gns.state.goto(RouteState.home);
+                    setErrorMesg(error.message);
+                    $scope.$digest();
+                    if (error.code == 401) {
+                        gns.state.goto(RouteState.home);
+                    }
                 }
             });
         });
@@ -307,7 +306,7 @@ function AuthButtonCtrl($scope, $cookies, gns, $location, $rootScope) {
         update(false);
     });
 
-    var bh = new ClientBabyHelp();
+    var bh = new ClientBabyHelp(null);
 
     $scope.authaction = function () {
         if (ClientLoader.logged) {

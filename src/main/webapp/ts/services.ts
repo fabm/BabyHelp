@@ -3,9 +3,45 @@
 /// <reference path="ext/angular/angular-ui-router.d.ts" />
 /// <reference path="ext/angular/angular-resource.d.ts" />
 /// <reference path="gapis.ts" />
+/// <reference path="api.ts" />
 
-var app = angular.module("babyhelp", ['ui.router', 'ui.growl', 'ngCookies']);
+function getInjector(){
+    return angular.element(document.body).injector();
+}
 
+var apiMapDepot = new ApiMapDepot(null);
+angular.module('api.depot', []).factory('apiMapDepot', ($http) => {
+
+    if (!apiMapDepot.allLoaded()) {
+        $http({method: 'GET', url: '/errors.json'}).
+            success(function (data, status, headers, config) {
+                apiMapDepot.setErros(data)
+            }).
+            error(function (data, status, headers, config) {
+                console.log(data);
+            });
+
+        $http({method: 'GET', url: '/js/gen/validationMap.json'}).
+            success(function (data, status, headers, config) {
+                apiMapDepot.setValidations(data);
+            }).
+            error(function (data, status, headers, config) {
+                console.log(data);
+            });
+
+        $http({method: 'GET', url: '/js/langMap.json'}).
+            success(function (data, status, headers, config) {
+                apiMapDepot.setFields(data);
+            }).
+            error(function (data, status, headers, config) {
+                console.log(data);
+            });
+
+    }
+    return apiMapDepot;
+});
+
+var app = angular.module('babyhelp', ['ui.router', 'ui.growl', 'ngCookies', 'api.depot']);
 
 app.directive('fileModel', function ($parse) {
     return {
@@ -17,11 +53,11 @@ app.directive('fileModel', function ($parse) {
 
             element.bind('change', function () {
                 scope.$apply(function () {
-                    if(scope.fileModelSetter)
+                    if (scope.fileModelSetter)
                         var callback = scope.fileModelSetter[modelName];
-                        if(callback && typeof(callback)==='function')
-                            callback(element[0].files[0]);
-                        modelSetter(scope, element[0].files[0]);
+                    if (callback && typeof(callback) === 'function')
+                        callback(element[0].files[0]);
+                    modelSetter(scope, element[0].files[0]);
                 });
             });
         }
@@ -127,7 +163,7 @@ app.factory('gns', ($state, $growl)=> {
     };
 });
 
-interface FUploadAppEngine{
+interface FUploadAppEngine {
     form:FormData;
     url:string;
     success:(success)=>void;
@@ -164,15 +200,14 @@ app.service('fUploadAppEngine', function ($http) {
 );
 
 
-
-app.factory('userService', ()=> {
-    return new UserService();
+app.factory('userService', (apiMapDepot:ApiMapDepot)=> {
+    return new UserService(apiMapDepot);
 });
 
-app.factory('articleService', ()=> {
-    return new ArticlesService();
+app.factory('articleService', (apiMapDepot:ApiMapDepot)=> {
+    return new ArticlesService(apiMapDepot);
 });
 
-app.factory('photoTokenService',()=>{
-    return new PhotoTokenService();
+app.factory('photoTokenService', (apiMapDepot:ApiMapDepot)=> {
+    return new PhotoTokenService(apiMapDepot);
 });

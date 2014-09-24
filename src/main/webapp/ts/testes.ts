@@ -1,11 +1,6 @@
 /// <reference path="def/testes.d.ts" />
 /// <reference path="app.ts" />
 
-var cbh = new ClientBabyHelp();
-cbh.client = ("userBH");
-var resToken;
-
-
 var testes = {
     success: null,
     error: (x)=> {
@@ -120,7 +115,7 @@ testes.upload = function () {
 
 
 testes.loadClientPhotoToken = function (callback) {
-    var clientBabyHelp = new ClientBabyHelp();
+    var clientBabyHelp = new ClientBabyHelp(null);
     clientBabyHelp.client = 'photoToken';
     clientBabyHelp.loadApi(callback);
 }
@@ -197,9 +192,9 @@ class UserEntry {
 }
 
 var apiTestes = {
-    article: new ApisHelper(),
-    user: new ApisHelper(),
-    testes: new ApisHelper()
+    article: new ApisHelper(null),
+    user: new ApisHelper(null),
+    testes: new ApisHelper(null)
 }
 
 apiTestes.article.helpLoader('article');

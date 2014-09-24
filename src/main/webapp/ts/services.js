@@ -3,7 +3,36 @@
 /// <reference path="ext/angular/angular-ui-router.d.ts" />
 /// <reference path="ext/angular/angular-resource.d.ts" />
 /// <reference path="gapis.ts" />
-var app = angular.module("babyhelp", ['ui.router', 'ui.growl', 'ngCookies']);
+/// <reference path="api.ts" />
+function getInjector() {
+    return angular.element(document.body).injector();
+}
+
+var apiMapDepot = new ApiMapDepot(null);
+angular.module('api.depot', []).factory('apiMapDepot', function ($http) {
+    if (!apiMapDepot.allLoaded()) {
+        $http({ method: 'GET', url: '/errors.json' }).success(function (data, status, headers, config) {
+            apiMapDepot.setErros(data);
+        }).error(function (data, status, headers, config) {
+            console.log(data);
+        });
+
+        $http({ method: 'GET', url: '/js/gen/validationMap.json' }).success(function (data, status, headers, config) {
+            apiMapDepot.setValidations(data);
+        }).error(function (data, status, headers, config) {
+            console.log(data);
+        });
+
+        $http({ method: 'GET', url: '/js/langMap.json' }).success(function (data, status, headers, config) {
+            apiMapDepot.setFields(data);
+        }).error(function (data, status, headers, config) {
+            console.log(data);
+        });
+    }
+    return apiMapDepot;
+});
+
+var app = angular.module('babyhelp', ['ui.router', 'ui.growl', 'ngCookies', 'api.depot']);
 
 app.directive('fileModel', function ($parse) {
     return {
@@ -144,15 +173,15 @@ app.service('fUploadAppEngine', function ($http) {
     };
 });
 
-app.factory('userService', function () {
-    return new UserService();
+app.factory('userService', function (apiMapDepot) {
+    return new UserService(apiMapDepot);
 });
 
-app.factory('articleService', function () {
-    return new ArticlesService();
+app.factory('articleService', function (apiMapDepot) {
+    return new ArticlesService(apiMapDepot);
 });
 
-app.factory('photoTokenService', function () {
-    return new PhotoTokenService();
+app.factory('photoTokenService', function (apiMapDepot) {
+    return new PhotoTokenService(apiMapDepot);
 });
 //# sourceMappingURL=services.js.map

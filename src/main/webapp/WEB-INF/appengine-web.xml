@@ -11,4 +11,8 @@
         <include path="/ts/**"/>
         <include path="/views/**"/>
     </static-files>
+    <system-properties>
+        <property name="file.encoding" value="UTF-8"/>
+        <property name="DEFAULT_ENCODING" value="UTF-8" />
+    </system-properties>
 </appengine-web-app>

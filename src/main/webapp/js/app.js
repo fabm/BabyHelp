@@ -226,7 +226,3 @@ angular.module('babyhelp', [])
             templateUrl: 'my-cust.html'
         };
     });
-
-function ola() {
-    alert("ola mundo");
-}

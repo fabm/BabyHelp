@@ -27,8 +27,6 @@ public class UserBHServiceImp implements UserBHService {
     private BHAuthorization bhAuthorization;
 
     @Override
-    @MappedAction(value = UserApiMap.LIST, area = "lista de utilizadores")
-    @RolesValidation(Role.ADMINISTRATOR)
     public Map<String, Object> getList() throws CEError {
         Iterator<UserFromApp> it = UserFromApp.iterateAll();
         Map<String, Object> map = new HashMap<String, Object>();
@@ -54,8 +52,6 @@ public class UserBHServiceImp implements UserBHService {
     }
 
     @Override
-    @MappedAction(value = UserApiMap.UPDATE_ROLES, area = "atualização de roles")
-    @RolesValidation(Role.ADMINISTRATOR)
     public Object updateRoles(UpdateRolesP updateRolesP) throws CEError {
         String email = updateRolesP.getEmail();
         RolesE rolesEntry = updateRolesP.getRolesE();
@@ -72,8 +68,6 @@ public class UserBHServiceImp implements UserBHService {
     }
 
     @Override
-    @MappedAction(value = UserApiMap.GET_ROLES, area = "visialização de roles")
-    @RolesValidation(Role.ADMINISTRATOR)
     public Object getRoles(GetRolesP getRolesP) throws CEError {
         String email = getRolesP.getEmail();
 
@@ -86,81 +80,10 @@ public class UserBHServiceImp implements UserBHService {
         }
     }
 
-    @Override
-    @MappedAction(value = UserApiMap.PENDING_ACTIONS, area = "ações pendentes")
-    @RolesValidation(Role.ADMINISTRATOR)
-    public Object pendingActions(UserFromApp userFromApp) {
-        Query<PendingParentality> query = BD.ofy().load().type(PendingParentality.class)
-                .filter("parent", userFromApp.getEmail());
-
-        if (query.count() > 0) {
-            List<String> emails = new ArrayList<String>();
-            List<Long> sonsList = new ArrayList<Long>();
-            List<PendingParentality> pendingsList = new ArrayList<PendingParentality>();
-
-            for (PendingParentality pp : query) {
-                emails.add(pp.getParent());
-                emails.add(pp.getAskedFor());
-                pendingsList.add(pp);
-                sonsList.add(pp.getSonId());
-            }
-            Map<String, UserFromApp> usersMap = BD.ofy().load().type(UserFromApp.class).ids(emails);
-            Map<Long, Son> sonsMap = BD.ofy().load().type(Son.class).ids(sonsList);
-            List<Map<String, Object>> pendingParentalityList = new ArrayList<Map<String, Object>>();
-            for (PendingParentality pp : pendingsList) {
-                UserFromApp userWhoAsk = usersMap.get(pp.getAskedFor());
-                UserFromApp userWhoConfirms = usersMap.get(pp.getParent());
-                Son son = sonsMap.get(pp.getParent());
-                Map<String, Object> pendingParentalityMap = new HashMap<String, Object>();
-
-                HashMap<String, Object> mapper = new HashMap<String, Object>();
-                mapper.put("name", userWhoAsk.getName());
-                mapper.put("email", userWhoAsk.getEmail());
-                pendingParentalityMap.put("asker", mapper);
-
-                mapper = new HashMap<String, Object>();
-                mapper.put("name", userWhoConfirms.getName());
-                mapper.put("email", userWhoConfirms.getEmail());
-                pendingParentalityMap.put("confirmer", mapper);
-
-                mapper = new HashMap<String, Object>();
-                mapper.put("name", son.getName());
-                mapper.put("photoKey", son.getPhotoKey());
-                mapper.put("birthDay", son.getBirthDate());
-                pendingParentalityMap.put("son", mapper);
-
-                pendingParentalityList.add(pendingParentalityMap);
-            }
-            return ImmutableMap.of("pending", pendingParentalityList);
-        }
-        return ImmutableMap.of("pending", "nothing");
-    }
-
     private Map<String, Object> setSons(Son[] sons) {
         BD.ofy().save().entities(sons).now();
 
         return null;
-    }
-
-    @Override
-    @MappedAction(value = UserApiMap.UPDATE_PROFESSION, area = "atualização da profissão")
-    @RolesValidation(Role.ADMINISTRATOR)
-    public Map<String, Object> updateProfession(UpdateProfessionP updateProfessionP) throws CEError {
-        bhAuthorization.getUserWithRoles().setProfession(updateProfessionP.getProfession());
-        bhAuthorization.savedUser();
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("message", "A sua profissão como técnico de saude foi atualizada");
-        map.put("current", bhAuthorization.getUserWithRoles().getProfession());
-        return map;
-    }
-
-    @Override
-    @MappedAction(value = UserApiMap.UPDATE_USERNAME, area = "atualização do username")
-    @RolesValidation(Role.ADMINISTRATOR)
-    public Object updateUserName(UpdateUserNameP updateUserNameP) throws CEError {
-        bhAuthorization.savedUser();
-        return ImmutableMap.of("message", "Utilizador atualizado com sucesso");
     }
 
 }

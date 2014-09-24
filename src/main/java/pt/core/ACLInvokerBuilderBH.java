@@ -6,7 +6,6 @@ import com.google.inject.Injector;
 import pt.babyHelp.cloudEndpoints.BHAuthorization;
 import pt.babyHelp.services.BHACLInvoker;
 import pt.babyHelp.services.RolesCapturerBH;
-import pt.gapiap.cloud.endpoints.authorization.ACLInvoker;
 import pt.gapiap.cloud.endpoints.authorization.AuthorizationContext;
 import pt.gapiap.cloud.endpoints.authorization.AuthorizationContextImpl;
 
@@ -38,7 +37,7 @@ public class ACLInvokerBuilderBH<T> {
     authorizationContext = new AuthorizationContextImpl<>(bhAuthorization, service);
     BHACLInvoker<T> aclInvoker = new BHACLInvoker<>(serviceClass);
     injector.injectMembers(aclInvoker);
-    aclInvoker.init(authorizationContext,new RolesCapturerBH(),user);
+    aclInvoker.init(authorizationContext, new RolesCapturerBH(), user);
     return aclInvoker;
   }
 }
